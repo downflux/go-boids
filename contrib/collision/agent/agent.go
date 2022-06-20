@@ -21,7 +21,7 @@ type C struct {
 }
 
 func (c C) Priority() constraint.P { return 0 }
-func (c C) Boid(a agent.A) vector.V {
+func (c C) A(a agent.A) vector.V {
 	distance := vector.Magnitude(vector.Scale(c.tau, c.obstacle.V())) + 0.5*c.tau*c.tau*c.obstacle.MaxAcceleration().R()
 	avoidance := hypersphere.New(
 		c.obstacle.P(),

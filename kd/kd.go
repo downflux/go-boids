@@ -1,3 +1,8 @@
+// Package kd provides a shim to lift and downcast caller K-D tree instances to
+// the correct type to be consumed by Boid.
+//
+// The alternative is using generics to enforce types, but after
+// experimentation, this syntax is very unwieldy.
 package kd
 
 import (

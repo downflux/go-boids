@@ -1,2 +1,7 @@
 github.com/downflux/go-geometry v0.10.1 h1:gvzKZAlzPAyZHiy1AmzfNGTsEknmvbNIDBf+EH634Qk=
 github.com/downflux/go-geometry v0.10.1/go.mod h1:XWTzSaMiRMAxupAR+cXAsa1Q75TCSp1Shc/ydsJ0xVE=
+github.com/downflux/go-kd v0.4.2 h1:Po+aWBoXNN180mAB1i5jg+xApNbUn5HIkUJEl9g27Ww=
+github.com/downflux/go-kd v0.4.2/go.mod h1:wP5Trk29xnmvxbTY0djz8FF+/digzEVUQfC1Y+cEVcU=
+github.com/google/go-cmp v0.5.6 h1:BKbKCqvP6I+rmFHt06ZmyQtvB8xAkWdhFyr0ZUNZcxQ=
+github.com/kyroy/kdtree v0.0.0-20200419114247-70830f883f1d h1:1n5M/49q9H6QtNJiiVL/W5mqgT1UdlGQ7oLP+DkJ1vs=
+github.com/kyroy/priority-queue v0.0.0-20180327160706-6e21825e7e0c h1:1c7+XOOGQ19cXjZ1Ss/irljQxgPvb+8z+jNEprCXl20=

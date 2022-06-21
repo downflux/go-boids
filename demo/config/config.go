@@ -26,6 +26,9 @@ func (a *A) V() vector.V                    { return a.O.V }
 func (a *A) R() float64                     { return a.O.R }
 func (a *A) MaxAcceleration() cylindrical.V { return a.O.A }
 
+func (a *A) SetP(p vector.V) { a.O.P = p }
+func (a *A) SetV(v vector.V) { a.O.V = v }
+
 func (a *A) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&O{
 		P: a.P(),
@@ -38,5 +41,5 @@ func (a *A) MarshalJSON() ([]byte, error) {
 func (a *A) UnmarshalJSON(data []byte) error { return json.Unmarshal(data, &a.O) }
 
 type C struct {
-	Agents []agent.A
+	Agents []A
 }

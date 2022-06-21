@@ -31,7 +31,7 @@ func GenerateGrid(h int, w int) config.C {
 	c := &config.C{}
 	for i := 0; i < h; i++ {
 		for j := 0; j < w; j++ {
-			c.Agents = append(c.Agents, &config.A{
+			c.Agents = append(c.Agents, config.A{
 				O: config.O{
 					P: *vector.New(float64(i)*tile, float64(j)*tile),
 					V: rv(0, 10),
@@ -51,6 +51,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	defer fp.Close()
 
 	c := GenerateGrid(10, 10)
 

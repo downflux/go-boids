@@ -33,7 +33,7 @@ func (c C) A(a agent.A) vector.V {
 		return *vector.New(0, 0)
 	}
 	return vector.Scale(
-		a.M()/math.Max(epsilon, d*d),
+		1/math.Max(epsilon, d*d),
 		vector.Unit(vector.Sub(a.P(), c.obstacle.P())),
 	)
 }

@@ -1,7 +1,7 @@
 package base
 
 import (
-	"container/heap"
+	//	"container/heap"
 	"math"
 
 	"github.com/downflux/go-boids/agent"
@@ -11,22 +11,35 @@ import (
 
 var _ constraint.C = C{}
 
-type q []constraint.C
+type item struct {
+	value constraint.C
+	index int
+}
 
-func (q *q) Len() int           { return len(*q) }
-func (q *q) Less(i, j int) bool { return (*q)[i].Priority() < (*q)[j].Priority() }
-func (q *q) Swap(i, j int)      { (*q)[i], (*q)[j] = (*q)[j], (*q)[i] }
+type q []*item
+
+func (q q) Len() int           { return len(q) }
+func (q q) Less(i, j int) bool { return q[i].value.Priority() < q[j].value.Priority() }
+func (q q) Swap(i, j int) {
+	q[i], q[j] = q[j], q[i]
+	q[i].index = i
+	q[j].index = j
+}
 func (q *q) Push(x any) {
-	item := x.(constraint.C)
-	*q = append(*q, item)
+	i := &item{
+		index: q.Len(),
+		value: x.(constraint.C),
+	}
+	*q = append(*q, i)
 }
 func (q *q) Pop() any {
 	p := *q
 	n := len(p)
 	item := p[n-1]
 	p[n-1] = nil
+	item.index = -1
 	*q = p[0 : n-1]
-	return item
+	return item.value
 }
 
 type C []constraint.C
@@ -39,17 +52,36 @@ func New(constraints []constraint.C) *C {
 func (c C) Priority() constraint.P { return 0 }
 
 func (c C) A(a agent.A) vector.V {
-	pq := make(q, len(c))
-	for _, constraint := range c {
-		pq = append(pq, constraint)
-	}
-	heap.Init(&pq)
+	/*
+		pq := make(q, len(c))
+		for i, constraint := range c {
+			pq = append(pq, &item{
+				index: i,
+				value: constraint,
+			})
+		}
+		heap.Init(&pq)
+	*/
 
 	// TODO(minkezhang): Account for a.MaxAcceleration().Theta() as well
 	// here.
-	var v vector.V
-	for v = *vector.New(0, 0); pq.Len() > 0 && vector.Magnitude(v) <= a.MaxAcceleration().R(); {
-		v = vector.Add(v, heap.Pop(&pq).(vector.V))
+	v := *vector.New(0, 0)
+	for _, constraint := range c {
+		// TODO(minkezhang): Truncate this last value vs. adding it in
+		// directly.
+		if vector.Magnitude(v) <= a.MaxAcceleration().R() {
+			break
+		}
+		v = vector.Add(v, constraint.A(a))
+	}
+	/*
+		for v = *vector.New(0, 0); pq.Len() > 0 && vector.Magnitude(v) <= a.MaxAcceleration().R(); {
+			v = vector.Add(v, heap.Pop(&pq).(constraint.C).A(a))
+		}
+	*/
+
+	if vector.Magnitude(v) < 1e-3 {
+		return *vector.New(0, 0)
 	}
 
 	return vector.Scale(

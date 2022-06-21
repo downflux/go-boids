@@ -20,6 +20,18 @@ type C struct {
 	tau      float64
 }
 
+type O struct {
+	Obstacle agent.A
+	Tau      float64
+}
+
+func New(o O) *C {
+	return &C{
+		obstacle: o.Obstacle,
+		tau:      o.Tau,
+	}
+}
+
 func (c C) Priority() constraint.P { return 0 }
 
 func (c C) A(a agent.A) vector.V {

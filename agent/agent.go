@@ -8,9 +8,7 @@ import (
 type A interface {
 	P() vector.V
 	V() vector.V
-
 	R() float64
-	M() float64
 
 	MaxAcceleration() cylindrical.V
 }

@@ -18,6 +18,7 @@ type O struct {
 }
 
 type A struct {
+	DebugID int
 	O
 }
 
@@ -41,5 +42,5 @@ func (a *A) MarshalJSON() ([]byte, error) {
 func (a *A) UnmarshalJSON(data []byte) error { return json.Unmarshal(data, &a.O) }
 
 type C struct {
-	Agents []A
+	Agents []*A
 }

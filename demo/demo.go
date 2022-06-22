@@ -50,18 +50,13 @@ type P config.A
 func (p *P) P() vector.V    { return vector.V(p.Agent().P()) }
 func (p *P) Agent() agent.A { return (*config.A)(p) }
 
-type Environment config.C
-
-func (e Environment) Points() []point.P {
-	ps := make([]point.P, 0, len(config.C(e).Agents))
-	for _, a := range config.C(e).Agents {
-		p := P(a)
-		ps = append(ps, &p)
-	}
-	return ps
+type Environment struct {
+	points []point.P
 }
 
-func (e Environment) Bound() hyperrectangle.R {
+func (e *Environment) Points() []point.P { return e.points }
+
+func (e *Environment) Bound() hyperrectangle.R {
 	min := *v2d.New(math.Inf(0), math.Inf(0))
 	max := *v2d.New(math.Inf(-1), math.Inf(-1))
 
@@ -84,7 +79,7 @@ func (e Environment) Bound() hyperrectangle.R {
 	)
 }
 
-func generate(fn string) Environment {
+func generate(fn string) *Environment {
 	fp, err := os.Open(fn)
 	if err != nil {
 		panic(fmt.Sprintf("could not open config file: %v", err))
@@ -95,7 +90,13 @@ func generate(fn string) Environment {
 	if err := json.NewDecoder(fp).Decode(&c); err != nil {
 		panic(fmt.Sprintf("could not decode config file: %v", err))
 	}
-	return Environment(c)
+
+	ps := make([]point.P, 0, len(c.Agents))
+	for _, a := range c.Agents {
+		p := P(*a)
+		ps = append(ps, &p)
+	}
+	return &Environment{points: ps}
 }
 
 func main() {
@@ -130,21 +131,26 @@ func main() {
 		for _, m := range mutations {
 			a := m.Agent.(*config.A)
 			a.SetV(v2d.Add(a.V(), v2d.Scale(frame, m.Acceleration)))
-			a.SetP(v2d.Add(a.V(), v2d.Scale(frame, a.V())))
+			a.SetP(v2d.Add(a.P(), v2d.Scale(frame, a.V())))
+
+			b := *hyperrectangle.New(
+				vector.Sub(b.Min(), vector.V(margin)),
+				vector.Sub(b.Max(), vector.V(margin)),
+			)
 
 			// Model the system as a 2D toroid.
-			if a.P().X() < b.Min().X(vector.AXIS_X) {
-				a.SetP(*v2d.New(b.Max().X(vector.AXIS_X), a.P().Y()))
+			x, y := a.P().X(), a.P().Y()
+			if d := v2d.V(b.Min()).X() - a.P().X(); d > 0 {
+				x = v2d.V(b.Max()).X() - d
+			} else if d := a.P().X() - v2d.V(b.Max()).X(); d > 0 {
+				x = v2d.V(b.Min()).X() + d
 			}
-			if a.P().X() > b.Max().X(vector.AXIS_X) {
-				a.SetP(*v2d.New(b.Min().X(vector.AXIS_X), a.P().Y()))
+			if d := v2d.V(b.Min()).Y() - a.P().Y(); d > 0 {
+				y = v2d.V(b.Max()).Y() - d
+			} else if d := a.P().Y() - v2d.V(b.Max()).Y(); d > 0 {
+				y = v2d.V(b.Min()).Y() + d
 			}
-			if a.P().Y() < b.Min().X(vector.AXIS_Y) {
-				a.SetP(*v2d.New(a.P().X(), b.Max().X(vector.AXIS_Y)))
-			}
-			if a.P().X() > b.Max().X(vector.AXIS_Y) {
-				a.SetP(*v2d.New(a.P().X(), b.Min().X(vector.AXIS_Y)))
-			}
+			a.SetP(*v2d.New(x, y))
 		}
 
 		img := image.NewPaletted(

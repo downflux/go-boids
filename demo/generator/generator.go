@@ -31,11 +31,11 @@ func GenerateGrid(h int, w int) config.C {
 	c := &config.C{}
 	for i := 0; i < h; i++ {
 		for j := 0; j < w; j++ {
-			c.Agents = append(c.Agents, config.A{
+			c.Agents = append(c.Agents, &config.A{
 				O: config.O{
 					P: *vector.New(float64(i)*tile, float64(j)*tile),
-					V: rv(0, 10),
-					A: cylindrical.V(*vector.New(0, 0)),
+					V: rv(10, 50),
+					A: cylindrical.V(*vector.New(0, 0.1)),
 					R: float64(Radius),
 				},
 			})

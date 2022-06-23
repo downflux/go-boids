@@ -54,6 +54,15 @@ type Environment struct {
 	points []point.P
 }
 
+func New(agents []*config.A) *Environment {
+	ps := make([]point.P, 0, len(agents))
+	for _, a := range agents {
+		p := P(*a)
+		ps = append(ps, &p)
+	}
+	return &Environment{points: ps}
+}
+
 func (e *Environment) Points() []point.P { return e.points }
 
 func (e *Environment) Bound() hyperrectangle.R {
@@ -91,19 +100,13 @@ func generate(fn string) *Environment {
 		panic(fmt.Sprintf("could not decode config file: %v", err))
 	}
 
-	ps := make([]point.P, 0, len(c.Agents))
-	for _, a := range c.Agents {
-		p := P(*a)
-		ps = append(ps, &p)
-	}
-	return &Environment{points: ps}
+	return New(c.Agents)
 }
 
 func main() {
 	flag.Parse()
 
 	e := generate(*fnInput)
-	const frame = 1.0 / 60.0
 
 	t, err := kd.New(e.Points())
 	if err != nil {
@@ -125,13 +128,22 @@ func main() {
 
 		mutations := boid.Step(boid.O{
 			T:   bkd.Lift(t),
-			Tau: .9,
+			Tau: 1. / 60,
 			F:   func(a agent.A) bool { return true },
 		})
 		for _, m := range mutations {
 			a := m.Agent.(*config.A)
-			a.SetV(v2d.Add(a.V(), v2d.Scale(frame, m.Acceleration)))
-			a.SetP(v2d.Add(a.P(), v2d.Scale(frame, a.V())))
+
+			fmt.Fprintf(os.Stderr, "DEBUG: accel == %v\n", m.Acceleration)
+			a.SetV(v2d.Add(a.V(), v2d.Scale(1, m.Acceleration)))
+			/*
+				a.SetV(v2d.Scale(
+					math.Min(v2d.Magnitude(a.V()), 10),
+					a.V(),
+				))
+			*/
+
+			a.SetP(v2d.Add(a.P(), v2d.Scale(1, a.V())))
 
 			b := *hyperrectangle.New(
 				vector.Sub(b.Min(), vector.V(margin)),

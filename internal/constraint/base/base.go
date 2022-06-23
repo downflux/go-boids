@@ -66,21 +66,24 @@ func (c C) A(a agent.A) vector.V {
 	// TODO(minkezhang): Account for a.MaxAcceleration().Theta() as well
 	// here.
 	v := *vector.New(0, 0)
+	var s float64
 	for _, constraint := range c {
+		s += vector.Magnitude(v)
+		v = vector.Add(v, constraint.A(a))
 		// TODO(minkezhang): Truncate this last value vs. adding it in
 		// directly.
-		if vector.Magnitude(v) <= a.MaxAcceleration().R() {
-			break
-		}
-		v = vector.Add(v, constraint.A(a))
+		/*
+			if s >= a.MaxAcceleration().R() {
+				break
+			}
+		*/
 	}
 	/*
 		for v = *vector.New(0, 0); pq.Len() > 0 && vector.Magnitude(v) <= a.MaxAcceleration().R(); {
 			v = vector.Add(v, heap.Pop(&pq).(constraint.C).A(a))
 		}
 	*/
-
-	if vector.Magnitude(v) < 1e-3 {
+	if vector.Within(*vector.New(0, 0), v) {
 		return *vector.New(0, 0)
 	}
 

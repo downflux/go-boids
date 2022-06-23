@@ -12,14 +12,14 @@ import (
 )
 
 var (
-	MaxAcceleration = cylindrical.V(*vector.New(0, 1))
+	MaxAcceleration = cylindrical.V(*vector.New(0.125, 0))
 	Radius          = 5
 
 	fn = flag.String("out", "/dev/stdout", "")
 )
 
 func rn(min, max float64) float64 {
-	return rand.Float64()*(max-min) - min
+	return rand.Float64()*(max-min) + min
 }
 
 func rv(min, max float64) vector.V {
@@ -34,8 +34,8 @@ func GenerateGrid(h int, w int) config.C {
 			c.Agents = append(c.Agents, &config.A{
 				O: config.O{
 					P: *vector.New(float64(i)*tile, float64(j)*tile),
-					V: rv(10, 50),
-					A: cylindrical.V(*vector.New(0, 0.1)),
+					V: rv(-0.5, 0.5),
+					A: MaxAcceleration,
 					R: float64(Radius),
 				},
 			})

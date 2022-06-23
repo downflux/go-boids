@@ -10,7 +10,7 @@ import (
 	"github.com/downflux/go-geometry/nd/hypersphere"
 	"github.com/downflux/go-geometry/nd/vector"
 
-	collisionagent "github.com/downflux/go-boids/contrib/constraint/collision/agent"
+	cc "github.com/downflux/go-boids/contrib/constraint/collision"
 	v2d "github.com/downflux/go-geometry/2d/vector"
 )
 
@@ -34,7 +34,8 @@ func Step(o O) []Mutation {
 			o.T,
 			*hypersphere.New(
 				vector.V(a.P()),
-				o.Tau*v2d.Magnitude(a.V())+2*a.R(),
+				// o.Tau*v2d.Magnitude(a.V())+2*a.R(),
+				10*a.R(),
 			),
 			// TODO(minkezhang): Check for interface equality
 			// instead of coordinate equality, via adding an
@@ -51,14 +52,14 @@ func Step(o O) []Mutation {
 		}
 
 		var cs []constraint.C
+		var obstacles []agent.A
 		for _, b := range kd.Agents(neighbors) {
-			cs = append(cs, *collisionagent.New(
-				collisionagent.O{
-					Obstacle: b,
-					Tau:      o.Tau,
-				},
-			))
+			obstacles = append(obstacles, b)
 		}
+		cs = append(cs, cc.New(cc.O{
+			Obstacles: obstacles,
+			Tau:       o.Tau,
+		}))
 		mutations = append(mutations, Mutation{
 			Agent:        a,
 			Acceleration: base.New(cs).A(a),

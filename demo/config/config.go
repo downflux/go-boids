@@ -18,7 +18,6 @@ type O struct {
 }
 
 type A struct {
-	DebugID int
 	O
 }
 

@@ -12,7 +12,10 @@ import (
 )
 
 var (
-	MaxAcceleration = *cylindrical.New(1, 0)
+	// MaxAcceleration is the maximum impuse that can be generated over some
+	// time period tau. Note that this should be fairly large compared to
+	// MaxSpeed to ensure agents can stop in time to avoid collisions.
+	MaxAcceleration = *cylindrical.New(10, 0)
 	MaxSpeed        = 1.0
 	Radius          = 5
 
@@ -31,18 +34,30 @@ func rv(min, max float64) vector.V {
 func GenerateGrid(h int, w int) config.C {
 	const tile = 50.0
 	c := &config.C{}
+
+	var positions []vector.V
+	var goals []vector.V
+
 	for i := 0; i < h; i++ {
 		for j := 0; j < w; j++ {
-			c.Agents = append(c.Agents, &config.A{
-				O: config.O{
-					P:               *vector.New(float64(i)*tile, float64(j)*tile),
-					V:               rv(-0.5, 0.5),
-					R:               float64(Radius),
-					MaxAcceleration: MaxAcceleration,
-					MaxSpeed:        MaxSpeed,
-				},
-			})
+			positions = append(positions, *vector.New(float64(i)*tile, float64(j)*tile))
+			goals = append(goals, *vector.New(float64(i)*tile, float64(j)*tile))
 		}
+	}
+
+	rand.Shuffle(len(goals), func(i, j int) { goals[i], goals[j] = goals[j], goals[i] })
+
+	for i, p := range positions {
+		c.Agents = append(c.Agents, &config.A{
+			O: config.O{
+				P:               p,
+				V:               rv(-0.5, 0.5),
+				R:               float64(Radius),
+				Goal:            goals[i],
+				MaxAcceleration: MaxAcceleration,
+				MaxSpeed:        MaxSpeed,
+			},
+		})
 	}
 	return *c
 }

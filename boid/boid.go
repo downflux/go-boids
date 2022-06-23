@@ -11,6 +11,7 @@ import (
 	"github.com/downflux/go-geometry/nd/vector"
 
 	cc "github.com/downflux/go-boids/contrib/constraint/collision"
+	cst "github.com/downflux/go-boids/contrib/constraint/steering/target"
 	v2d "github.com/downflux/go-geometry/2d/vector"
 )
 
@@ -34,7 +35,7 @@ func Step(o O) []Mutation {
 			o.T,
 			*hypersphere.New(
 				vector.V(a.P()),
-				o.Tau*v2d.Magnitude(a.V())+3*a.R(),
+				v2d.Magnitude(v2d.Scale(o.Tau*10, a.V()))+100*a.R(),
 			),
 			// TODO(minkezhang): Check for interface equality
 			// instead of coordinate equality, via adding an
@@ -51,13 +52,18 @@ func Step(o O) []Mutation {
 		}
 
 		var cs []constraint.C
+
 		var obstacles []agent.A
 		for _, b := range kd.Agents(neighbors) {
 			obstacles = append(obstacles, b)
 		}
-		cs = append(cs, cc.New(cc.O{
-			Obstacles: obstacles,
-		}))
+
+		cs = append(cs,
+			cc.New(cc.O{
+				Obstacles: obstacles,
+			}),
+			cst.New(cst.O{}),
+		)
 		mutations = append(mutations, Mutation{
 			Agent:        a,
 			Acceleration: v2d.Scale(o.Tau, base.New(cs).A(a)),

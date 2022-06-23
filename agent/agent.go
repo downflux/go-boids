@@ -10,6 +10,8 @@ type A interface {
 	V() vector.V
 	R() float64
 
+	Goal() vector.V
+
 	MaxSpeed() float64
 	MaxAcceleration() cylindrical.V
 }

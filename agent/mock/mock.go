@@ -13,6 +13,8 @@ type O struct {
 	V vector.V
 	R float64
 
+	Goal vector.V
+
 	MaxSpeed        float64
 	MaxAcceleration cylindrical.V
 }
@@ -28,5 +30,6 @@ func New(o O) *Mock {
 func (a *Mock) P() vector.V                    { return a.O.P }
 func (a *Mock) V() vector.V                    { return a.O.V }
 func (a *Mock) R() float64                     { return a.O.R }
+func (a *Mock) Goal() vector.V                 { return a.O.Goal }
 func (a *Mock) MaxSpeed() float64              { return a.O.MaxSpeed }
 func (a *Mock) MaxAcceleration() cylindrical.V { return a.O.MaxAcceleration }

@@ -1,9 +1,6 @@
 package base
 
 import (
-	"fmt"
-	"os"
-
 	"github.com/downflux/go-boids/agent"
 	"github.com/downflux/go-boids/constraint"
 	"github.com/downflux/go-boids/internal/geometry/2d/vector/cylindrical"
@@ -54,8 +51,5 @@ func (c C) A(a agent.A) vector.V {
 		return *vector.New(0, 0)
 	}
 
-	if vector.Magnitude(v) >= a.MaxAcceleration().R() {
-		fmt.Fprintf(os.Stderr, "DEBUG: total accel == %v\n", vector.Magnitude(v))
-	}
 	return v
 }

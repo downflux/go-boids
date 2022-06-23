@@ -12,8 +12,8 @@ import (
 )
 
 var (
-	MaxAcceleration = *cylindrical.New(10, 0)
-	MaxSpeed        = 10
+	MaxAcceleration = *cylindrical.New(1, 0)
+	MaxSpeed        = 1.0
 	Radius          = 5
 
 	fn = flag.String("out", "/dev/stdout", "")
@@ -35,10 +35,11 @@ func GenerateGrid(h int, w int) config.C {
 		for j := 0; j < w; j++ {
 			c.Agents = append(c.Agents, &config.A{
 				O: config.O{
-					P: *vector.New(float64(i)*tile, float64(j)*tile),
-					V: rv(-0.5, 0.5),
-					A: MaxAcceleration,
-					R: float64(Radius),
+					P:               *vector.New(float64(i)*tile, float64(j)*tile),
+					V:               rv(-0.5, 0.5),
+					R:               float64(Radius),
+					MaxAcceleration: MaxAcceleration,
+					MaxSpeed:        MaxSpeed,
 				},
 			})
 		}

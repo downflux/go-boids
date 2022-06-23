@@ -17,13 +17,11 @@ type C struct {
 
 type O struct {
 	Obstacles []agent.A
-	Tau       float64
 }
 
 func New(o O) *C {
 	return &C{
 		obstacles: o.Obstacles,
-		tau:       o.Tau,
 	}
 }
 
@@ -35,7 +33,6 @@ func (c C) A(a agent.A) vector.V {
 		v = vector.Add(v, vector.Scale(1.0/float64(len(c.obstacles)),
 			ca.New(ca.O{
 				Obstacle: o,
-				Tau:      c.tau,
 			}).A(a)))
 	}
 	return v

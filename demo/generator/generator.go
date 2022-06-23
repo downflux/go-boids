@@ -12,18 +12,20 @@ import (
 )
 
 var (
-	MaxAcceleration = cylindrical.V(*vector.New(0.125, 0))
+	MaxAcceleration = *cylindrical.New(10, 0)
+	MaxSpeed        = 10
 	Radius          = 5
 
 	fn = flag.String("out", "/dev/stdout", "")
 )
 
-func rn(min, max float64) float64 {
-	return rand.Float64()*(max-min) + min
-}
+func rn(min, max float64) float64 { return min + (max-min)*rand.Float64() }
 
 func rv(min, max float64) vector.V {
-	return vector.Scale(rn(min, max), vector.Unit(*vector.New(rn(-1, 1), rn(-1, 1))))
+	return vector.Scale(
+		rn(min, max),
+		vector.Unit(*vector.New(rn(-1, 1), rn(-1, 1))),
+	)
 }
 
 func GenerateGrid(h int, w int) config.C {

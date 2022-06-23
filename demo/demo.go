@@ -23,6 +23,10 @@ import (
 	examplesdraw "github.com/downflux/go-orca/examples/draw"
 )
 
+const (
+	framerate = 60.0
+)
+
 var (
 	// Color palette for drawing.
 
@@ -128,14 +132,18 @@ func main() {
 
 		mutations := boid.Step(boid.O{
 			T:   bkd.Lift(t),
-			Tau: 1. / 60,
+			Tau: 1.0 / float64(framerate),
 			F:   func(a agent.A) bool { return true },
 		})
 		for _, m := range mutations {
 			a := m.Agent.(*config.A)
 
-			fmt.Fprintf(os.Stderr, "DEBUG: accel == %v\n", m.Acceleration)
-			a.SetV(v2d.Add(a.V(), v2d.Scale(1, m.Acceleration)))
+			a.SetV(
+				v2d.Add(
+					a.V(),
+					m.Acceleration,
+				),
+			)
 			/*
 				a.SetV(v2d.Scale(
 					math.Min(v2d.Magnitude(a.V()), 10),

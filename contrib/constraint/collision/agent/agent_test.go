@@ -28,7 +28,7 @@ func TestA(t *testing.T) {
 				V: *vector.New(0, 0),
 				R: 1,
 			}),
-			want: *vector.New(-1, 0),
+			want: *vector.New(5, 0),
 		},
 		{
 			name: "Cutoff",
@@ -50,7 +50,6 @@ func TestA(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			if got := New(O{
 				Obstacle: c.obstacle,
-				Tau:      1,
 			}).A(c.agent); !vector.Within(got, c.want) {
 				t.Errorf("A() = %v, want = %v", got, c.want)
 			}

@@ -61,8 +61,13 @@ func Step(o O) []Mutation {
 		cs = append(cs,
 			cc.New(cc.O{
 				Obstacles: obstacles,
+				K:         10,
+				Tau:       o.Tau,
 			}),
-			cst.New(cst.O{}),
+			cst.New(cst.O{
+				K:   2,
+				Tau: o.Tau,
+			}),
 		)
 		mutations = append(mutations, Mutation{
 			Agent:        a,

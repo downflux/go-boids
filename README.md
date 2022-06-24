@@ -6,5 +6,5 @@ Golang implementation of Boid flocking
 ```bash
 go run \
   github.com/downflux/go-boids/demo/generator | go run \
-  github.com/downflux/go-boids/demo 2> demo.gif
+  github.com/downflux/go-boids/demo > demo.gif
 ```

@@ -14,6 +14,7 @@ func TestA(t *testing.T) {
 		name     string
 		obstacle agent.A
 		agent    agent.A
+		k        float64
 		want     vector.V
 	}{
 		{
@@ -28,6 +29,7 @@ func TestA(t *testing.T) {
 				V: *vector.New(0, 0),
 				R: 1,
 			}),
+			k:    10,
 			want: *vector.New(0, 0),
 		},
 		{
@@ -42,6 +44,7 @@ func TestA(t *testing.T) {
 				V: *vector.New(-1, 0),
 				R: 1,
 			}),
+			k:    10,
 			want: *vector.New(0, 0),
 		},
 		{
@@ -56,6 +59,7 @@ func TestA(t *testing.T) {
 				V: *vector.New(-1, 0),
 				R: 1,
 			}),
+			k:    10,
 			want: *vector.New(10, 0),
 		},
 	}
@@ -64,6 +68,7 @@ func TestA(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			if got := New(O{
 				Obstacle: c.obstacle,
+				K:        c.k,
 			}).A(c.agent); !vector.Within(got, c.want) {
 				t.Errorf("A() = %v, want = %v", got, c.want)
 			}

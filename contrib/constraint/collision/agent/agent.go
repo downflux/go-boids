@@ -10,23 +10,21 @@ import (
 	"github.com/downflux/go-geometry/2d/vector"
 )
 
-const (
-	strength = 10.0
-)
-
 var _ constraint.C = C{}
 
 type C struct {
-	obstacle agent.A
+	o O
 }
 
 type O struct {
 	Obstacle agent.A
+	K        float64
+	Tau      float64
 }
 
 func New(o O) *C {
 	return &C{
-		obstacle: o.Obstacle,
+		o: o,
 	}
 }
 
@@ -38,10 +36,10 @@ func (c C) Priority() constraint.P { return 0 }
 // for more details.
 func (c C) A(a agent.A) vector.V {
 	l := line.New(a.P(), a.V())
-	r := a.R() + c.obstacle.R() + vector.Magnitude(a.V())
+	r := a.R() + c.o.Obstacle.R() + vector.Magnitude(a.V())
 
 	lmin, lmax, ok := l.IntersectCircle(
-		*hypersphere.New(c.obstacle.P(), r))
+		*hypersphere.New(c.o.Obstacle.P(), r))
 	// The obstacle ray-traces an intersection with the obstacle. This may
 	// have happend in the past though, so we need to check if the
 	// intersection is in the positive direction.
@@ -56,8 +54,8 @@ func (c C) A(a agent.A) vector.V {
 			t = tmax
 		}
 		if t > 0 {
-			avoid := vector.Sub(vector.Add(a.P(), a.V()), c.obstacle.P())
-			return vector.Scale(strength, vector.Unit(avoid))
+			avoid := vector.Sub(vector.Add(a.P(), a.V()), c.o.Obstacle.P())
+			return vector.Scale(c.o.K, vector.Unit(avoid))
 		}
 	}
 	return *vector.New(0, 0)

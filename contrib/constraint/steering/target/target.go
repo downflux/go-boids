@@ -10,21 +10,28 @@ import (
 
 const (
 	epsilon  = 1e-3
-	strength = 2
 )
 
 var _ constraint.C = C{}
 
-type C struct{}
-type O struct{}
+type C struct{
+	o O
+}
+
+type O struct{
+	K float64
+	Tau float64
+}
 
 func New(o O) *C {
-	return &C{}
+	return &C{
+		o: o,
+	}	
 }
 
 func (c C) Priority() constraint.P { return 0 }
 
-func (C C) A(a agent.A) vector.V {
+func (c C) A(a agent.A) vector.V {
 	r := vector.Sub(a.Goal(), a.P())
 	d := vector.Magnitude(r)
 	if e.Within(d, 0) {
@@ -36,5 +43,5 @@ func (C C) A(a agent.A) vector.V {
 	// See also Park, Tahk, and Bang 2004.
 	if d < a.R() {
 	}
-	return vector.Scale(strength, vector.Unit(r))
+	return vector.Scale(c.o.K, vector.Unit(r))
 }

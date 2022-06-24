@@ -15,21 +15,23 @@ func TestA(t *testing.T) {
 		obstacle agent.A
 		agent    agent.A
 		k        float64
+		tau      float64
 		want     vector.V
 	}{
 		{
-			name: "Miss/Stationary",
+			name: "Miss/RelativeStationary",
 			obstacle: mock.New(mock.O{
 				P: *vector.New(0, 0),
-				V: *vector.New(0, 0),
+				V: *vector.New(1, 0),
 				R: 1,
 			}),
 			agent: mock.New(mock.O{
 				P: *vector.New(3, 0),
-				V: *vector.New(0, 0),
+				V: *vector.New(1, 0),
 				R: 1,
 			}),
-			k:    10,
+			k:    1,
+			tau:  1,
 			want: *vector.New(0, 0),
 		},
 		{
@@ -40,11 +42,12 @@ func TestA(t *testing.T) {
 				R: 1,
 			}),
 			agent: mock.New(mock.O{
-				P: *vector.New(0, 3),
+				P: *vector.New(0, 4),
 				V: *vector.New(-1, 0),
 				R: 1,
 			}),
-			k:    10,
+			k:    1,
+			tau:  1,
 			want: *vector.New(0, 0),
 		},
 		{
@@ -59,8 +62,9 @@ func TestA(t *testing.T) {
 				V: *vector.New(-1, 0),
 				R: 1,
 			}),
-			k:    10,
-			want: *vector.New(10, 0),
+			k:    1,
+			tau:  1,
+			want: *vector.New(20, 0),
 		},
 	}
 
@@ -69,6 +73,7 @@ func TestA(t *testing.T) {
 			if got := New(O{
 				Obstacle: c.obstacle,
 				K:        c.k,
+				Tau:      c.tau,
 			}).A(c.agent); !vector.Within(got, c.want) {
 				t.Errorf("A() = %v, want = %v", got, c.want)
 			}

@@ -39,8 +39,17 @@ func (c C) Priority() constraint.P { return 0 }
 // https://gamedevelopment.tutsplus.com/tutorials/understanding-steering-behaviors-collision-avoidance--gamedev-7777
 // for more details.
 func (c C) A(a agent.A) vector.V {
-	l := line.New(a.P(), a.V())
-	r := a.R() + c.o.Obstacle.R() + c.o.Tau*vector.Magnitude(a.V())
+	// v is the relative velocity between the input agent and the incoming
+	// obstacle. This is affords the agent some room for anticipatory
+	// movement, which looks more natural.
+	v := vector.Sub(a.V(), c.o.Obstacle.V())
+	l := line.New(a.P(), v)
+
+	// r is the minimum separation distance between the agent and the
+	// obstacle. We need to factor in some uncertainty in how the agents
+	// will move within the time period given. We are assuming the actual
+	// acceleration is negligible.
+	r := a.R() + c.o.Obstacle.R() + c.o.Tau*vector.Magnitude(v)
 
 	lmin, lmax, ok := l.IntersectCircle(
 		*hypersphere.New(c.o.Obstacle.P(), r))
@@ -58,10 +67,22 @@ func (c C) A(a agent.A) vector.V {
 			t = tmax
 		}
 
-		if t > 0 {
-			avoid := vector.Sub(vector.Add(a.P(), a.V()), c.o.Obstacle.P())
-			scalar := math.Max(epsilon, vector.Magnitude(avoid)-2*r)
-			return vector.Scale(c.o.K/scalar, vector.Unit(avoid))
+		if collision := t > 0; collision {
+			avoid := vector.Sub(vector.Add(a.P(), v), c.o.Obstacle.P())
+			// scalar represents how strong of a force the avoidance
+			// vector is -- the shorter the avoidance vector, the
+			// closer the agent is to the obstacle. Therefore, we
+			// want to ensure that at the point of contact, the
+			// agent is trying to steer away from the obstacle as
+			// hard as possible.
+			scalar := 1.0 / math.Max(epsilon, vector.Magnitude(avoid)-r)
+
+			// We also need to scale the avoidance vector by the
+			// actual relative velocity -- if the agent and obstacle
+			// are moving in the same direction, then there is no
+			// need to create some avoidance acceleration as they
+			// will never actually collide.
+			return vector.Scale(c.o.K*vector.Magnitude(v)*scalar, vector.Unit(avoid))
 		}
 	}
 	return *vector.New(0, 0)

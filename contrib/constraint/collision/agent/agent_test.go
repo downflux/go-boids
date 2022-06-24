@@ -17,7 +17,7 @@ func TestA(t *testing.T) {
 		want     vector.V
 	}{
 		{
-			name: "Oncoming",
+			name: "Miss/Stationary",
 			obstacle: mock.New(mock.O{
 				P: *vector.New(0, 0),
 				V: *vector.New(0, 0),
@@ -28,21 +28,35 @@ func TestA(t *testing.T) {
 				V: *vector.New(0, 0),
 				R: 1,
 			}),
-			want: *vector.New(5, 0),
+			want: *vector.New(0, 0),
 		},
 		{
-			name: "Cutoff",
+			name: "Miss/Slide",
 			obstacle: mock.New(mock.O{
-				P: *vector.New(100, 0),
-				V: *vector.New(0, 0),
+				P: *vector.New(0, 0),
+				V: *vector.New(1, 0),
+				R: 1,
+			}),
+			agent: mock.New(mock.O{
+				P: *vector.New(0, 3),
+				V: *vector.New(-1, 0),
+				R: 1,
+			}),
+			want: *vector.New(0, 0),
+		},
+		{
+			name: "Collide/Direct",
+			obstacle: mock.New(mock.O{
+				P: *vector.New(0, 0),
+				V: *vector.New(1, 0),
 				R: 1,
 			}),
 			agent: mock.New(mock.O{
 				P: *vector.New(3, 0),
-				V: *vector.New(0, 0),
+				V: *vector.New(-1, 0),
 				R: 1,
 			}),
-			want: *vector.New(0, 0),
+			want: *vector.New(10, 0),
 		},
 	}
 

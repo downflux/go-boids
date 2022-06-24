@@ -9,24 +9,24 @@ import (
 )
 
 const (
-	epsilon  = 1e-3
+	epsilon = 1e-3
 )
 
 var _ constraint.C = C{}
 
-type C struct{
+type C struct {
 	o O
 }
 
-type O struct{
-	K float64
+type O struct {
+	K   float64
 	Tau float64
 }
 
 func New(o O) *C {
 	return &C{
 		o: o,
-	}	
+	}
 }
 
 func (c C) Priority() constraint.P { return 0 }

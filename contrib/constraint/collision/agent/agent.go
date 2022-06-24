@@ -10,6 +10,10 @@ import (
 	"github.com/downflux/go-geometry/2d/vector"
 )
 
+const (
+	epsilon = 1e-1
+)
+
 var _ constraint.C = C{}
 
 type C struct {
@@ -36,7 +40,7 @@ func (c C) Priority() constraint.P { return 0 }
 // for more details.
 func (c C) A(a agent.A) vector.V {
 	l := line.New(a.P(), a.V())
-	r := a.R() + c.o.Obstacle.R() + vector.Magnitude(a.V())
+	r := a.R() + c.o.Obstacle.R() + c.o.Tau*vector.Magnitude(a.V())
 
 	lmin, lmax, ok := l.IntersectCircle(
 		*hypersphere.New(c.o.Obstacle.P(), r))
@@ -53,9 +57,11 @@ func (c C) A(a agent.A) vector.V {
 		} else if tmax > 0 {
 			t = tmax
 		}
+
 		if t > 0 {
 			avoid := vector.Sub(vector.Add(a.P(), a.V()), c.o.Obstacle.P())
-			return vector.Scale(c.o.K, vector.Unit(avoid))
+			scalar := math.Max(epsilon, vector.Magnitude(avoid)-2*r)
+			return vector.Scale(c.o.K/scalar, vector.Unit(avoid))
 		}
 	}
 	return *vector.New(0, 0)

@@ -14,8 +14,14 @@ func New(r float64, theta float64) *V {
 	return &v
 }
 
-func (v V) R() float64     { return vector.V(v).X() }
-func (v V) Theta() float64 { return vector.V(v).Y() }
+func (v V) R() float64 { return vector.V(v).X() }
+
+// Theta returns the angular component of the polar coordinate. Note that we are
+// always returning an angle between 0 and 2π.
+func (v V) Theta() float64 {
+	theta := vector.V(v).Y()
+	return (theta/(2*math.Pi) - math.Round(theta/2*math.Pi)) * (2 * math.Pi)
+}
 
 func Add(v V, u V) V { return V(vector.Add(vector.V(v), vector.V(u))) }
 func Sub(v V, u V) V { return V(vector.Sub(vector.V(v), vector.V(u))) }

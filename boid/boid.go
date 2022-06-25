@@ -61,8 +61,13 @@ func Step(o O) []Mutation {
 		cs = append(cs,
 			cc.New(cc.O{
 				Obstacles: obstacles,
-				K:         5,
-				Tau:       o.Tau,
+				// K is the agent-agent collision scalar; a
+				// larger value here allows the repulsive
+				// acceleration to be larger, earlier, which
+				// smooths out collisions as the acceleration
+				// becomes noticeable from further away.
+				K:   20,
+				Tau: o.Tau,
 			}),
 			cst.New(cst.O{
 				K:   1,

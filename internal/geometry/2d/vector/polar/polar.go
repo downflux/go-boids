@@ -16,12 +16,10 @@ func New(r float64, theta float64) *V {
 
 func (v V) R() float64 { return vector.V(v).X() }
 
-// Theta returns the angular component of the polar coordinate. Note that we are
-// always returning an angle between 0 and 2π.
-func (v V) Theta() float64 {
-	theta := vector.V(v).Y()
-	return (theta/(2*math.Pi) - math.Round(theta/2*math.Pi)) * (2 * math.Pi)
-}
+// Theta returns the angular component of the polar coordinate. Note that theta
+// may extend beyond 2π, as polar coordinates may also represent angular
+// acceleration and velocity, which are not bound by a single rotation.
+func (v V) Theta() float64 { return vector.V(v).Y() }
 
 func Add(v V, u V) V { return V(vector.Add(vector.V(v), vector.V(u))) }
 func Sub(v V, u V) V { return V(vector.Sub(vector.V(v), vector.V(u))) }
@@ -33,6 +31,19 @@ func Polar(v vector.V) V {
 	))
 }
 
+// Normalize returns a vector whose anglular component is bound between 0 and
+// 2π.
+func Normalize(v V) V {
+	theta := math.Mod(v.Theta(), 2*math.Pi)
+	// theta may be negative in the case the original polar coordinate is
+	// negative. Since we want to ensure the angle is positive, we have to
+	// take this into consideration.
+	if theta < 0 {
+		theta += 2 * math.Pi
+	}
+	return *New(v.R(), theta)
+}
+
 func Cartesian(v V) vector.V {
 	return *vector.New(
 		v.R()*math.Cos(v.Theta()),
@@ -41,17 +52,6 @@ func Cartesian(v V) vector.V {
 }
 
 func WithinEpsilon(v V, u V, e epsilon.E) bool {
-	if !e.Within(v.R(), u.R()) {
-		return false
-	}
-	angle := v.Theta() - u.Theta()
-	if !e.Within(
-		angle/(2*math.Pi),
-		math.Round(angle/(2*math.Pi)),
-	) && !e.Within(v.R(), 0) && !e.Within(u.R(), 0) {
-		return false
-	}
-	return true
+	return (e.Within(v.R(), 0) && e.Within(u.R(), 0)) || vector.WithinEpsilon(vector.V(v), vector.V(u), e)
 }
-
 func Within(v, u V) bool { return WithinEpsilon(v, u, epsilon.DefaultE) }

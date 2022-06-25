@@ -7,6 +7,48 @@ import (
 	"github.com/downflux/go-geometry/2d/vector"
 )
 
+func TestNormalize(t *testing.T) {
+	configs := []struct {
+		name string
+		v    V
+		want V
+	}{
+		{
+			name: "Theta/Theta=0",
+			v:    *New(1, 2*math.Pi),
+			want: *New(1, 0),
+		},
+		{
+			name: "Theta/Q1",
+			v:    *New(1, 2*math.Pi+math.Pi/4),
+			want: *New(1, math.Pi/4),
+		},
+		{
+			name: "Theta/Q2",
+			v:    *New(1, 2*math.Pi+3*math.Pi/4),
+			want: *New(1, 3*math.Pi/4),
+		},
+		{
+			name: "Theta/Q3",
+			v:    *New(1, 2*math.Pi+5*math.Pi/4),
+			want: *New(1, 5*math.Pi/4),
+		},
+		{
+			name: "Theta/Q4",
+			v:    *New(1, -math.Pi/4),
+			want: *New(1, 7*math.Pi/4),
+		},
+	}
+
+	for _, c := range configs {
+		t.Run(c.name, func(t *testing.T) {
+			if got := Normalize(c.v); !Within(got, c.want) {
+				t.Errorf("Normalize() = %v, want = %v", got, c.want)
+			}
+		})
+	}
+}
+
 func TestCartesian(t *testing.T) {
 	configs := []struct {
 		name string
@@ -104,7 +146,7 @@ func TestPolar(t *testing.T) {
 
 	for _, c := range configs {
 		t.Run(c.name, func(t *testing.T) {
-			if got := Polar(c.v); !Within(got, c.want) {
+			if got := Polar(c.v); !Within(Normalize(got), Normalize(c.want)) {
 				t.Errorf("Polar() = %v, want = %v", got, c.want)
 			}
 		})
@@ -131,15 +173,9 @@ func TestWithin(t *testing.T) {
 			want: false,
 		},
 		{
-			name: "Within/Rotate",
-			u:    *New(1, 1),
-			v:    *New(1, 1+2*math.Pi),
-			want: true,
-		},
-		{
 			name: "Within/Rotate/False",
 			u:    *New(1, 1),
-			v:    *New(1, 1+math.Pi),
+			v:    *New(1, 1+2*math.Pi),
 			want: false,
 		},
 		{

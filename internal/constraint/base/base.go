@@ -3,7 +3,7 @@ package base
 import (
 	"github.com/downflux/go-boids/agent"
 	"github.com/downflux/go-boids/constraint"
-	"github.com/downflux/go-boids/internal/geometry/2d/vector/polar"
+	"github.com/downflux/go-boids/internal/accumulator"
 	"github.com/downflux/go-geometry/2d/vector"
 )
 
@@ -19,36 +19,15 @@ func New(constraints []constraint.C) *C {
 func (c C) Priority() constraint.P { return 0 }
 
 func (c C) A(a agent.A) vector.V {
-	// TODO(minkezhang): Account for a.MaxAcceleration().Theta() as well
-	// here.
 	v := *vector.New(0, 0)
-	accumulator := *polar.New(0, 0)
-	for _, constraint := range c {
-		acceleration := constraint.A(a)
-		// Ensure total acceleration influences is capped.
-		if accumulator.R()+vector.Magnitude(acceleration) >= a.MaxAcceleration().R() {
-			// Truncate "extra" acceleration influence.
-			//
-			// See Reynolds 1987 for more information on
-			// acceleration truncation.
-			acceleration = vector.Scale(
-				a.MaxAcceleration().R()-accumulator.R(),
-				vector.Unit(acceleration),
-			)
-		}
+	acc := accumulator.New(a.MaxAcceleration())
 
-		accumulator = polar.Add(
-			accumulator,
-			*polar.New(vector.Magnitude(acceleration), 0),
-		)
+	for _, constraint := range c {
+		acceleration, ok := acc.Add(constraint.A(a))
 		v = vector.Add(v, acceleration)
-		if accumulator.R() >= a.MaxAcceleration().R() {
+		if !ok {
 			break
 		}
-	}
-
-	if vector.Within(*vector.New(0, 0), v) {
-		return *vector.New(0, 0)
 	}
 
 	return v

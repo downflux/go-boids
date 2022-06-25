@@ -7,6 +7,58 @@ import (
 	"github.com/downflux/go-geometry/2d/vector"
 )
 
+func TestCartesian(t *testing.T) {
+	configs := []struct {
+		name string
+		v    V
+		want vector.V
+	}{
+		{
+			name: "R=0",
+			v:    *New(0, 1),
+			want: *vector.New(0, 0),
+		},
+		{
+			name: "Theta/Q1",
+			v:    *New(1, math.Pi/4),
+			want: vector.Scale(
+				math.Sqrt(2)/2,
+				*vector.New(1, 1),
+			),
+		},
+		{
+			name: "Theta/Q2",
+			v:    *New(1, 3*math.Pi/4),
+			want: vector.Scale(
+				math.Sqrt(2)/2,
+				*vector.New(-1, 1),
+			),
+		},
+		{
+			name: "Theta/Q3",
+			v:    *New(1, 5*math.Pi/4),
+			want: vector.Scale(
+				math.Sqrt(2)/2,
+				*vector.New(-1, -1),
+			),
+		},
+		{
+			name: "Theta/Q4",
+			v:    *New(1, 7*math.Pi/4),
+			want: vector.Scale(
+				math.Sqrt(2)/2,
+				*vector.New(1, -1),
+			),
+		},
+	}
+
+	for _, c := range configs {
+		if got := Cartesian(c.v); !vector.Within(got, c.want) {
+			t.Errorf("Cartesian() = %v, want = %v", got, c.want)
+		}
+	}
+}
+
 func TestPolar(t *testing.T) {
 	configs := []struct {
 		name string

@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"flag"
+	"math"
 	"math/rand"
 	"os"
 
@@ -15,7 +16,7 @@ var (
 	// MaxAcceleration is the maximum impuse that can be generated over some
 	// time period tau. Note that this should be fairly large compared to
 	// MaxSpeed to ensure agents can stop in time to avoid collisions.
-	MaxAcceleration = *polar.New(10, 0)
+	MaxAcceleration = *polar.New(10, math.Pi/4)
 	MaxSpeed        = 1.0
 	Radius          = 5
 

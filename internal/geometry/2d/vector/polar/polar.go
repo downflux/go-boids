@@ -33,6 +33,13 @@ func Polar(v vector.V) V {
 	))
 }
 
+func Cartesian(v V) vector.V {
+	return *vector.New(
+		v.R()*math.Cos(v.Theta()),
+		v.R()*math.Sin(v.Theta()),
+	)
+}
+
 func WithinEpsilon(v V, u V, e epsilon.E) bool {
 	if !e.Within(v.R(), u.R()) {
 		return false

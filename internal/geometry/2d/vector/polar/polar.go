@@ -1,4 +1,4 @@
-package cylindrical
+package polar
 
 import (
 	"github.com/downflux/go-geometry/2d/vector"

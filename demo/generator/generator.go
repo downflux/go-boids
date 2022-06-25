@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/downflux/go-boids/demo/config"
-	"github.com/downflux/go-boids/internal/geometry/2d/vector/cylindrical"
+	"github.com/downflux/go-boids/internal/geometry/2d/vector/polar"
 	"github.com/downflux/go-geometry/2d/vector"
 )
 
@@ -15,7 +15,7 @@ var (
 	// MaxAcceleration is the maximum impuse that can be generated over some
 	// time period tau. Note that this should be fairly large compared to
 	// MaxSpeed to ensure agents can stop in time to avoid collisions.
-	MaxAcceleration = *cylindrical.New(10, 0)
+	MaxAcceleration = *polar.New(10, 0)
 	MaxSpeed        = 1.0
 	Radius          = 5
 

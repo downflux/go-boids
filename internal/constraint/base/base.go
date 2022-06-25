@@ -3,7 +3,7 @@ package base
 import (
 	"github.com/downflux/go-boids/agent"
 	"github.com/downflux/go-boids/constraint"
-	"github.com/downflux/go-boids/internal/geometry/2d/vector/cylindrical"
+	"github.com/downflux/go-boids/internal/geometry/2d/vector/polar"
 	"github.com/downflux/go-geometry/2d/vector"
 )
 
@@ -22,7 +22,7 @@ func (c C) A(a agent.A) vector.V {
 	// TODO(minkezhang): Account for a.MaxAcceleration().Theta() as well
 	// here.
 	v := *vector.New(0, 0)
-	accumulator := *cylindrical.New(0, 0)
+	accumulator := *polar.New(0, 0)
 	for _, constraint := range c {
 		acceleration := constraint.A(a)
 		// Ensure total acceleration influences is capped.
@@ -37,9 +37,9 @@ func (c C) A(a agent.A) vector.V {
 			)
 		}
 
-		accumulator = cylindrical.Add(
+		accumulator = polar.Add(
 			accumulator,
-			*cylindrical.New(vector.Magnitude(acceleration), 0),
+			*polar.New(vector.Magnitude(acceleration), 0),
 		)
 		v = vector.Add(v, acceleration)
 		if accumulator.R() >= a.MaxAcceleration().R() {

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/downflux/go-boids/agent"
-	"github.com/downflux/go-boids/internal/geometry/2d/vector/cylindrical"
+	"github.com/downflux/go-boids/internal/geometry/2d/vector/polar"
 	"github.com/downflux/go-geometry/2d/vector"
 )
 
@@ -15,7 +15,7 @@ type O struct {
 	V               vector.V
 	R               float64
 	Goal            vector.V
-	MaxAcceleration cylindrical.V
+	MaxAcceleration polar.V
 	MaxSpeed        float64
 }
 
@@ -23,12 +23,12 @@ type A struct {
 	O
 }
 
-func (a *A) P() vector.V                    { return a.O.P }
-func (a *A) V() vector.V                    { return a.O.V }
-func (a *A) R() float64                     { return a.O.R }
-func (a *A) Goal() vector.V                 { return a.O.Goal }
-func (a *A) MaxSpeed() float64              { return a.O.MaxSpeed }
-func (a *A) MaxAcceleration() cylindrical.V { return a.O.MaxAcceleration }
+func (a *A) P() vector.V              { return a.O.P }
+func (a *A) V() vector.V              { return a.O.V }
+func (a *A) R() float64               { return a.O.R }
+func (a *A) Goal() vector.V           { return a.O.Goal }
+func (a *A) MaxSpeed() float64        { return a.O.MaxSpeed }
+func (a *A) MaxAcceleration() polar.V { return a.O.MaxAcceleration }
 
 func (a *A) SetP(p vector.V) { a.O.P = p }
 func (a *A) SetV(v vector.V) { a.O.V = v }

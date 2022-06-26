@@ -9,7 +9,7 @@ import (
 	mock "github.com/downflux/go-boids/agent/mock"
 )
 
-func TestA(t *testing.T) {
+func TestForce(t *testing.T) {
 	configs := []struct {
 		name     string
 		obstacle agent.A
@@ -74,7 +74,7 @@ func TestA(t *testing.T) {
 				Obstacle: c.obstacle,
 				K:        c.k,
 				Tau:      c.tau,
-			}).A(c.agent); !vector.Within(got, c.want) {
+			}).Force(c.agent); !vector.Within(got, c.want) {
 				t.Errorf("A() = %v, want = %v", got, c.want)
 			}
 		})

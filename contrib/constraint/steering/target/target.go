@@ -25,9 +25,7 @@ func New(o O) *C {
 	}
 }
 
-func (c C) Priority() constraint.P { return 0 }
-
-func (c C) A(a agent.A) vector.V {
+func (c C) Force(a agent.A) vector.V {
 	r := vector.Sub(a.Goal(), a.P())
 	d := vector.Magnitude(r)
 

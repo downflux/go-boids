@@ -26,9 +26,7 @@ func New(o O) *C {
 	}
 }
 
-func (c C) Priority() constraint.P { return 0 }
-
-func (c C) A(a agent.A) vector.V {
+func (c C) Force(a agent.A) vector.V {
 	v := *vector.New(0, 0)
 	for _, o := range c.o.Obstacles {
 		v = vector.Add(v, vector.Scale(1.0/float64(len(c.o.Obstacles)),
@@ -36,7 +34,7 @@ func (c C) A(a agent.A) vector.V {
 				Obstacle: o,
 				K:        c.o.K,
 				Tau:      c.o.Tau,
-			}).A(a)))
+			}).Force(a)))
 	}
 	return v
 }

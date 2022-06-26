@@ -16,14 +16,12 @@ func New(constraints []constraint.C) *C {
 	return &c
 }
 
-func (c C) Priority() constraint.P { return 0 }
-
-func (c C) A(a agent.A) vector.V {
+func (c C) Force(a agent.A) vector.V {
 	v := *vector.New(0, 0)
 	acc := accumulator.New(a.MaxNetForce())
 
 	for _, constraint := range c {
-		acceleration, ok := acc.Add(constraint.A(a))
+		acceleration, ok := acc.Add(constraint.Force(a))
 		v = vector.Add(v, acceleration)
 		if !ok {
 			break

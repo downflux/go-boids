@@ -14,6 +14,7 @@ type O struct {
 	V           vector.V
 	R           float64
 	Goal        vector.V
+	Mass        float64
 	MaxNetForce float64
 	MaxSpeed    float64
 }
@@ -26,6 +27,7 @@ func (a *A) P() vector.V          { return a.O.P }
 func (a *A) V() vector.V          { return a.O.V }
 func (a *A) R() float64           { return a.O.R }
 func (a *A) Goal() vector.V       { return a.O.Goal }
+func (a *A) Mass() float64        { return a.O.Mass }
 func (a *A) MaxSpeed() float64    { return a.O.MaxSpeed }
 func (a *A) MaxNetForce() float64 { return a.O.MaxNetForce }
 
@@ -38,6 +40,7 @@ func (a *A) MarshalJSON() ([]byte, error) {
 		V:           a.V(),
 		R:           a.R(),
 		Goal:        a.Goal(),
+		Mass:        a.Mass(),
 		MaxSpeed:    a.MaxSpeed(),
 		MaxNetForce: a.MaxNetForce(),
 	})

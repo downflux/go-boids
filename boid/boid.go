@@ -29,14 +29,23 @@ type Mutation struct {
 	Velocity v2d.V
 }
 
+// Step iterates through a single simulation step, but does not mutate the given
+// state.
+//
+// TODO(minkezhang): Make this concurrent.
 func Step(o O) []Mutation {
 	var mutations []Mutation
+	// TODO(minkezhang): Find a better way to get the global variable here.
+	r := 0.0
+	for _, a := range kd.Agents(kd.Data(o.T)) {
+		r = math.Max(r, a.R())
+	}
 	for _, a := range kd.Agents(kd.Data(o.T)) {
 		neighbors, err := kd.RadialFilter(
 			o.T,
 			*hypersphere.New(
 				vector.V(a.P()),
-				o.Tau*a.MaxSpeed()+3*a.R(),
+				o.Tau*a.MaxSpeed()+3*r,
 			),
 			// TODO(minkezhang): Check for interface equality
 			// instead of coordinate equality, via adding an
@@ -73,7 +82,7 @@ func Step(o O) []Mutation {
 
 		mutations = append(mutations, Mutation{
 			Agent:    a,
-			Velocity: v2d.Scale(o.Tau, Steer(a, base.New(cs).A(a))),
+			Velocity: v2d.Scale(o.Tau, Steer(a, base.New(cs).Force(a))),
 		})
 	}
 
@@ -82,15 +91,13 @@ func Step(o O) []Mutation {
 
 // Steer returns the desired velocity for the next tick for a given agent with
 // the calculated input Boid force.
-func Steer(a agent.A, acceleration v2d.V) v2d.V {
+func Steer(a agent.A, force v2d.V) v2d.V {
 	// Tau is a pseudo constant with units of time. This allows unit
 	// matching, which makes the overall code easier to read.
 	const tau = 1.0
 
 	// TODO(minkezhang): Implement agent heading API.
-	// TODO(minkezhang): Implement agent mass API. Since steering is a
-	// force, we want to take into account the agent mass here.
-	steering := v2d.Scale(tau, v2d.Sub(v2d.Scale(tau, acceleration), a.V()))
+	steering := v2d.Scale(tau, v2d.Sub(v2d.Scale(tau/a.Mass(), force), a.V()))
 	if v2d.Within(steering, *v2d.New(0, 0)) {
 		return *v2d.New(0, 0)
 	}

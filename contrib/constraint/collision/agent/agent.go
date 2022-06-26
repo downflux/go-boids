@@ -32,13 +32,11 @@ func New(o O) *C {
 	}
 }
 
-func (c C) Priority() constraint.P { return 0 }
-
 // TODO(minkezhang): Implement the avoidance force as a sideways push tangent to
 // the side of a sphere. See
 // https://gamedevelopment.tutsplus.com/tutorials/understanding-steering-behaviors-collision-avoidance--gamedev-7777
 // for more details.
-func (c C) A(a agent.A) vector.V {
+func (c C) Force(a agent.A) vector.V {
 	// v is the relative velocity between the input agent and the incoming
 	// obstacle. This is affords the agent some room for anticipatory
 	// movement, which looks more natural.

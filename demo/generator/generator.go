@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"flag"
+	"math"
 	"math/rand"
 	"os"
 
@@ -17,7 +18,7 @@ var (
 	//
 	// Due to the scale of our simulations, our net force and max speed
 	// values are not at human-scale.
-	MaxNetForce = 50.0
+	MaxNetForce = 1000.0
 	MaxSpeed    = 600.0
 	Radius      = 5
 
@@ -50,14 +51,18 @@ func GenerateGrid(h int, w int) config.C {
 	rand.Shuffle(len(goals), func(i, j int) { goals[i], goals[j] = goals[j], goals[i] })
 
 	for i, p := range positions {
+		mass := rn(10, 15)
+		radius := float64(Radius) * math.Pow(mass/10.0, 2)
+		speed := MaxSpeed / mass
 		c.Agents = append(c.Agents, &config.A{
 			O: config.O{
 				P:           p,
 				V:           rv(-0.5, 0.5),
-				R:           float64(Radius),
+				R:           radius,
 				Goal:        goals[i],
+				Mass:        mass,
 				MaxNetForce: MaxNetForce,
-				MaxSpeed:    MaxSpeed,
+				MaxSpeed:    speed,
 			},
 		})
 	}

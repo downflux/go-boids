@@ -1,7 +1,6 @@
 package agent
 
 import (
-	"github.com/downflux/go-boids/internal/geometry/2d/vector/polar"
 	"github.com/downflux/go-geometry/2d/vector"
 )
 
@@ -12,6 +11,6 @@ type A interface {
 
 	Goal() vector.V
 
-	MaxVelocity() polar.V
-	MaxAcceleration() polar.V
+	MaxSpeed() float64
+	MaxNetForce() float64
 }

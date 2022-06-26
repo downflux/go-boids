@@ -20,7 +20,7 @@ func (c C) Priority() constraint.P { return 0 }
 
 func (c C) A(a agent.A) vector.V {
 	v := *vector.New(0, 0)
-	acc := accumulator.New(a.MaxAcceleration(), a.V())
+	acc := accumulator.New(a.MaxNetForce())
 
 	for _, constraint := range c {
 		acceleration, ok := acc.Add(constraint.A(a))
@@ -30,5 +30,8 @@ func (c C) A(a agent.A) vector.V {
 		}
 	}
 
-	return v
+	if vector.Within(v, *vector.New(0, 0)) {
+		return *vector.New(0, 0)
+	}
+	return vector.Scale(a.MaxNetForce(), vector.Unit(v))
 }

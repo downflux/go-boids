@@ -2,6 +2,7 @@ package boid
 
 import (
 	"fmt"
+	"math"
 
 	"github.com/downflux/go-boids/agent"
 	"github.com/downflux/go-boids/constraint"
@@ -24,8 +25,8 @@ type O struct {
 }
 
 type Mutation struct {
-	Agent        agent.A
-	Acceleration v2d.V
+	Agent    agent.A
+	Velocity v2d.V
 }
 
 func Step(o O) []Mutation {
@@ -61,24 +62,57 @@ func Step(o O) []Mutation {
 		cs = append(cs,
 			cc.New(cc.O{
 				Obstacles: obstacles,
-				// K is the agent-agent collision scalar; a
-				// larger value here allows the repulsive
-				// acceleration to be larger, earlier, which
-				// smooths out collisions as the acceleration
-				// becomes noticeable from further away.
-				K:   20,
-				Tau: o.Tau,
+				K:         2,
+				Tau:       o.Tau,
 			}),
 			cst.New(cst.O{
 				K:   1,
 				Tau: o.Tau,
 			}),
 		)
+
 		mutations = append(mutations, Mutation{
-			Agent:        a,
-			Acceleration: v2d.Scale(o.Tau, base.New(cs).A(a)),
+			Agent:    a,
+			Velocity: v2d.Scale(o.Tau, Steer(a, base.New(cs).A(a))),
 		})
 	}
 
 	return mutations
+}
+
+// Steer returns the desired velocity for the next tick for a given agent with
+// the calculated input Boid force.
+func Steer(a agent.A, acceleration v2d.V) v2d.V {
+	// Tau is a pseudo constant with units of time. This allows unit
+	// matching, which makes the overall code easier to read.
+	const tau = 1.0
+
+	// TODO(minkezhang): Implement agent heading API.
+	// TODO(minkezhang): Implement agent mass API. Since steering is a
+	// force, we want to take into account the agent mass here.
+	steering := v2d.Scale(tau, v2d.Sub(v2d.Scale(tau, acceleration), a.V()))
+	if v2d.Within(steering, *v2d.New(0, 0)) {
+		return *v2d.New(0, 0)
+	}
+
+	steering = v2d.Scale(
+		math.Min(
+			a.MaxNetForce(),
+			v2d.Magnitude(steering),
+		),
+		v2d.Unit(steering),
+	)
+
+	v := v2d.Add(a.V(), v2d.Scale(tau, steering))
+	if v2d.Within(v, *v2d.New(0, 0)) {
+		return *v2d.New(0, 0)
+	}
+
+	return v2d.Scale(
+		math.Min(
+			a.MaxSpeed(),
+			v2d.Magnitude(v),
+		),
+		v2d.Unit(v),
+	)
 }

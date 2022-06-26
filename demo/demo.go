@@ -138,15 +138,7 @@ func main() {
 		for _, m := range mutations {
 			a := m.Agent.(*config.A)
 
-			v := v2d.Add(a.V(), m.Acceleration)
-			if !v2d.Within(v, *v2d.New(0, 0)) {
-				v = v2d.Scale(
-					math.Min(v2d.Magnitude(v), a.MaxSpeed()),
-					v2d.Unit(v),
-				)
-			}
-
-			a.SetV(v)
+			a.SetV(m.Velocity)
 			a.SetP(v2d.Add(a.P(), v2d.Scale(1, a.V())))
 
 			b := *hyperrectangle.New(

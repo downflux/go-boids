@@ -7,17 +7,19 @@ import (
 	"os"
 
 	"github.com/downflux/go-boids/demo/config"
-	"github.com/downflux/go-boids/internal/geometry/2d/vector/cylindrical"
 	"github.com/downflux/go-geometry/2d/vector"
 )
 
 var (
-	// MaxAcceleration is the maximum impuse that can be generated over some
+	// MaxNetForce is the maximum impuse that can be generated over some
 	// time period tau. Note that this should be fairly large compared to
 	// MaxSpeed to ensure agents can stop in time to avoid collisions.
-	MaxAcceleration = *cylindrical.New(10, 0)
-	MaxSpeed        = 1.0
-	Radius          = 5
+	//
+	// Due to the scale of our simulations, our net force and max speed
+	// values are not at human-scale.
+	MaxNetForce = 50.0
+	MaxSpeed    = 600.0
+	Radius      = 5
 
 	fn = flag.String("out", "/dev/stdout", "")
 )
@@ -50,12 +52,12 @@ func GenerateGrid(h int, w int) config.C {
 	for i, p := range positions {
 		c.Agents = append(c.Agents, &config.A{
 			O: config.O{
-				P:               p,
-				V:               rv(-0.5, 0.5),
-				R:               float64(Radius),
-				Goal:            goals[i],
-				MaxAcceleration: MaxAcceleration,
-				MaxSpeed:        MaxSpeed,
+				P:           p,
+				V:           rv(-0.5, 0.5),
+				R:           float64(Radius),
+				Goal:        goals[i],
+				MaxNetForce: MaxNetForce,
+				MaxSpeed:    MaxSpeed,
 			},
 		})
 	}

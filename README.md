@@ -8,3 +8,5 @@ go run \
   github.com/downflux/go-boids/demo/generator | go run \
   github.com/downflux/go-boids/demo > demo.gif
 ```
+
+![collision.gif](demo/output/collision.gif)

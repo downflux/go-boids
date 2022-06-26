@@ -22,7 +22,7 @@ func TestAdd(t *testing.T) {
 			a: &A{
 				limit:       *polar.New(10, 0),
 				accumulator: *polar.New(0, 0),
-				velocity:    *polar.New(1, math.Pi/4),
+				reference:   *polar.New(1, math.Pi/4),
 			},
 			acceleration: *vector.New(1, 1),
 			want:         *vector.New(1, 1),
@@ -33,7 +33,7 @@ func TestAdd(t *testing.T) {
 			a: &A{
 				limit:       *polar.New(2, 0),
 				accumulator: *polar.New(0, 0),
-				velocity:    *polar.New(1, math.Pi/4),
+				reference:   *polar.New(1, math.Pi/4),
 			},
 			acceleration: *vector.New(10, 10),
 			want: vector.Scale(
@@ -47,7 +47,7 @@ func TestAdd(t *testing.T) {
 			a: &A{
 				limit:       *polar.New(10, math.Pi),
 				accumulator: *polar.New(0, 0),
-				velocity:    *polar.New(1, 0),
+				reference:   *polar.New(1, 0),
 			},
 			acceleration: *vector.New(1, 1),
 			want:         *vector.New(1, 1),
@@ -58,7 +58,7 @@ func TestAdd(t *testing.T) {
 			a: &A{
 				limit:       *polar.New(10, math.Pi/2),
 				accumulator: *polar.New(0, math.Pi/4),
-				velocity:    *polar.New(1, 0),
+				reference:   *polar.New(1, 0),
 			},
 			acceleration: *vector.New(-1, 0),
 			want:         *vector.New(-0.5, -0.5),
@@ -69,7 +69,7 @@ func TestAdd(t *testing.T) {
 			a: &A{
 				limit:       *polar.New(10, 0),
 				accumulator: *polar.New(0, 0),
-				velocity:    *polar.New(1, 0),
+				reference:   *polar.New(1, 0),
 			},
 			acceleration: *vector.New(-1, 9),
 			want:         *vector.New(-1, 0),
@@ -80,7 +80,7 @@ func TestAdd(t *testing.T) {
 			a: &A{
 				limit:       *polar.New(10, math.Pi),
 				accumulator: *polar.New(0, math.Pi/2),
-				velocity:    *polar.New(1, 0),
+				reference:   *polar.New(1, 0),
 			},
 			acceleration: *vector.New(-1, 0),
 			want:         *vector.New(0, 0),

@@ -21,8 +21,8 @@ var (
 	// movement, if the angular component is small, we will by necessity
 	// need to raise the total allowance for the acceleration scalar (to
 	// allow for fast dead stops).
-	MaxAcceleration = *polar.New(10, math.Pi)
-	MaxVelocity     = *polar.New(1, math.Pi/16)
+	MaxAcceleration = *polar.New(10, 2*math.Pi)
+	MaxVelocity     = *polar.New(1, math.Pi/8)
 	Radius          = 5
 
 	fn = flag.String("out", "/dev/stdout", "")

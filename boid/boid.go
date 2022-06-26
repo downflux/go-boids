@@ -5,6 +5,7 @@ import (
 
 	"github.com/downflux/go-boids/agent"
 	"github.com/downflux/go-boids/constraint"
+	"github.com/downflux/go-boids/internal/accumulator"
 	"github.com/downflux/go-boids/internal/constraint/base"
 	"github.com/downflux/go-boids/kd"
 	"github.com/downflux/go-geometry/nd/hypersphere"
@@ -24,8 +25,8 @@ type O struct {
 }
 
 type Mutation struct {
-	Agent        agent.A
-	Acceleration v2d.V
+	Agent    agent.A
+	Velocity v2d.V
 }
 
 func Step(o O) []Mutation {
@@ -74,9 +75,27 @@ func Step(o O) []Mutation {
 				Tau: o.Tau,
 			}),
 		)
+
+		v := v2d.Add(a.V(), v2d.Scale(o.Tau, base.New(cs).A(a)))
+		// u is the output velocity scaled by the agent velocity limits.
+		// If the turning angle induced by the acceleration is too
+		// large, the actual v is scaled back.
+		//
+		// TODO(minkezhang): Ensure the turning radius cannot reverse
+		// (e.g. if max angular velocity is 0, there is only one degree
+		// of freedom).
+		//
+		// See
+		// https://gamedevelopment.tutsplus.com/tutorials/understanding-steering-behaviors-seek--gamedev-849
+		// and Kakaria (2016) for more details.
+		u, _ := accumulator.New(
+			a.MaxVelocity(),
+			a.V(),
+		).Add(v)
+
 		mutations = append(mutations, Mutation{
-			Agent:        a,
-			Acceleration: v2d.Scale(o.Tau, base.New(cs).A(a)),
+			Agent:    a,
+			Velocity: u,
 		})
 	}
 

@@ -15,14 +15,14 @@ import (
 var (
 	// MaxAcceleration is the maximum impuse that can be generated over some
 	// time period tau. Note that this should be fairly large compared to
-	// MaxSpeed to ensure agents can stop in time to avoid collisions.
+	// MaxVelocity to ensure agents can stop in time to avoid collisions.
 	//
 	// Note that because the angular component restricts a degree of
 	// movement, if the angular component is small, we will by necessity
 	// need to raise the total allowance for the acceleration scalar (to
 	// allow for fast dead stops).
 	MaxAcceleration = *polar.New(10, math.Pi)
-	MaxSpeed        = 1.0
+	MaxVelocity     = *polar.New(1, math.Pi/16)
 	Radius          = 5
 
 	fn = flag.String("out", "/dev/stdout", "")
@@ -61,7 +61,7 @@ func GenerateGrid(h int, w int) config.C {
 				R:               float64(Radius),
 				Goal:            goals[i],
 				MaxAcceleration: MaxAcceleration,
-				MaxSpeed:        MaxSpeed,
+				MaxVelocity:     MaxVelocity,
 			},
 		})
 	}

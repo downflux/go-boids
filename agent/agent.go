@@ -12,6 +12,6 @@ type A interface {
 
 	Goal() vector.V
 
-	MaxSpeed() float64
+	MaxVelocity() polar.V
 	MaxAcceleration() polar.V
 }

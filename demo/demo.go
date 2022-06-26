@@ -141,7 +141,7 @@ func main() {
 			v := v2d.Add(a.V(), m.Acceleration)
 			if !v2d.Within(v, *v2d.New(0, 0)) {
 				v = v2d.Scale(
-					math.Min(v2d.Magnitude(v), a.MaxSpeed()),
+					math.Min(v2d.Magnitude(v), a.MaxVelocity().R()),
 					v2d.Unit(v),
 				)
 			}

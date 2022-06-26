@@ -16,7 +16,7 @@ type O struct {
 	R               float64
 	Goal            vector.V
 	MaxAcceleration polar.V
-	MaxSpeed        float64
+	MaxVelocity     polar.V
 }
 
 type A struct {
@@ -27,7 +27,7 @@ func (a *A) P() vector.V              { return a.O.P }
 func (a *A) V() vector.V              { return a.O.V }
 func (a *A) R() float64               { return a.O.R }
 func (a *A) Goal() vector.V           { return a.O.Goal }
-func (a *A) MaxSpeed() float64        { return a.O.MaxSpeed }
+func (a *A) MaxVelocity() polar.V     { return a.O.MaxVelocity }
 func (a *A) MaxAcceleration() polar.V { return a.O.MaxAcceleration }
 
 func (a *A) SetP(p vector.V) { a.O.P = p }
@@ -39,7 +39,7 @@ func (a *A) MarshalJSON() ([]byte, error) {
 		V:               a.V(),
 		R:               a.R(),
 		Goal:            a.Goal(),
-		MaxSpeed:        a.MaxSpeed(),
+		MaxVelocity:     a.MaxVelocity(),
 		MaxAcceleration: a.MaxAcceleration(),
 	})
 }

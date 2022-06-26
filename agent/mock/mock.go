@@ -15,7 +15,7 @@ type O struct {
 
 	Goal vector.V
 
-	MaxSpeed        float64
+	MaxVelocity     polar.V
 	MaxAcceleration polar.V
 }
 
@@ -31,5 +31,5 @@ func (a *Mock) P() vector.V              { return a.O.P }
 func (a *Mock) V() vector.V              { return a.O.V }
 func (a *Mock) R() float64               { return a.O.R }
 func (a *Mock) Goal() vector.V           { return a.O.Goal }
-func (a *Mock) MaxSpeed() float64        { return a.O.MaxSpeed }
+func (a *Mock) MaxVelocity() polar.V     { return a.O.MaxVelocity }
 func (a *Mock) MaxAcceleration() polar.V { return a.O.MaxAcceleration }

@@ -26,6 +26,7 @@ func New(o O) *C {
 	}
 }
 
+// TOOD(minkezhang): Toy with using a PQ here instead of a weighted average.
 func (c C) Force(a agent.A) vector.V {
 	v := *vector.New(0, 0)
 	for _, o := range c.o.Obstacles {

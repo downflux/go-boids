@@ -11,8 +11,8 @@ import (
 	"github.com/downflux/go-geometry/nd/hypersphere"
 	"github.com/downflux/go-geometry/nd/vector"
 
+	ca "github.com/downflux/go-boids/contrib/constraint/arrival"
 	cc "github.com/downflux/go-boids/contrib/constraint/collision"
-	cst "github.com/downflux/go-boids/contrib/constraint/steering/target"
 	v2d "github.com/downflux/go-geometry/2d/vector"
 )
 
@@ -74,7 +74,7 @@ func Step(o O) []Mutation {
 				K:         2,
 				Tau:       o.Tau,
 			}),
-			cst.New(cst.O{
+			ca.New(ca.O{
 				K:   1,
 				Tau: o.Tau,
 			}),

@@ -11,14 +11,14 @@ type A struct {
 	limit       polar.V
 	accumulator polar.V
 
-	theta       float64
-	initialized bool
+	velocity polar.V
 }
 
-func New(limit polar.V) *A {
+func New(limit polar.V, v vector.V) *A {
 	return &A{
 		limit:       limit,
 		accumulator: *polar.New(0, 0),
+		velocity:    polar.Normalize(polar.Polar(v)),
 	}
 }
 
@@ -26,22 +26,32 @@ func New(limit polar.V) *A {
 // limits. If the given acceleration will exceed the given max, the limit bool
 // return value will be set to false.
 func (a *A) Add(acceleration vector.V) (vector.V, bool) {
-	p := polar.Polar(acceleration)
-	if !a.initialized {
-		a.initialized = true
-		a.theta = p.Theta()
-	}
+	p := polar.Normalize(polar.Polar(acceleration))
+	remainder := polar.Sub(a.limit, a.accumulator)
 
-	remainder := *polar.New(
-		a.limit.R()-a.accumulator.R(),
-		a.limit.Theta()-math.Abs(a.accumulator.Theta()-a.theta),
+	// dtheta is the angular difference between the acceleration and
+	// velocity. This angle may be negative.
+	dtheta := p.Theta() - a.velocity.Theta()
+
+	// theta is the actual, absolute accleration angle.
+	theta := a.velocity.Theta() + math.Copysign(
+		math.Min(remainder.Theta(), math.Abs(dtheta)),
+		dtheta,
 	)
-	q := *polar.New(
-		math.Min(remainder.R(), p.R()),
-		math.Min(remainder.Theta(), p.Theta()))
-	a.accumulator = polar.Add(a.accumulator, q)
 
-	a.theta = q.Theta()
+	r := polar.Dot(
+		*polar.New(1, p.Theta()),
+		*polar.New(1, theta),
+	) * math.Min(remainder.R(), p.R())
+
+	q := *polar.New(r, theta)
+	a.accumulator = polar.Add(
+		a.accumulator,
+		polar.Sub(
+			polar.Normalize(q),
+			*polar.New(0, a.velocity.Theta()),
+		),
+	)
 
 	return polar.Cartesian(q), polar.Within(p, q)
 }

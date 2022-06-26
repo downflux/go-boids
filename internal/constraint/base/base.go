@@ -20,7 +20,7 @@ func (c C) Priority() constraint.P { return 0 }
 
 func (c C) A(a agent.A) vector.V {
 	v := *vector.New(0, 0)
-	acc := accumulator.New(a.MaxAcceleration())
+	acc := accumulator.New(a.MaxAcceleration(), a.V())
 
 	for _, constraint := range c {
 		acceleration, ok := acc.Add(constraint.A(a))

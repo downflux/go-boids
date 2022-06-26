@@ -16,7 +16,12 @@ var (
 	// MaxAcceleration is the maximum impuse that can be generated over some
 	// time period tau. Note that this should be fairly large compared to
 	// MaxSpeed to ensure agents can stop in time to avoid collisions.
-	MaxAcceleration = *polar.New(10, math.Pi/4)
+	//
+	// Note that because the angular component restricts a degree of
+	// movement, if the angular component is small, we will by necessity
+	// need to raise the total allowance for the acceleration scalar (to
+	// allow for fast dead stops).
+	MaxAcceleration = *polar.New(10, math.Pi)
 	MaxSpeed        = 1.0
 	Radius          = 5
 

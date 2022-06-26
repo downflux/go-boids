@@ -21,8 +21,10 @@ func (v V) R() float64 { return vector.V(v).X() }
 // acceleration and velocity, which are not bound by a single rotation.
 func (v V) Theta() float64 { return vector.V(v).Y() }
 
-func Add(v V, u V) V { return V(vector.Add(vector.V(v), vector.V(u))) }
-func Sub(v V, u V) V { return V(vector.Sub(vector.V(v), vector.V(u))) }
+func Add(v V, u V) V               { return V(vector.Add(vector.V(v), vector.V(u))) }
+func Sub(v V, u V) V               { return V(vector.Sub(vector.V(v), vector.V(u))) }
+func Dot(v V, u V) float64         { return v.R() * u.R() * math.Cos(v.Theta()-u.Theta()) }
+func Determinant(v V, u V) float64 { return v.R() * u.R() * math.Sin(v.Theta()-u.Theta()) }
 
 func Polar(v vector.V) V {
 	return V(*vector.New(

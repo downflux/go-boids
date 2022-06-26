@@ -6,7 +6,7 @@ import (
 
 	"github.com/downflux/go-boids/agent"
 	"github.com/downflux/go-boids/constraint"
-	"github.com/downflux/go-boids/internal/constraint/base"
+	"github.com/downflux/go-boids/internal/constraint/truncated"
 	"github.com/downflux/go-boids/kd"
 	"github.com/downflux/go-geometry/nd/hypersphere"
 	"github.com/downflux/go-geometry/nd/vector"
@@ -82,7 +82,7 @@ func Step(o O) []Mutation {
 
 		mutations = append(mutations, Mutation{
 			Agent:    a,
-			Velocity: v2d.Scale(o.Tau, Steer(a, base.New(cs).Force(a))),
+			Velocity: v2d.Scale(o.Tau, Steer(a, truncated.New(cs).Force(a))),
 		})
 	}
 

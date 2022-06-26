@@ -3,6 +3,7 @@ package collision
 import (
 	"github.com/downflux/go-boids/agent"
 	"github.com/downflux/go-boids/constraint"
+	"github.com/downflux/go-boids/internal/constraint/weighted"
 	"github.com/downflux/go-geometry/2d/vector"
 
 	ca "github.com/downflux/go-boids/contrib/constraint/collision/agent"
@@ -28,14 +29,15 @@ func New(o O) *C {
 
 // TOOD(minkezhang): Toy with using a PQ here instead of a weighted average.
 func (c C) Force(a agent.A) vector.V {
-	v := *vector.New(0, 0)
+	var cs []constraint.C
+	var ws []float64
 	for _, o := range c.o.Obstacles {
-		v = vector.Add(v, vector.Scale(1.0/float64(len(c.o.Obstacles)),
-			ca.New(ca.O{
-				Obstacle: o,
-				K:        c.o.K,
-				Tau:      c.o.Tau,
-			}).Force(a)))
+		cs = append(cs, ca.New(ca.O{
+			Obstacle: o,
+			K:        c.o.K,
+			Tau:      c.o.Tau,
+		}))
+		ws = append(ws, 1)
 	}
-	return v
+	return weighted.New(cs, ws).Force(a)
 }

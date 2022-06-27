@@ -13,6 +13,7 @@ import (
 	"github.com/downflux/go-boids/agent"
 	"github.com/downflux/go-boids/boid"
 	"github.com/downflux/go-boids/demo/config"
+	"github.com/downflux/go-boids/internal/geometry/2d/vector/polar"
 	"github.com/downflux/go-geometry/2d/line"
 	"github.com/downflux/go-geometry/2d/segment"
 	"github.com/downflux/go-geometry/nd/hyperrectangle"
@@ -209,7 +210,7 @@ func main() {
 
 			// Draw heading.
 			examplesdraw.Line(img, *segment.New(
-				*line.New(v2d.Add(margin, a.P()), a.Heading()), 0, 2*a.R()), red,
+				*line.New(v2d.Add(margin, a.P()), polar.Cartesian(a.Heading())), 0, 2*a.R()), red,
 			)
 		}
 

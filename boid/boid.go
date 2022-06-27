@@ -10,10 +10,10 @@ import (
 	"github.com/downflux/go-boids/kd"
 	// "github.com/downflux/go-geometry/2d/line"
 	// "github.com/downflux/go-geometry/2d/segment"
+	"github.com/downflux/go-boids/internal/geometry/2d/vector/polar"
 	"github.com/downflux/go-geometry/epsilon"
 	"github.com/downflux/go-geometry/nd/hypersphere"
 	"github.com/downflux/go-geometry/nd/vector"
-	// "github.com/downflux/go-boids/internal/geometry/2d/vector/polar"
 
 	ca "github.com/downflux/go-boids/contrib/constraint/arrival"
 	cc "github.com/downflux/go-boids/contrib/constraint/collision"
@@ -31,7 +31,7 @@ type O struct {
 type Mutation struct {
 	Agent    agent.A
 	Velocity v2d.V
-	Heading  v2d.V
+	Heading  polar.V
 
 	// Visualzation-only fields.
 	Acceleration v2d.V
@@ -54,7 +54,7 @@ func Step(o O) []Mutation {
 			o.T,
 			*hypersphere.New(
 				vector.V(a.P()),
-				o.Tau*a.MaxSpeed()+3*r,
+				o.Tau*a.MaxVelocity().R()+3*r,
 			),
 			// TODO(minkezhang): Check for interface equality
 			// instead of coordinate equality, via adding an
@@ -170,10 +170,10 @@ func Steer(a agent.A, force v2d.V, tau float64) Mutation {
 		Agent: a,
 		Velocity: v2d.Scale(
 			tau*math.Min(
-				a.MaxSpeed(),
+				a.MaxVelocity().R(),
 				v2d.Magnitude(v),
 			), v2d.Unit(v)),
-		Heading: v2d.Unit(v),
+		Heading: polar.Polar(v2d.Unit(v)),
 
 		Steering:     steering,
 		Acceleration: acceleration,

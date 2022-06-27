@@ -19,19 +19,22 @@ func New(constraints []constraint.C) *C {
 }
 
 func (c C) Force(a agent.A) vector.V {
-	v := *vector.New(0, 0)
-	acc := accumulator.New(a.MaxNetForce())
+	acc := accumulator.New(
+		accumulator.D{
+			Force:  a.MaxNetForce(),
+			Torque: a.MaxNetTorque(),
+		}, a.R(), a.Heading(),
+	)
+
+	f := *vector.New(0, 0)
 
 	for _, constraint := range c {
-		f, ok := acc.Add(constraint.Force(a))
-		v = vector.Add(v, f)
+		g, ok := acc.Add(constraint.Force(a))
+		f = vector.Add(f, g)
 		if !ok {
 			break
 		}
 	}
 
-	if vector.Within(v, *vector.New(0, 0)) {
-		return *vector.New(0, 0)
-	}
-	return vector.Scale(a.MaxNetForce(), vector.Unit(v))
+	return f
 }

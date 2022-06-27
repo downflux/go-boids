@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/downflux/go-boids/demo/config"
+	"github.com/downflux/go-boids/internal/geometry/2d/vector/polar"
 	"github.com/downflux/go-geometry/2d/vector"
 )
 
@@ -18,9 +19,10 @@ var (
 	//
 	// Due to the scale of our simulations, our net force and max speed
 	// values are not at human-scale.
-	MaxNetForce = 1000.0
-	MaxSpeed    = 600.0
-	Radius      = 5
+	MaxNetForce  = 1000.0
+	MaxNetTorque = 1000.0
+	MaxVelocity  = *polar.New(600.0, 20*math.Pi)
+	Radius       = 5
 
 	fn = flag.String("out", "/dev/stdout", "")
 )
@@ -53,11 +55,14 @@ func GenerateGrid(h int, w int) config.C {
 	for i, p := range positions {
 		mass := rn(10, 15)
 		radius := float64(Radius) * math.Pow(mass/10.0, 2)
-		speed := MaxSpeed / mass
+		maxVelocity := *polar.New(
+			MaxVelocity.R()/mass,
+			MaxVelocity.Theta()/mass,
+		)
 		velocity := rv(-0.5, 0.5)
-		heading := map[bool]vector.V{
-			true:  *vector.New(1, 0),
-			false: vector.Unit(velocity),
+		heading := map[bool]polar.V{
+			true:  *polar.New(1, 0),
+			false: polar.Polar(vector.Unit(velocity)),
 		}[vector.Within(velocity, *vector.New(0, 0))]
 		c.Agents = append(c.Agents, &config.A{
 			O: config.O{
@@ -68,7 +73,7 @@ func GenerateGrid(h int, w int) config.C {
 				Mass:        mass,
 				Heading:     heading,
 				MaxNetForce: MaxNetForce,
-				MaxSpeed:    speed,
+				MaxVelocity: maxVelocity,
 			},
 		})
 	}

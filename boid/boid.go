@@ -8,8 +8,12 @@ import (
 	"github.com/downflux/go-boids/constraint"
 	"github.com/downflux/go-boids/internal/constraint/truncated"
 	"github.com/downflux/go-boids/kd"
+	// "github.com/downflux/go-geometry/2d/line"
+	// "github.com/downflux/go-geometry/2d/segment"
+	"github.com/downflux/go-geometry/epsilon"
 	"github.com/downflux/go-geometry/nd/hypersphere"
 	"github.com/downflux/go-geometry/nd/vector"
+	// "github.com/downflux/go-boids/internal/geometry/2d/vector/polar"
 
 	ca "github.com/downflux/go-boids/contrib/constraint/arrival"
 	cc "github.com/downflux/go-boids/contrib/constraint/collision"
@@ -27,6 +31,11 @@ type O struct {
 type Mutation struct {
 	Agent    agent.A
 	Velocity v2d.V
+	Heading  v2d.V
+
+	// Visualzation-only fields.
+	Acceleration v2d.V
+	Steering     v2d.V
 }
 
 // Step iterates through a single simulation step, but does not mutate the given
@@ -80,10 +89,7 @@ func Step(o O) []Mutation {
 			}),
 		)
 
-		mutations = append(mutations, Mutation{
-			Agent:    a,
-			Velocity: v2d.Scale(o.Tau, Steer(a, truncated.New(cs).Force(a))),
-		})
+		mutations = append(mutations, Steer(a, truncated.New(cs).Force(a), o.Tau))
 	}
 
 	return mutations
@@ -91,15 +97,23 @@ func Step(o O) []Mutation {
 
 // Steer returns the desired velocity for the next tick for a given agent with
 // the calculated input Boid force.
-func Steer(a agent.A, force v2d.V) v2d.V {
-	// Tau is a pseudo constant with units of time. This allows unit
+func Steer(a agent.A, force v2d.V, tau float64) Mutation {
+	// second is a pseudo constant with units of time. This allows unit
 	// matching, which makes the overall code easier to read.
-	const tau = 1.0
+	const second = 1.0
+	acceleration := v2d.Scale(1/a.Mass(), force)
+	desired := v2d.Scale(second, acceleration)
+	steering := v2d.Scale(second, v2d.Sub(desired, a.V()))
 
-	// TODO(minkezhang): Implement agent heading API.
-	steering := v2d.Scale(tau, v2d.Sub(v2d.Scale(tau/a.Mass(), force), a.V()))
 	if v2d.Within(steering, *v2d.New(0, 0)) {
-		return *v2d.New(0, 0)
+		return Mutation{
+			Agent:    a,
+			Velocity: a.V(),
+			Heading:  a.Heading(),
+
+			Steering:     steering,
+			Acceleration: acceleration,
+		}
 	}
 
 	steering = v2d.Scale(
@@ -110,16 +124,58 @@ func Steer(a agent.A, force v2d.V) v2d.V {
 		v2d.Unit(steering),
 	)
 
-	v := v2d.Add(a.V(), v2d.Scale(tau, steering))
-	if v2d.Within(v, *v2d.New(0, 0)) {
-		return *v2d.New(0, 0)
+	/*
+		const omega = math.Pi / 8
+		s := *segment.New(*line.New(a.V(), steering), 0, 1)
+
+		for _, theta := range []float64{omega, -omega} {
+			// u is the current heading rotated the maximum allowable
+			// angular velocity. We use this to check for intersections with
+			// the steering force. If there is an intersection with the
+			// force vector, this means the resultant velocity exceeds the
+			// maximum turn -- we will need to scale back the steering force
+			// accordingly.
+			u := *line.New(
+				*v2d.New(0, 0),
+				v2d.Rotate(theta, a.Heading()),
+			)
+			if p, ok := s.L().Intersect(u); ok && s.L().T(p) > s.TMin() && s.L().T(p) < s.TMax() {
+				steering = v2d.Sub(p, a.V())
+				if v2d.Within(a.V(), *v2d.New(0, 0)) {
+					return Mutation{
+						Agent:    a,
+						Velocity: *v2d.New(0, 0),
+						Heading:  v2d.Rotate(theta, a.Heading()),
+
+						Steering: steering,
+						Acceleration: acceleration,
+					}
+				}
+			}
+		}
+	*/
+	v := v2d.Add(a.V(), v2d.Scale(second, steering))
+	if v2d.WithinEpsilon(v, *v2d.New(0, 0), epsilon.Relative(1e-5)) {
+		return Mutation{
+			Agent:    a,
+			Velocity: *v2d.New(0, 0),
+			Heading:  a.Heading(),
+
+			Steering:     steering,
+			Acceleration: acceleration,
+		}
 	}
 
-	return v2d.Scale(
-		math.Min(
-			a.MaxSpeed(),
-			v2d.Magnitude(v),
-		),
-		v2d.Unit(v),
-	)
+	return Mutation{
+		Agent: a,
+		Velocity: v2d.Scale(
+			tau*math.Min(
+				a.MaxSpeed(),
+				v2d.Magnitude(v),
+			), v2d.Unit(v)),
+		Heading: v2d.Unit(v),
+
+		Steering:     steering,
+		Acceleration: acceleration,
+	}
 }

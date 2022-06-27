@@ -54,13 +54,19 @@ func GenerateGrid(h int, w int) config.C {
 		mass := rn(10, 15)
 		radius := float64(Radius) * math.Pow(mass/10.0, 2)
 		speed := MaxSpeed / mass
+		velocity := rv(-0.5, 0.5)
+		heading := map[bool]vector.V{
+			true:  *vector.New(1, 0),
+			false: vector.Unit(velocity),
+		}[vector.Within(velocity, *vector.New(0, 0))]
 		c.Agents = append(c.Agents, &config.A{
 			O: config.O{
 				P:           p,
-				V:           rv(-0.5, 0.5),
+				V:           velocity,
 				R:           radius,
 				Goal:        goals[i],
 				Mass:        mass,
+				Heading:     heading,
 				MaxNetForce: MaxNetForce,
 				MaxSpeed:    speed,
 			},

@@ -13,6 +13,8 @@ import (
 	"github.com/downflux/go-boids/agent"
 	"github.com/downflux/go-boids/boid"
 	"github.com/downflux/go-boids/demo/config"
+	"github.com/downflux/go-geometry/2d/line"
+	"github.com/downflux/go-geometry/2d/segment"
 	"github.com/downflux/go-geometry/nd/hyperrectangle"
 	"github.com/downflux/go-geometry/nd/vector"
 	"github.com/downflux/go-kd/kd"
@@ -130,37 +132,6 @@ func main() {
 			trailbuf[i%len(trailbuf)] = append(trailbuf[i%len(trailbuf)], p.(*P).Agent().P())
 		}
 
-		mutations := boid.Step(boid.O{
-			T:   bkd.Lift(t),
-			Tau: 1.0 / float64(framerate),
-			F:   func(a agent.A) bool { return true },
-		})
-		for _, m := range mutations {
-			a := m.Agent.(*config.A)
-
-			a.SetV(m.Velocity)
-			a.SetP(v2d.Add(a.P(), v2d.Scale(1, a.V())))
-
-			b := *hyperrectangle.New(
-				vector.Sub(b.Min(), vector.V(margin)),
-				vector.Sub(b.Max(), vector.V(margin)),
-			)
-
-			// Model the system as a 2D toroid.
-			x, y := a.P().X(), a.P().Y()
-			if d := v2d.V(b.Min()).X() - a.P().X(); d > 0 {
-				x = v2d.V(b.Max()).X() - d
-			} else if d := a.P().X() - v2d.V(b.Max()).X(); d > 0 {
-				x = v2d.V(b.Min()).X() + d
-			}
-			if d := v2d.V(b.Min()).Y() - a.P().Y(); d > 0 {
-				y = v2d.V(b.Max()).Y() - d
-			} else if d := a.P().Y() - v2d.V(b.Max()).Y(); d > 0 {
-				y = v2d.V(b.Min()).Y() + d
-			}
-			a.SetP(*v2d.New(x, y))
-		}
-
 		img := image.NewPaletted(
 			image.Rectangle{
 				image.Point{
@@ -182,6 +153,48 @@ func main() {
 			},
 		)
 
+		tau := 1.0 / float64(framerate)
+		mutations := boid.Step(boid.O{
+			T:   bkd.Lift(t),
+			Tau: tau,
+			F:   func(a agent.A) bool { return true },
+		})
+		for _, m := range mutations {
+			a := m.Agent.(*config.A)
+
+			a.SetV(m.Velocity)
+			a.SetP(v2d.Add(a.P(), v2d.Scale(1, a.V())))
+			a.SetHeading(m.Heading)
+
+			b := *hyperrectangle.New(
+				vector.Sub(b.Min(), vector.V(margin)),
+				vector.Sub(b.Max(), vector.V(margin)),
+			)
+
+			// Model the system as a 2D toroid.
+			x, y := a.P().X(), a.P().Y()
+			if d := v2d.V(b.Min()).X() - a.P().X(); d > 0 {
+				x = v2d.V(b.Max()).X() - d
+			} else if d := a.P().X() - v2d.V(b.Max()).X(); d > 0 {
+				x = v2d.V(b.Min()).X() + d
+			}
+			if d := v2d.V(b.Min()).Y() - a.P().Y(); d > 0 {
+				y = v2d.V(b.Max()).Y() - d
+			} else if d := a.P().Y() - v2d.V(b.Max()).Y(); d > 0 {
+				y = v2d.V(b.Min()).Y() + d
+			}
+			a.SetP(*v2d.New(x, y))
+
+			// Draw visualization lines.
+			examplesdraw.Line(img, *segment.New(
+				*line.New(v2d.Add(margin, a.P()), v2d.Scale(0.25, a.V())), 0, 1), black)
+			examplesdraw.Line(img, *segment.New(
+				*line.New(v2d.Add(margin, v2d.Add(a.P(), a.V())), v2d.Scale(0.25, m.Steering)), 0, 1), green)
+			examplesdraw.Line(img, *segment.New(
+				*line.New(v2d.Add(margin, a.P()), v2d.Scale(0.25, m.Acceleration)), 0, 1), blue)
+
+		}
+
 		// Draw historical agent paths.
 		for _, buf := range trailbuf {
 			examplesdraw.Trail(img, margin, buf, gray)
@@ -193,6 +206,11 @@ func main() {
 
 			// Draw circle.
 			examplesdraw.Circle(img, v2d.Add(margin, a.P()), int(a.R()), black)
+
+			// Draw heading.
+			examplesdraw.Line(img, *segment.New(
+				*line.New(v2d.Add(margin, a.P()), a.Heading()), 0, 2*a.R()), red,
+			)
 		}
 
 		frames = append(frames, img)

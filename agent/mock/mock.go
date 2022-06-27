@@ -8,10 +8,11 @@ import (
 var _ agent.A = &Mock{}
 
 type O struct {
-	P    vector.V
-	V    vector.V
-	R    float64
-	Mass float64
+	P       vector.V
+	V       vector.V
+	R       float64
+	Mass    float64
+	Heading vector.V
 
 	Goal vector.V
 
@@ -31,6 +32,7 @@ func (a *Mock) P() vector.V          { return a.O.P }
 func (a *Mock) V() vector.V          { return a.O.V }
 func (a *Mock) R() float64           { return a.O.R }
 func (a *Mock) Goal() vector.V       { return a.O.Goal }
+func (a *Mock) Heading() vector.V    { return a.O.Heading }
 func (a *Mock) MaxSpeed() float64    { return a.O.MaxSpeed }
 func (a *Mock) MaxNetForce() float64 { return a.O.MaxNetForce }
 func (a *Mock) Mass() float64        { return a.O.Mass }

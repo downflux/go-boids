@@ -79,27 +79,38 @@ func (a *A) Step(steering vector.V, tau float64) {
 		),
 	)
 
-	dh := w
+	dw := w
 	// In the case the angular velocity exceeds the maximal turnable rate,
 	// model the move as a reverse step instead.
 	//
 	// If the turning velocity is greater than the absolute angular
 	// velocity, and is also pointing away from the agent, model this
 	// behavior as the agent reversing.
-	if math.Abs(dh) > math.Pi/2 && math.Abs(w) > a.MaxVelocity().Theta() {
+	if math.Abs(w) > math.Pi/2 && math.Abs(w) > a.MaxVelocity().Theta() {
 		// We should be rotating towards 0 -- this means our π offset
-		// needs to ensure the new dh is still within [-π, π).
-		dh -= math.Copysign(math.Pi, dh)
-		u = *polar.New(-u.R(), u.Theta())
+		// needs to ensure the new dw is still within [-π, π).
+		dw = -math.Copysign(
+			a.MaxVelocity().Theta(),
+			dw,
+		)
+		u = *polar.New(-u.R(), dw)
 	}
 
-	a.O.Heading = *polar.New(1, a.Heading().Theta()+(tau*dh))
+	dw = math.Copysign(
+		math.Min(
+			a.MaxVelocity().Theta(),
+			math.Abs(dw),
+		),
+		dw,
+	)
+
 	a.O.V = polar.Cartesian(
 		*polar.New(
 			u.R(),
 			a.Heading().Theta()+tau*u.Theta(),
 		),
 	)
+	a.O.Heading = *polar.New(1, a.Heading().Theta()+tau*dw)
 
 	a.O.P = vector.Add(a.P(), vector.Scale(tau, a.V()))
 }

@@ -7,7 +7,6 @@ import (
 	"image"
 	"image/color"
 	"image/gif"
-	"math"
 	"os"
 
 	"github.com/downflux/go-boids/agent"
@@ -43,8 +42,6 @@ var (
 	fnInput  = flag.String("in", "/dev/stdin", "")
 	fnOutput = flag.String("out", "/dev/stdout", "")
 	n        = flag.Int("frames", 1500, "")
-
-	margin = *v2d.New(50, 50)
 )
 
 var (
@@ -59,39 +56,30 @@ func (p *P) Agent() agent.A { return (*config.A)(p) }
 
 type Environment struct {
 	points []point.P
+
+	height float64
+	width  float64
 }
 
-func New(agents []*config.A) *Environment {
-	ps := make([]point.P, 0, len(agents))
-	for _, a := range agents {
+func New(c config.C) *Environment {
+	ps := make([]point.P, 0, len(c.Agents))
+	for _, a := range c.Agents {
 		p := P(*a)
 		ps = append(ps, &p)
 	}
-	return &Environment{points: ps}
+	return &Environment{
+		points: ps,
+		height: c.Height,
+		width:  c.Width,
+	}
 }
 
 func (e *Environment) Points() []point.P { return e.points }
 
 func (e *Environment) Bound() hyperrectangle.R {
-	min := *v2d.New(math.Inf(0), math.Inf(0))
-	max := *v2d.New(math.Inf(-1), math.Inf(-1))
-
-	for _, p := range e.Points() {
-		min = *v2d.New(
-			math.Min(min.X(), v2d.V(p.P()).X()),
-			math.Min(min.Y(), v2d.V(p.P()).Y()),
-		)
-		max = *v2d.New(
-			math.Max(max.X(), v2d.V(p.P()).X()),
-			math.Max(max.Y(), v2d.V(p.P()).Y()),
-		)
-	}
 	return *hyperrectangle.New(
 		*vector.New(0, 0),
-		vector.V(v2d.Add(
-			v2d.Sub(max, min),
-			v2d.Scale(2, margin),
-		)),
+		*vector.New(e.width, e.height),
 	)
 }
 
@@ -107,7 +95,7 @@ func generate(fn string) *Environment {
 		panic(fmt.Sprintf("could not decode config file: %v", err))
 	}
 
-	return New(c.Agents)
+	return New(c)
 }
 
 func main() {
@@ -165,11 +153,6 @@ func main() {
 
 			a.Step(m.Steering, tau)
 
-			b := *hyperrectangle.New(
-				vector.Sub(b.Min(), vector.V(margin)),
-				vector.Sub(b.Max(), vector.V(margin)),
-			)
-
 			// Model the system as a 2D toroid.
 			x, y := a.P().X(), a.P().Y()
 			if d := v2d.V(b.Min()).X() - a.P().X(); d > 0 {
@@ -186,17 +169,17 @@ func main() {
 
 			// Draw visualization lines.
 			examplesdraw.Line(img, *segment.New(
-				*line.New(v2d.Add(margin, a.P()), v2d.Scale(0.25, a.V())), 0, 1), black)
+				*line.New(a.P(), v2d.Scale(0.25, a.V())), 0, 1), black)
 			examplesdraw.Line(img, *segment.New(
-				*line.New(v2d.Add(margin, v2d.Add(a.P(), v2d.Scale(0.25, a.V()))), v2d.Scale(0.25, m.Steering)), 0, 1), green)
+				*line.New(v2d.Add(a.P(), v2d.Scale(0.25, a.V())), v2d.Scale(0.25, m.Steering)), 0, 1), green)
 			examplesdraw.Line(img, *segment.New(
-				*line.New(v2d.Add(margin, a.P()), v2d.Scale(0.25, m.Acceleration)), 0, 1), blue)
+				*line.New(a.P(), v2d.Scale(0.25, m.Acceleration)), 0, 1), blue)
 
 		}
 
 		// Draw historical agent paths.
 		for _, buf := range trailbuf {
-			examplesdraw.Trail(img, margin, buf, gray)
+			examplesdraw.Trail(img, *v2d.New(0, 0), buf, gray)
 		}
 
 		// Draw agents.
@@ -204,11 +187,11 @@ func main() {
 			a := p.(*P).Agent()
 
 			// Draw circle.
-			examplesdraw.Circle(img, v2d.Add(margin, a.P()), int(a.R()), black)
+			examplesdraw.Circle(img, a.P(), int(a.R()), black)
 
 			// Draw heading.
 			examplesdraw.Line(img, *segment.New(
-				*line.New(v2d.Add(margin, a.P()), polar.Cartesian(a.Heading())), 0, 2*a.R()), red,
+				*line.New(a.P(), polar.Cartesian(a.Heading())), 0, 2*a.R()), red,
 			)
 		}
 

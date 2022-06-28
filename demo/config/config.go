@@ -138,4 +138,6 @@ func (a *A) UnmarshalJSON(data []byte) error { return json.Unmarshal(data, &a.O)
 
 type C struct {
 	Agents []*A
+	Height float64
+	Width  float64
 }

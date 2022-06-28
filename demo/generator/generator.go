@@ -19,9 +19,9 @@ var (
 	//
 	// Due to the scale of our simulations, our net force and max speed
 	// values are not at human-scale.
-	MaxNetForce  = 100.0
-	MaxNetTorque = 100.0
-	MaxVelocity  = *polar.New(600.0, 20*math.Pi)
+	MaxNetForce  = 10.0
+	MaxNetTorque = 10.0
+	MaxVelocity  = *polar.New(600.0, 10*math.Pi)
 	Radius       = 5
 
 	fn = flag.String("out", "/dev/stdout", "")
@@ -38,15 +38,18 @@ func rv(min, max float64) vector.V {
 
 func GenerateGrid(h int, w int) config.C {
 	const tile = 50.0
-	c := &config.C{}
+	c := &config.C{
+		Height: tile * (float64(h) + 1.0),
+		Width:  tile * (float64(w) + 1.0),
+	}
 
 	var positions []vector.V
 	var goals []vector.V
 
 	for i := 0; i < h; i++ {
 		for j := 0; j < w; j++ {
-			positions = append(positions, *vector.New(float64(i)*tile, float64(j)*tile))
-			goals = append(goals, *vector.New(float64(i)*tile, float64(j)*tile))
+			positions = append(positions, *vector.New(float64(i+1)*tile, float64(j+1)*tile))
+			goals = append(goals, *vector.New(float64(i+1)*tile, float64(j+1)*tile))
 		}
 	}
 

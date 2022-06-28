@@ -3,7 +3,6 @@ package config
 import (
 	"encoding/json"
 	"math"
-	"fmt"
 
 	"github.com/downflux/go-boids/agent"
 	"github.com/downflux/go-boids/internal/geometry/2d/vector/polar"
@@ -67,8 +66,6 @@ func (a *A) Step(steering vector.V, tau float64) {
 		w -= 2 * math.Pi
 	}
 
-	fmt.Printf("DEBUG: w == %v\n", w)
-
 	// u is the net new velocity in polar coordinates rotated about the
 	// agent reference frame.
 	u := *polar.New(
@@ -82,18 +79,10 @@ func (a *A) Step(steering vector.V, tau float64) {
 		),
 	)
 
-	fmt.Printf("DEBUG: u == %v\n", u)
-
+	dh := w
 	// In the case the angular velocity exceeds the maximal turnable rate,
 	// model the move as a reverse step instead.
-	a.O.V = polar.Cartesian(
-		*polar.New(
-			tau*u.R(),
-			a.Heading().Theta()+tau*u.Theta(),
-		),
-	)
-
-	dh := w // u.Theta()
+	//
 	// If the turning velocity is greater than the absolute angular
 	// velocity, and is also pointing away from the agent, model this
 	// behavior as the agent reversing.
@@ -101,9 +90,17 @@ func (a *A) Step(steering vector.V, tau float64) {
 		// We should be rotating towards 0 -- this means our π offset
 		// needs to ensure the new dh is still within [-π, π).
 		dh -= math.Copysign(math.Pi, dh)
+		u = *polar.New(-u.R(), u.Theta())
 	}
 
 	a.O.Heading = *polar.New(1, a.Heading().Theta()+(tau*dh))
+	a.O.V = polar.Cartesian(
+		*polar.New(
+			u.R(),
+			a.Heading().Theta()+tau*u.Theta(),
+		),
+	)
+
 	a.O.P = vector.Add(a.P(), vector.Scale(tau, a.V()))
 }
 

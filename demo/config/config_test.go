@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"math"
 	"testing"
 
 	"github.com/downflux/go-boids/internal/geometry/2d/vector/polar"
@@ -20,7 +21,7 @@ func TestStep(t *testing.T) {
 		p       vector.V
 	}{
 		{
-			name: "Trivial/NoTurn",
+			name: "Trivial/Speed",
 			a: &A{
 				O: O{
 					P:           *vector.New(1, 0),
@@ -37,7 +38,24 @@ func TestStep(t *testing.T) {
 			p:       *vector.New(2, 0),
 		},
 		{
-			name: "Truncate/Magnitude/NoTurn",
+			name: "Trivial/Rotate",
+			a: &A{
+				O: O{
+					P:           *vector.New(1, 0),
+					V:           *vector.New(0, 0),
+					Heading:     *polar.New(1, 0),
+					MaxVelocity: *polar.New(1, math.Pi),
+				},
+			},
+			steering: *vector.New(0, 1),
+			tau:      1,
+
+			heading: *polar.New(1, math.Pi/2),
+			v:       *vector.New(0, 1),
+			p:       *vector.New(1, 1),
+		},
+		{
+			name: "Truncate/Speed",
 			a: &A{
 				O: O{
 					P:           *vector.New(1, 0),
@@ -54,7 +72,24 @@ func TestStep(t *testing.T) {
 			p:       *vector.New(2, 0),
 		},
 		{
-			name: "Truncate/Magnitude/Reverse",
+			name: "Truncate/Rotate",
+			a: &A{
+				O: O{
+					P:           *vector.New(1, 0),
+					V:           *vector.New(0, 0),
+					Heading:     *polar.New(1, 0),
+					MaxVelocity: *polar.New(1, math.Pi/2),
+				},
+			},
+			steering: *vector.New(0, 1),
+			tau:      1,
+
+			heading: *polar.New(1, math.Pi/2),
+			v:       *vector.New(math.Sqrt(2)/2, math.Sqrt(2)/2),
+			p:       *vector.New(1+math.Sqrt(2)/2, math.Sqrt(2)/2),
+		},
+		{
+			name: "Truncate/Speed/Reverse",
 			a: &A{
 				O: O{
 					P:           *vector.New(1, 0),

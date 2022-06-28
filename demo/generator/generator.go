@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"flag"
 	"math"
 	"math/rand"
@@ -22,9 +23,10 @@ var (
 	MaxNetForce  = 10.0
 	MaxNetTorque = 10.0
 	MaxVelocity  = *polar.New(600.0, 10*math.Pi)
-	Radius       = 5
+	Radius       = 5.0
 
 	fn = flag.String("out", "/dev/stdout", "")
+	mode = flag.String("mode", "grid", "")
 )
 
 func rn(min, max float64) float64 { return min + (max-min)*rand.Float64() }
@@ -34,6 +36,37 @@ func rv(min, max float64) vector.V {
 		rn(min, max),
 		vector.Unit(*vector.New(rn(-1, 1), rn(-1, 1))),
 	)
+}
+
+func GenerateSimple() config.C {
+	return config.C{
+		Height: 200,
+		Width: 200,
+		Agents: []*config.A{
+			&config.A{O: config.O{
+				P:            *vector.New(25, 50),
+				V:            *vector.New(0, 0),
+				R:            Radius,
+				Goal:         *vector.New(175, 50),
+				Mass:         10,
+				Heading:      *polar.New(1, 0),
+				MaxNetTorque: MaxNetTorque,
+				MaxNetForce:  MaxNetForce,
+				MaxVelocity:  MaxVelocity,
+			}},
+			&config.A{O: config.O{
+				P:            *vector.New(175, 50),
+				V:            *vector.New(0, 0),
+				R:            Radius,
+				Goal:         *vector.New(25, 50),
+				Mass:         10,
+				Heading:      *polar.New(1, math.Pi),
+				MaxNetTorque: MaxNetTorque,
+				MaxNetForce:  MaxNetForce,
+				MaxVelocity:  MaxVelocity,
+			}},
+		},
+	}
 }
 
 func GenerateGrid(h int, w int) config.C {
@@ -93,7 +126,13 @@ func main() {
 	}
 	defer fp.Close()
 
-	c := GenerateGrid(10, 10)
+	c, ok := map[string]config.C{
+		"grid": GenerateGrid(10, 10),
+		"simple": GenerateSimple(),
+	}[*mode]
+	if !ok {
+		panic(fmt.Sprintf("unsupported mode %v", *mode))
+	}
 
 	e := json.NewEncoder(fp)
 	e.SetIndent("", "  ")

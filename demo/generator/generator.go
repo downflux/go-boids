@@ -19,8 +19,8 @@ var (
 	//
 	// Due to the scale of our simulations, our net force and max speed
 	// values are not at human-scale.
-	MaxNetForce  = 1000.0
-	MaxNetTorque = 1000.0
+	MaxNetForce  = 100.0
+	MaxNetTorque = 100.0
 	MaxVelocity  = *polar.New(600.0, 20*math.Pi)
 	Radius       = 5
 

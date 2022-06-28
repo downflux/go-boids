@@ -163,9 +163,7 @@ func main() {
 		for _, m := range mutations {
 			a := m.Agent.(*config.A)
 
-			a.SetV(m.Velocity)
-			a.SetP(v2d.Add(a.P(), v2d.Scale(1, a.V())))
-			a.SetHeading(m.Heading)
+			a.Step(m.Steering, tau)
 
 			b := *hyperrectangle.New(
 				vector.Sub(b.Min(), vector.V(margin)),
@@ -190,7 +188,7 @@ func main() {
 			examplesdraw.Line(img, *segment.New(
 				*line.New(v2d.Add(margin, a.P()), v2d.Scale(0.25, a.V())), 0, 1), black)
 			examplesdraw.Line(img, *segment.New(
-				*line.New(v2d.Add(margin, v2d.Add(a.P(), a.V())), v2d.Scale(0.25, m.Steering)), 0, 1), green)
+				*line.New(v2d.Add(margin, v2d.Add(a.P(), v2d.Scale(0.25, a.V()))), v2d.Scale(0.25, m.Steering)), 0, 1), green)
 			examplesdraw.Line(img, *segment.New(
 				*line.New(v2d.Add(margin, a.P()), v2d.Scale(0.25, m.Acceleration)), 0, 1), blue)
 

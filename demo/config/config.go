@@ -2,7 +2,9 @@ package config
 
 import (
 	"encoding/json"
+	"fmt"
 	"math"
+	"os"
 
 	"github.com/downflux/go-boids/agent"
 	"github.com/downflux/go-boids/internal/geometry/2d/vector/polar"
@@ -113,11 +115,10 @@ func (a *A) Step(steering vector.V, tau float64) {
 	a.O.Heading = *polar.New(1, a.Heading().Theta()+tau*dw)
 
 	a.O.P = vector.Add(a.P(), vector.Scale(tau, a.V()))
+	fmt.Fprintf(os.Stderr, "DEBUG: v == %v\n", a.V())
 }
 
-func (a *A) SetP(p vector.V)      { a.O.P = p }
-func (a *A) SetV(v vector.V)      { a.O.V = v }
-func (a *A) SetHeading(h polar.V) { a.O.Heading = h }
+func (a *A) SetP(p vector.V) { a.O.P = p }
 
 func (a *A) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&O{

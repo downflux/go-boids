@@ -139,6 +139,27 @@ func TestStep(t *testing.T) {
 			v:       *vector.New(-1, 0),
 			p:       *vector.New(0, 0),
 		},
+
+
+
+
+		{
+			name: "Truncate/LargeScale",
+			a: &A{
+				O: O{
+					P:           *vector.New(100, 0),
+					V:           *vector.New(0, 0),
+					Heading:     *polar.New(1, 0),
+					MaxVelocity: *polar.New(1, 0),
+				},
+			},
+			steering: *vector.New(-100, 0),
+			tau:      1,
+
+			heading: *polar.New(1, 0),
+			v:       *vector.New(-1, 0),
+			p:       *vector.New(0, 0),
+		},
 	}
 
 	for _, c := range configs {

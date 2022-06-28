@@ -21,8 +21,8 @@ var (
 	// Due to the scale of our simulations, our net force and max speed
 	// values are not at human-scale.
 	MaxNetForce  = 10000.0
-	MaxNetTorque = 100000.0
-	MaxVelocity  = *polar.New(600.0, 10*math.Pi)
+	MaxNetTorque = 200000.0
+	MaxVelocity  = *polar.New(60.0, math.Pi / 2)
 	Radius       = 5.0
 
 	fn   = flag.String("out", "/dev/stdout", "")
@@ -56,7 +56,7 @@ func GenerateSimple() config.C {
 				MaxVelocity:  MaxVelocity,
 			}},
 			&config.A{O: config.O{
-				P:            *vector.New(110, 50),
+				P:            *vector.New(100, 50),
 				V:            *vector.New(0, 0),
 				R:            r,
 				Goal:         *vector.New(75, 50),
@@ -66,28 +66,30 @@ func GenerateSimple() config.C {
 				MaxNetForce:  MaxNetForce,
 				MaxVelocity:  MaxVelocity,
 			}},
-			&config.A{O: config.O{
-				P:            *vector.New(25, 150),
-				V:            *vector.New(0, 0),
-				R:            r,
-				Goal:         *vector.New(175, 150),
-				Mass:         10,
-				Heading:      *polar.New(1, math.Pi),
-				MaxNetTorque: MaxNetTorque,
-				MaxNetForce:  MaxNetForce,
-				MaxVelocity:  MaxVelocity,
-			}},
-			&config.A{O: config.O{
-				P:            *vector.New(175, 150),
-				V:            *vector.New(0, 0),
-				R:            r,
-				Goal:         *vector.New(25, 150),
-				Mass:         10,
-				Heading:      *polar.New(1, 0),
-				MaxNetTorque: MaxNetTorque,
-				MaxNetForce:  MaxNetForce,
-				MaxVelocity:  MaxVelocity,
-			}},
+			/*
+				&config.A{O: config.O{
+					P:            *vector.New(25, 150),
+					V:            *vector.New(0, 0),
+					R:            r,
+					Goal:         *vector.New(175, 150),
+					Mass:         10,
+					Heading:      *polar.New(1, math.Pi),
+					MaxNetTorque: MaxNetTorque,
+					MaxNetForce:  MaxNetForce,
+					MaxVelocity:  MaxVelocity,
+				}},
+				&config.A{O: config.O{
+					P:            *vector.New(175, 150),
+					V:            *vector.New(0, 0),
+					R:            r,
+					Goal:         *vector.New(25, 150),
+					Mass:         10,
+					Heading:      *polar.New(1, 0),
+					MaxNetTorque: MaxNetTorque,
+					MaxNetForce:  MaxNetForce,
+					MaxVelocity:  MaxVelocity,
+				}},
+			*/
 		},
 	}
 }
@@ -114,10 +116,6 @@ func GenerateGrid(h int, w int) config.C {
 	for i, p := range positions {
 		mass := rn(10, 15)
 		radius := float64(Radius) * math.Pow(mass/10.0, 2)
-		maxVelocity := *polar.New(
-			MaxVelocity.R()/mass,
-			MaxVelocity.Theta()/mass,
-		)
 		velocity := rv(-0.5, 0.5)
 		heading := map[bool]polar.V{
 			true:  *polar.New(1, 0),
@@ -133,7 +131,7 @@ func GenerateGrid(h int, w int) config.C {
 				Heading:      heading,
 				MaxNetTorque: MaxNetTorque,
 				MaxNetForce:  MaxNetForce,
-				MaxVelocity:  maxVelocity,
+				MaxVelocity:  MaxVelocity,
 			},
 		})
 	}

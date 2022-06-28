@@ -51,6 +51,16 @@ func (a *A) MaxNetForce() float64  { return a.O.MaxNetForce }
 // the current one.
 // The angular component of the input vector is relative to the agent heading.
 func (a *A) Step(steering vector.V, tau float64) {
+	data, _ := json.MarshalIndent(
+		map[string]string{
+			"steering":    fmt.Sprintf("%.3f, %.3f)", steering.X(), steering.Y()),
+			"a.P()":       fmt.Sprintf("%.3f, %.3f)", a.P().X(), a.P().Y()),
+			"a.Heading()": fmt.Sprintf("%.3f, %.3f)", a.Heading().R(), a.Heading().Theta()),
+			"a.V()":       fmt.Sprintf("%.3f, %.3f)", a.V().X(), a.V().Y()),
+		},
+		"", "  ")
+	fmt.Fprintf(os.Stderr, "DEBUG(config.Step): before %s\n", data)
+
 	v := vector.Add(a.V(), steering)
 
 	// w is the angular between the current agent heading and drected
@@ -80,6 +90,12 @@ func (a *A) Step(steering vector.V, tau float64) {
 			w,
 		),
 	)
+	data, _ = json.MarshalIndent(
+		map[string]string{
+			"w": fmt.Sprintf("%.3f", w),
+		},
+		"", "  ")
+	fmt.Fprintf(os.Stderr, "DEBUG(config.Step): w %s\n", data)
 
 	dw := w
 	// In the case the angular velocity exceeds the maximal turnable rate,
@@ -88,7 +104,8 @@ func (a *A) Step(steering vector.V, tau float64) {
 	// If the turning velocity is greater than the absolute angular
 	// velocity, and is also pointing away from the agent, model this
 	// behavior as the agent reversing.
-	if math.Abs(w) > math.Pi/2 && math.Abs(w) > a.MaxVelocity().Theta() {
+	if math.Abs(w) > math.Pi/2 && math.Abs(w) / tau > a.MaxVelocity().Theta() {
+		fmt.Fprintf(os.Stderr, "DEBUG(config.Step): need to flip heading and velocity\n")
 		// We should be rotating towards 0 -- this means our π offset
 		// needs to ensure the new dw is still within [-π, π).
 		dw = -math.Copysign(
@@ -113,19 +130,16 @@ func (a *A) Step(steering vector.V, tau float64) {
 		),
 	)
 	a.O.Heading = *polar.New(1, a.Heading().Theta()+tau*dw)
-
-	p := a.P()
-
 	a.O.P = vector.Add(a.P(), vector.Scale(tau, a.V()))
 
-	data, _ := json.MarshalIndent(
+	data, _ = json.MarshalIndent(
 		map[string]string{
-			"a.P()":       fmt.Sprintf("%.3f, %.3f)", p.X(), p.Y()),
+			"a.P()":       fmt.Sprintf("%.3f, %.3f)", a.P().X(), a.P().Y()),
 			"a.Heading()": fmt.Sprintf("%.3f, %.3f)", a.Heading().R(), a.Heading().Theta()),
 			"a.V()":       fmt.Sprintf("%.3f, %.3f)", a.V().X(), a.V().Y()),
 		},
 		"", "  ")
-	fmt.Fprintf(os.Stderr, "DEBUG(config.Step): %s\n", data)
+	fmt.Fprintf(os.Stderr, "DEBUG(config.Step): after %s\n", data)
 }
 
 func (a *A) SetP(p vector.V) { a.O.P = p }

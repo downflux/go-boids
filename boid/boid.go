@@ -1,18 +1,16 @@
 package boid
 
 import (
+	"encoding/json"
 	"fmt"
 	"math"
 	"os"
 
 	"github.com/downflux/go-boids/agent"
 	"github.com/downflux/go-boids/constraint"
+	"github.com/downflux/go-boids/internal/accumulator"
 	"github.com/downflux/go-boids/internal/constraint/truncated"
 	"github.com/downflux/go-boids/kd"
-	// "github.com/downflux/go-geometry/2d/line"
-	// "github.com/downflux/go-geometry/2d/segment"
-	"github.com/downflux/go-boids/internal/geometry/2d/vector/polar"
-	"github.com/downflux/go-geometry/epsilon"
 	"github.com/downflux/go-geometry/nd/hypersphere"
 	"github.com/downflux/go-geometry/nd/vector"
 
@@ -22,8 +20,7 @@ import (
 )
 
 type O struct {
-	T *kd.T
-
+	T   *kd.T
 	Tau float64
 
 	F func(a agent.A) bool
@@ -31,12 +28,10 @@ type O struct {
 
 type Mutation struct {
 	Agent    agent.A
-	Velocity v2d.V
-	Heading  polar.V
+	Steering v2d.V
 
 	// Visualzation-only fields.
 	Acceleration v2d.V
-	Steering     v2d.V
 }
 
 // Step iterates through a single simulation step, but does not mutate the given
@@ -55,7 +50,7 @@ func Step(o O) []Mutation {
 			o.T,
 			*hypersphere.New(
 				vector.V(a.P()),
-				o.Tau*a.MaxVelocity().R()+5*r,
+				o.Tau*a.MaxVelocity().R()+3*r,
 			),
 			// TODO(minkezhang): Check for interface equality
 			// instead of coordinate equality, via adding an
@@ -81,14 +76,22 @@ func Step(o O) []Mutation {
 		cs = append(cs,
 			cc.New(cc.O{
 				Obstacles: obstacles,
-				K:         1,
+				K:         500,
 				Tau:       o.Tau,
 			}),
 			ca.New(ca.O{
-				K:   1,
+				K:   1000,
 				Tau: o.Tau,
 			}),
 		)
+
+		data, _ := json.MarshalIndent(
+			map[string]string{
+				"collision": fmt.Sprintf("(%.3f, %.3f)", cs[0].Force(a).X(), cs[0].Force(a).Y()),
+				"arrival":   fmt.Sprintf("(%.3f, %.3f)", cs[1].Force(a).X(), cs[1].Force(a).Y()),
+			},
+			"", "  ")
+		fmt.Fprintf(os.Stderr, "DEBUG(boid.Step): %s\n", data)
 
 		mutations = append(mutations, Steer(a, truncated.New(cs).Force(a), o.Tau))
 	}
@@ -102,95 +105,29 @@ func Steer(a agent.A, force v2d.V, tau float64) Mutation {
 	// second is a pseudo constant with units of time. This allows unit
 	// matching, which makes the overall code easier to read.
 	const second = 1.0
+
 	acceleration := v2d.Scale(1/a.Mass(), force)
-	if epsilon.Within(v2d.Magnitude(acceleration), 0) {
-		return Mutation{
-			Agent:        a,
-			Velocity:     a.V(),
-			Heading:      a.Heading(),
-			Steering:     *v2d.New(0, 0),
-			Acceleration: *v2d.New(0, 0),
-		}
-	}
-	desired := v2d.Scale(second*a.MaxNetForce(), v2d.Unit(acceleration))
-	steering := v2d.Scale(second, v2d.Sub(desired, a.V()))
-	fmt.Fprintf(os.Stderr, "DEBUG: steering == %v, acceleration == %v\n", steering, acceleration)
-	return Mutation{
-		Agent:        a,
-		Steering:     steering,
-		Acceleration: acceleration,
-	}
+	desired := v2d.Scale(second, acceleration)
 
-	if v2d.Within(steering, *v2d.New(0, 0)) {
-		return Mutation{
-			Agent:    a,
-			Velocity: a.V(),
-			Heading:  a.Heading(),
-
-			Steering:     steering,
-			Acceleration: acceleration,
-		}
-	}
-
-	steering = v2d.Scale(
-		math.Min(
-			a.MaxNetForce(),
-			v2d.Magnitude(steering),
-		),
-		v2d.Unit(steering),
+	steering, _ := accumulator.New(accumulator.D{
+		Force:  a.MaxNetForce(),
+		Torque: a.MaxNetTorque(),
+	}, a.R(), a.Heading()).Add(
+		v2d.Scale(second, v2d.Sub(desired, a.V())),
 	)
 
-	/*
-		const omega = math.Pi / 8
-		s := *segment.New(*line.New(a.V(), steering), 0, 1)
-
-		for _, theta := range []float64{omega, -omega} {
-			// u is the current heading rotated the maximum allowable
-			// angular velocity. We use this to check for intersections with
-			// the steering force. If there is an intersection with the
-			// force vector, this means the resultant velocity exceeds the
-			// maximum turn -- we will need to scale back the steering force
-			// accordingly.
-			u := *line.New(
-				*v2d.New(0, 0),
-				v2d.Rotate(theta, a.Heading()),
-			)
-			if p, ok := s.L().Intersect(u); ok && s.L().T(p) > s.TMin() && s.L().T(p) < s.TMax() {
-				steering = v2d.Sub(p, a.V())
-				if v2d.Within(a.V(), *v2d.New(0, 0)) {
-					return Mutation{
-						Agent:    a,
-						Velocity: *v2d.New(0, 0),
-						Heading:  v2d.Rotate(theta, a.Heading()),
-
-						Steering: steering,
-						Acceleration: acceleration,
-					}
-				}
-			}
-		}
-	*/
-	v := v2d.Add(a.V(), v2d.Scale(second, steering))
-	if v2d.WithinEpsilon(v, *v2d.New(0, 0), epsilon.Relative(1e-5)) {
-		return Mutation{
-			Agent:    a,
-			Velocity: *v2d.New(0, 0),
-			Heading:  a.Heading(),
-
-			Steering:     steering,
-			Acceleration: acceleration,
-		}
-	}
+	data, _ := json.MarshalIndent(
+		map[string]string{
+			"a.P()":    fmt.Sprintf("(%.3f, %.3f)", a.P().X(), a.P().Y()),
+			"force":    fmt.Sprintf("(%.3f, %.3f)", force.X(), force.Y()),
+			"steering": fmt.Sprintf("(%.3f, %.3f)", steering.X(), steering.Y()),
+			"desired":  fmt.Sprintf("(%.3f, %.3f)", desired.X(), desired.Y()),
+		},
+		"", "  ")
+	fmt.Fprintf(os.Stderr, "DEBUG(boid.Steer): %s\n", data)
 
 	return Mutation{
-		Agent: a,
-		Velocity: v2d.Scale(
-			tau*math.Min(
-				a.MaxVelocity().R(),
-				v2d.Magnitude(v),
-			), v2d.Unit(v)),
-		Heading: polar.Polar(v2d.Unit(v)),
-
+		Agent:        a,
 		Steering:     steering,
 		Acceleration: acceleration,
 	}

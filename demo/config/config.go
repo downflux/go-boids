@@ -114,8 +114,18 @@ func (a *A) Step(steering vector.V, tau float64) {
 	)
 	a.O.Heading = *polar.New(1, a.Heading().Theta()+tau*dw)
 
+	p := a.P()
+
 	a.O.P = vector.Add(a.P(), vector.Scale(tau, a.V()))
-	fmt.Fprintf(os.Stderr, "DEBUG: v == %v\n", a.V())
+
+	data, _ := json.MarshalIndent(
+		map[string]string{
+			"a.P()":       fmt.Sprintf("%.3f, %.3f)", p.X(), p.Y()),
+			"a.Heading()": fmt.Sprintf("%.3f, %.3f)", a.Heading().R(), a.Heading().Theta()),
+			"a.V()":       fmt.Sprintf("%.3f, %.3f)", a.V().X(), a.V().Y()),
+		},
+		"", "  ")
+	fmt.Fprintf(os.Stderr, "DEBUG(config.Step): %s\n", data)
 }
 
 func (a *A) SetP(p vector.V) { a.O.P = p }

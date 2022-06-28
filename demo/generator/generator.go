@@ -22,7 +22,7 @@ var (
 	// values are not at human-scale.
 	MaxNetForce  = 1000.0
 	MaxNetTorque = 1000.0
-	MaxVelocity  = *polar.New(60.0, 100*math.Pi)
+	MaxVelocity  = *polar.New(600.0, math.Pi)
 	Radius       = 5.0
 
 	fn   = flag.String("out", "/dev/stdout", "")
@@ -41,14 +41,14 @@ func rv(min, max float64) vector.V {
 func GenerateSimple() config.C {
 	const r = 5.0
 	return config.C{
-		Height: 500,
-		Width:  500,
+		Height: 200,
+		Width:  200,
 		Agents: []*config.A{
 			&config.A{O: config.O{
-				P:            *vector.New(25, 50),
+				P:            *vector.New(90, 50),
 				V:            *vector.New(0, 0),
 				R:            r,
-				Goal:         *vector.New(475, 50),
+				Goal:         *vector.New(125, 50),
 				Mass:         10,
 				Heading:      *polar.New(1, 0),
 				MaxNetTorque: MaxNetTorque,
@@ -56,38 +56,40 @@ func GenerateSimple() config.C {
 				MaxVelocity:  MaxVelocity,
 			}},
 			&config.A{O: config.O{
-				P:            *vector.New(475, 50),
+				P:            *vector.New(110, 50),
 				V:            *vector.New(0, 0),
 				R:            r,
-				Goal:         *vector.New(25, 50),
+				Goal:         *vector.New(75, 50),
 				Mass:         10,
 				Heading:      *polar.New(1, math.Pi),
 				MaxNetTorque: MaxNetTorque,
 				MaxNetForce:  MaxNetForce,
 				MaxVelocity:  MaxVelocity,
 			}},
-			&config.A{O: config.O{
-				P:            *vector.New(25, 450),
-				V:            *vector.New(0, 0),
-				R:            r,
-				Goal:         *vector.New(475, 450),
-				Mass:         10,
-				Heading:      *polar.New(1, math.Pi),
-				MaxNetTorque: MaxNetTorque,
-				MaxNetForce:  MaxNetForce,
-				MaxVelocity:  MaxVelocity,
-			}},
-			&config.A{O: config.O{
-				P:            *vector.New(475, 450),
-				V:            *vector.New(0, 0),
-				R:            r,
-				Goal:         *vector.New(25, 450),
-				Mass:         10,
-				Heading:      *polar.New(1, 0),
-				MaxNetTorque: MaxNetTorque,
-				MaxNetForce:  MaxNetForce,
-				MaxVelocity:  MaxVelocity,
-			}},
+			/*
+				&config.A{O: config.O{
+					P:            *vector.New(25, 150),
+					V:            *vector.New(0, 0),
+					R:            r,
+					Goal:         *vector.New(175, 150),
+					Mass:         10,
+					Heading:      *polar.New(1, math.Pi),
+					MaxNetTorque: MaxNetTorque,
+					MaxNetForce:  MaxNetForce,
+					MaxVelocity:  MaxVelocity,
+				}},
+				&config.A{O: config.O{
+					P:            *vector.New(175, 150),
+					V:            *vector.New(0, 0),
+					R:            r,
+					Goal:         *vector.New(25, 150),
+					Mass:         10,
+					Heading:      *polar.New(1, 0),
+					MaxNetTorque: MaxNetTorque,
+					MaxNetForce:  MaxNetForce,
+					MaxVelocity:  MaxVelocity,
+				}},
+			*/
 		},
 	}
 }

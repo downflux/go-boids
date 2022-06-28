@@ -3,6 +3,7 @@ package boid
 import (
 	"fmt"
 	"math"
+	"os"
 
 	"github.com/downflux/go-boids/agent"
 	"github.com/downflux/go-boids/constraint"
@@ -54,7 +55,7 @@ func Step(o O) []Mutation {
 			o.T,
 			*hypersphere.New(
 				vector.V(a.P()),
-				o.Tau*a.MaxVelocity().R()+3*r,
+				o.Tau*a.MaxVelocity().R()+5*r,
 			),
 			// TODO(minkezhang): Check for interface equality
 			// instead of coordinate equality, via adding an
@@ -80,7 +81,7 @@ func Step(o O) []Mutation {
 		cs = append(cs,
 			cc.New(cc.O{
 				Obstacles: obstacles,
-				K:         2,
+				K:         1,
 				Tau:       o.Tau,
 			}),
 			ca.New(ca.O{
@@ -102,8 +103,23 @@ func Steer(a agent.A, force v2d.V, tau float64) Mutation {
 	// matching, which makes the overall code easier to read.
 	const second = 1.0
 	acceleration := v2d.Scale(1/a.Mass(), force)
-	desired := v2d.Scale(second, acceleration)
+	if epsilon.Within(v2d.Magnitude(acceleration), 0) {
+		return Mutation{
+			Agent:        a,
+			Velocity:     a.V(),
+			Heading:      a.Heading(),
+			Steering:     *v2d.New(0, 0),
+			Acceleration: *v2d.New(0, 0),
+		}
+	}
+	desired := v2d.Scale(second*a.MaxNetForce(), v2d.Unit(acceleration))
 	steering := v2d.Scale(second, v2d.Sub(desired, a.V()))
+	fmt.Fprintf(os.Stderr, "DEBUG: steering == %v, acceleration == %v\n", steering, acceleration)
+	return Mutation{
+		Agent:        a,
+		Steering:     steering,
+		Acceleration: acceleration,
+	}
 
 	if v2d.Within(steering, *v2d.New(0, 0)) {
 		return Mutation{

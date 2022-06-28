@@ -115,6 +115,7 @@ func main() {
 	b := e.Bound()
 
 	for i := 0; i < *n; i++ {
+		fmt.Fprintf(os.Stderr, "DEBUG(demo.go): frame == %v\n", i)
 		// Overwrite trail buffer.
 		trailbuf[i%len(trailbuf)] = nil
 		for _, p := range e.Points() {

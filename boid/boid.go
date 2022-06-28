@@ -50,7 +50,7 @@ func Step(o O) []Mutation {
 			o.T,
 			*hypersphere.New(
 				vector.V(a.P()),
-				o.Tau*a.MaxVelocity().R()+3*r,
+				o.Tau*a.MaxVelocity().R()+10*r,
 			),
 			// TODO(minkezhang): Check for interface equality
 			// instead of coordinate equality, via adding an
@@ -76,11 +76,11 @@ func Step(o O) []Mutation {
 		cs = append(cs,
 			cc.New(cc.O{
 				Obstacles: obstacles,
-				K:         500,
+				K:         10,
 				Tau:       o.Tau,
 			}),
 			ca.New(ca.O{
-				K:   1000,
+				K:   1,
 				Tau: o.Tau,
 			}),
 		)

@@ -45,12 +45,60 @@ func (a *A) MaxNetForce() float64  { return a.O.MaxNetForce }
 // We could alteratively instruct the agent to reverse if the angle is too
 // large.
 //
+// The input velocity is the incremental velocity, and will need to be added to
+// the current one.
 // The angular component of the input vector is relative to the agent heading.
-func (a *A) Step(v polar.V, tau float64) {
-	a.O.Heading = *polar.New(1, a.O.Heading.Theta()+tau*math.Copysign(
-		math.Min(a.MaxVelocity().Theta(), math.Abs(v.Theta())), v.Theta(),
-	))
+func (a *A) Step(steering vector.V, tau float64) {
+	v := vector.Add(a.V(), steering)
 
+	// w is the angular between the current agent heading and drected
+	// towards the new velocity vector. Note that 0 <= w < 2π.
+	w := polar.Normalize(
+		polar.Sub(
+			polar.Polar(v),
+			a.Heading(),
+		),
+	).Theta()
+
+	// Specify w such that the agent will turn in the optimal direction.
+	// This ensures -π <= 0 < π.
+	if w > math.Pi {
+		w -= 2 * math.Pi
+	}
+
+	// u is the net new velocity in polar coordinates rotated about the
+	// agent reference frame.
+	u := *polar.New(
+		math.Min(a.MaxVelocity().R(), vector.Magnitude(v)),
+		math.Copysign(
+			math.Min(
+				a.MaxVelocity().Theta(),
+				math.Abs(w),
+			),
+			w,
+		),
+	)
+
+	// In the case the angular velocity exceeds the maximal turnable rate,
+	// model the move as a reverse step instead.
+	a.O.V = polar.Cartesian(
+		*polar.New(
+			tau*u.R(),
+			a.Heading().Theta()+tau*u.Theta(),
+		),
+	)
+
+	dh := u.Theta()
+	// If the turning velocity is greater than the absolute angular
+	// velocity, and is also pointing away from the agent, model this
+	// behavior as the agent reversing.
+	if math.Abs(u.Theta()) > math.Pi/2 && math.Abs(w) > a.MaxVelocity().Theta() {
+		// We should be rotating towards 0 -- this means our π offset
+		// needs to ensure the new dh is still within [-π, π).
+		dh -= math.Copysign(math.Pi, dh)
+	}
+
+	a.O.Heading = *polar.New(1, a.Heading().Theta()+(tau*dh))
 	a.O.P = vector.Add(a.P(), vector.Scale(tau, a.V()))
 }
 

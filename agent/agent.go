@@ -39,7 +39,7 @@ type WO interface {
 	//
 	// The input velocity vector must have an angular component which is
 	// relative to the agent heading.
-	Step(v polar.V, tau float64)
+	Step(steering vector.V, tau float64)
 }
 
 // TODO(minkezhang): Rename RO.

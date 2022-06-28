@@ -108,7 +108,6 @@ func Steer(a agent.A, force v2d.V, tau float64) Mutation {
 
 	acceleration := v2d.Scale(1/a.Mass(), force)
 	desired := v2d.Scale(second, acceleration)
-
 	steering, _ := accumulator.New(accumulator.D{
 		Force:  a.MaxNetForce(),
 		Torque: a.MaxNetTorque(),

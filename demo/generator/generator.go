@@ -20,9 +20,9 @@ var (
 	//
 	// Due to the scale of our simulations, our net force and max speed
 	// values are not at human-scale.
-	MaxNetForce  = 1000.0
-	MaxNetTorque = 1000.0
-	MaxVelocity  = *polar.New(600.0, math.Pi)
+	MaxNetForce  = 10000.0
+	MaxNetTorque = 100000.0
+	MaxVelocity  = *polar.New(600.0, 10*math.Pi)
 	Radius       = 5.0
 
 	fn   = flag.String("out", "/dev/stdout", "")
@@ -66,30 +66,28 @@ func GenerateSimple() config.C {
 				MaxNetForce:  MaxNetForce,
 				MaxVelocity:  MaxVelocity,
 			}},
-			/*
-				&config.A{O: config.O{
-					P:            *vector.New(25, 150),
-					V:            *vector.New(0, 0),
-					R:            r,
-					Goal:         *vector.New(175, 150),
-					Mass:         10,
-					Heading:      *polar.New(1, math.Pi),
-					MaxNetTorque: MaxNetTorque,
-					MaxNetForce:  MaxNetForce,
-					MaxVelocity:  MaxVelocity,
-				}},
-				&config.A{O: config.O{
-					P:            *vector.New(175, 150),
-					V:            *vector.New(0, 0),
-					R:            r,
-					Goal:         *vector.New(25, 150),
-					Mass:         10,
-					Heading:      *polar.New(1, 0),
-					MaxNetTorque: MaxNetTorque,
-					MaxNetForce:  MaxNetForce,
-					MaxVelocity:  MaxVelocity,
-				}},
-			*/
+			&config.A{O: config.O{
+				P:            *vector.New(25, 150),
+				V:            *vector.New(0, 0),
+				R:            r,
+				Goal:         *vector.New(175, 150),
+				Mass:         10,
+				Heading:      *polar.New(1, math.Pi),
+				MaxNetTorque: MaxNetTorque,
+				MaxNetForce:  MaxNetForce,
+				MaxVelocity:  MaxVelocity,
+			}},
+			&config.A{O: config.O{
+				P:            *vector.New(175, 150),
+				V:            *vector.New(0, 0),
+				R:            r,
+				Goal:         *vector.New(25, 150),
+				Mass:         10,
+				Heading:      *polar.New(1, 0),
+				MaxNetTorque: MaxNetTorque,
+				MaxNetForce:  MaxNetForce,
+				MaxVelocity:  MaxVelocity,
+			}},
 		},
 	}
 }

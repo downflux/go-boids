@@ -204,8 +204,9 @@ func main() {
 		// queries.
 		t.Balance()
 	}
-	delay := make([]int, 0, *n)
+
 	// Render with approximately 2/100 s delay, i.e. at 50Hz.
+	delay := make([]int, 0, *n)
 	for i := 0; i < *n; i++ {
 		delay = append(delay, 2)
 	}

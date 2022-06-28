@@ -45,5 +45,9 @@ func (c C) Force(a agent.A) vector.V {
 		dampening = math.Max(0, d/a.R()-0.5)
 	}
 
-	return vector.Scale(c.o.K*dampening, vector.Unit(r))
+	if vector.Within(r, *vector.New(0, 0)) {
+		return *vector.New(0, 0)
+	}
+
+	return vector.Scale(c.o.K*dampening*a.MaxVelocity().R()*a.Mass(), vector.Unit(r))
 }

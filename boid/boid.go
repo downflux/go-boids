@@ -78,11 +78,11 @@ func Step(o O) []Mutation {
 		cs = append(cs,
 			cc.New(cc.O{
 				Obstacles: obstacles,
-				K:         1,
+				K:         60,
 				Tau:       o.Tau,
 			}),
 			ca.New(ca.O{
-				K:   1,
+				K:   6,
 				Tau: o.Tau,
 			}),
 		)
@@ -108,13 +108,23 @@ func Steer(a agent.A, force v2d.V, tau float64) Mutation {
 	// matching, which makes the overall code easier to read.
 	const second = 1.0
 
-	acceleration := v2d.Scale(1/a.Mass(), force)
-	desired := v2d.Scale(second, acceleration)
-	steering, _ := accumulator.New(accumulator.D{
-		Force:  a.MaxNetForce(),
-		Torque: a.MaxNetTorque(),
-	}, a.R(), a.Heading()).Add(
-		v2d.Scale(second, v2d.Sub(desired, a.V())),
+	desired := v2d.Scale(a.MaxVelocity().R()/a.Mass(), force)
+	steering := v2d.Sub(desired, a.V())
+
+	if v2d.Within(steering, *v2d.New(0, 0)) {
+		return Mutation{
+			Agent:        a,
+			Steering:     *v2d.New(0, 0),
+			Acceleration: v2d.Scale(1/tau, desired),
+		}
+	}
+
+	steering = v2d.Scale(
+		math.Min(
+			a.MaxNetForce(),
+			v2d.Magnitude(steering),
+		),
+		v2d.Unit(steering),
 	)
 
 	data, _ := json.MarshalIndent(
@@ -130,6 +140,32 @@ func Steer(a agent.A, force v2d.V, tau float64) Mutation {
 	return Mutation{
 		Agent:        a,
 		Steering:     steering,
-		Acceleration: acceleration,
+		Acceleration: v2d.Scale(1/tau, desired),
 	}
+
+	if false {
+		steering, _ := accumulator.New(accumulator.D{
+			Force:  a.MaxNetForce(),
+			Torque: a.MaxNetTorque(),
+		}, a.R(), a.Heading()).Add(
+			v2d.Scale(second, v2d.Sub(desired, a.V())),
+		)
+
+		data, _ = json.MarshalIndent(
+			map[string]string{
+				"a.P()":    fmt.Sprintf("(%.3f, %.3f)", a.P().X(), a.P().Y()),
+				"force":    fmt.Sprintf("(%.3f, %.3f)", force.X(), force.Y()),
+				"steering": fmt.Sprintf("(%.3f, %.3f)", steering.X(), steering.Y()),
+				"desired":  fmt.Sprintf("(%.3f, %.3f)", desired.X(), desired.Y()),
+			},
+			"", "  ")
+		fmt.Fprintf(os.Stderr, "DEBUG(boid.Steer): %s\n", data)
+
+		return Mutation{
+			Agent:        a,
+			Steering:     steering,
+			Acceleration: v2d.Scale(1/tau, desired),
+		}
+	}
+	return Mutation{}
 }

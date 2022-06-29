@@ -6,6 +6,7 @@ import (
 
 	"github.com/downflux/go-boids/agent"
 	"github.com/downflux/go-boids/constraint"
+	"github.com/downflux/go-boids/internal/geometry/2d/vector/polar"
 	"github.com/downflux/go-geometry/2d/vector"
 	"github.com/downflux/go-geometry/epsilon"
 )
@@ -49,12 +50,15 @@ func (c C) Force(a agent.A) vector.V {
 	if epsilon.Within(
 		math.Remainder(c.o.Obstacle.Heading().Theta()-a.Heading().Theta(), math.Pi),
 		0,
+	) && epsilon.Within(
+		vector.Determinant(polar.Cartesian(a.Heading()), p),
+		0,
 	) {
 		p = vector.Add(p, vector.Scale(0.1+vector.Magnitude(p), vector.Unit(jitter())))
 	}
 
 	r := c.o.Obstacle.R() + a.R()
-	separation := math.Min(
+	separation := math.Max(
 		1e-5, vector.SquaredMagnitude(p)/r/r)
 
 	return vector.Scale(c.o.K/separation*a.Mass(), vector.Unit(p))

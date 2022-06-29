@@ -20,9 +20,9 @@ var (
 	//
 	// Due to the scale of our simulations, our net force and max speed
 	// values are not at human-scale.
-	MaxNetForce  = 10000.0
-	MaxNetTorque = 200000.0
-	MaxVelocity  = *polar.New(60.0, math.Pi / 2)
+	MaxNetForce  = 100.0
+	MaxNetTorque = 200.0
+	MaxVelocity  = *polar.New(60.0, 2*math.Pi)
 	Radius       = 5.0
 
 	fn   = flag.String("out", "/dev/stdout", "")

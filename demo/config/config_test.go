@@ -140,9 +140,6 @@ func TestStep(t *testing.T) {
 			p:       *vector.New(0, 0),
 		},
 
-
-
-
 		{
 			name: "Truncate/LargeScale",
 			a: &A{

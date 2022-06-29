@@ -104,7 +104,7 @@ func (a *A) Step(steering vector.V, tau float64) {
 	// If the turning velocity is greater than the absolute angular
 	// velocity, and is also pointing away from the agent, model this
 	// behavior as the agent reversing.
-	if math.Abs(w) > math.Pi/2 && math.Abs(w) / tau > a.MaxVelocity().Theta() {
+	if math.Abs(w) > math.Pi/2 && math.Abs(w)/tau > a.MaxVelocity().Theta() {
 		fmt.Fprintf(os.Stderr, "DEBUG(config.Step): need to flip heading and velocity\n")
 		// We should be rotating towards 0 -- this means our π offset
 		// needs to ensure the new dw is still within [-π, π).

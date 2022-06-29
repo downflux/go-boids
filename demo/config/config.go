@@ -112,8 +112,6 @@ func (a *A) Step(steering vector.V, tau float64) {
 			a.MaxVelocity().Theta(),
 			dw,
 		)
-		// u = *polar.New(-u.R(), dw)
-		// u = *polar.New(u.R(), dw)
 		u = *polar.New(-u.R(), dw)
 	}
 

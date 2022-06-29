@@ -29,7 +29,7 @@ var (
 	MaxNetForce  = 20000.0
 	MaxNetTorque = 200000.0
 	Mass         = 2000.
-	MaxVelocity  = *polar.New(60.0, math.Pi)
+	MaxVelocity  = *polar.New(60.0, 0.5*math.Pi)
 	Radius       = 5.0
 
 	fn   = flag.String("out", "/dev/stdout", "")

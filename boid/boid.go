@@ -78,7 +78,7 @@ func Step(o O) []Mutation {
 		cs = append(cs,
 			cc.New(cc.O{
 				Obstacles: obstacles,
-				K:         60,
+				K:         50,
 				Tau:       o.Tau,
 			}),
 			ca.New(ca.O{
@@ -108,24 +108,25 @@ func Steer(a agent.A, force v2d.V, tau float64) Mutation {
 	// matching, which makes the overall code easier to read.
 	const second = 1.0
 
-	desired := v2d.Scale(a.MaxVelocity().R()/a.Mass(), force)
-	steering := v2d.Sub(desired, a.V())
-
-	if v2d.Within(steering, *v2d.New(0, 0)) {
-		return Mutation{
-			Agent:        a,
-			Steering:     *v2d.New(0, 0),
-			Acceleration: v2d.Scale(1/tau, desired),
-		}
+	desired := *v2d.New(0, 0)
+	if !v2d.Within(force, *v2d.New(0, 0)) {
+		// Agent's locomotion directive is to travel as fast as possible
+		// in the direction indicated by the force vector.
+		desired = v2d.Scale(a.MaxVelocity().R(), v2d.Unit(force))
 	}
 
-	steering = v2d.Scale(
-		math.Min(
-			a.MaxNetForce(),
-			v2d.Magnitude(steering),
-		),
-		v2d.Unit(steering),
-	)
+	// desired := v2d.Scale(a.MaxVelocity().R() * tau /a.Mass(), force)
+
+	steering := *v2d.New(0, 0)
+	if !v2d.Within(desired, a.V()) {
+		steering = v2d.Scale(
+			math.Min(
+				tau*a.MaxNetForce()/a.Mass(),
+				v2d.Magnitude(v2d.Sub(desired, a.V())),
+			),
+			v2d.Unit(v2d.Sub(desired, a.V())),
+		)
+	}
 
 	data, _ := json.MarshalIndent(
 		map[string]string{

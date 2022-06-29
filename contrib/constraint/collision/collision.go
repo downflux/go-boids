@@ -19,7 +19,6 @@ type O struct {
 	Obstacles []agent.A
 	K         float64
 	Tau       float64
-	MaxRange  float64
 }
 
 func New(o O) *C {
@@ -37,7 +36,6 @@ func (c C) Force(a agent.A) vector.V {
 			Obstacle: o,
 			K:        c.o.K,
 			Tau:      c.o.Tau,
-			MaxRange: c.o.MaxRange,
 		}))
 		ws = append(ws, 1)
 	}

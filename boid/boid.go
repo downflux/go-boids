@@ -47,7 +47,9 @@ func Step(o O) []Mutation {
 	}
 
 	for _, a := range kd.Agents(kd.Data(o.T)) {
-		vision := o.Tau*a.MaxVelocity().R() + 7*r
+		// TODO(minkezhang): Pass tree directly to constraints;
+		// different agents may have different radii of influence.
+		vision := o.Tau*a.MaxVelocity().R() + 5*r
 
 		neighbors, err := kd.RadialFilter(
 			o.T,
@@ -78,7 +80,6 @@ func Step(o O) []Mutation {
 				Obstacles: obstacles,
 				K:         1,
 				Tau:       o.Tau,
-				MaxRange:  vision,
 			}),
 			ca.New(ca.O{
 				K:   1,

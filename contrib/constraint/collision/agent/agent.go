@@ -7,6 +7,7 @@ import (
 	"github.com/downflux/go-boids/agent"
 	"github.com/downflux/go-boids/constraint"
 	"github.com/downflux/go-geometry/2d/vector"
+	"github.com/downflux/go-geometry/epsilon"
 )
 
 var _ constraint.C = C{}
@@ -19,11 +20,6 @@ type O struct {
 	Obstacle agent.A
 	K        float64
 	Tau      float64
-
-	// MaxRange represents the furthest away another agent can be -- this is
-	// used to smooth out the force curve, which allows us to dampen sharp
-	// turns at the boundary.
-	MaxRange float64
 }
 
 func New(o O) *C {
@@ -46,36 +42,20 @@ func jitter() vector.V {
 // https://gamedevelopment.tutsplus.com/tutorials/understanding-steering-behaviors-collision-avoidance--gamedev-7777
 // for more details.
 func (c C) Force(a agent.A) vector.V {
-	p := vector.Sub(c.o.Obstacle.P(), a.P())
-
-	// r is the effective radius of avoidance
-	r := math.Min(c.o.Obstacle.R()+a.R(), c.o.MaxRange)
-
-	ahead := vector.Add(a.P(), a.V())
-	approach := math.Min(
-		vector.Magnitude(p),
-		math.Min(
-			vector.Magnitude(vector.Sub(ahead, c.o.Obstacle.P())),
-			vector.Magnitude(
-				vector.Sub(
-					vector.Add(a.P(), vector.Scale(0.5, a.V())),
-					c.o.Obstacle.P(),
-				),
-			),
-		),
-	)
-	if approach <= r {
-		f := vector.Sub(ahead, c.o.Obstacle.P())
-		if vector.Within(f, *vector.New(0, 0)) {
-			return *vector.New(0, 0)
-		}
-		separation := math.Max(1e-5, approach-r)
-
-		return vector.Scale(
-			c.o.K*a.Mass()/separation/separation, vector.Unit(f),
-		)
-
+	p := vector.Sub(a.P(), c.o.Obstacle.P())
+	if vector.Within(p, *vector.New(0, 0)) {
+		p = jitter()
+	}
+	if epsilon.Within(
+		math.Remainder(c.o.Obstacle.Heading().Theta()-a.Heading().Theta(), math.Pi),
+		0,
+	) {
+		p = vector.Add(p, vector.Scale(0.1+vector.Magnitude(p), vector.Unit(jitter())))
 	}
 
-	return *vector.New(0, 0)
+	r := c.o.Obstacle.R() + a.R()
+	separation := math.Min(
+		1e-5, vector.SquaredMagnitude(p)/r/r)
+
+	return vector.Scale(c.o.K/separation*a.Mass(), vector.Unit(p))
 }

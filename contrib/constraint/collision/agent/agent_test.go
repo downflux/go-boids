@@ -1,7 +1,6 @@
 package agent
 
 import (
-	"math"
 	"testing"
 
 	"github.com/downflux/go-boids/agent"
@@ -93,7 +92,7 @@ func TestForce(t *testing.T) {
 			}),
 			k:        1,
 			tau:      1,
-			maxRange: math.Inf(1),
+			maxRange: 10,
 			want:     *vector.New(1e10, 0),
 		},
 	}

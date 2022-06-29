@@ -9,7 +9,8 @@ import (
 )
 
 type D struct {
-	// Force is the radial force component of a force vector.
+	// Force is the total force accumulated during the time step, i.e. the
+	// actual force magnitude (not just the radial component).
 	Force float64
 
 	// Torque may be calculated via
@@ -38,6 +39,16 @@ func New(limit D, radius float64, heading polar.V) *A {
 	}
 }
 
+// d calculates the incremental force and torque of the given input force.
+func (a *A) d(f vector.V) D {
+	// theta is the relative angle directed from the heading to the force.
+	theta := polar.Sub(polar.Polar(f), a.heading).Theta()
+	return D{
+		Force:  vector.Magnitude(f),
+		Torque: a.radius * vector.Magnitude(f) * math.Sin(theta),
+	}
+}
+
 // Add truncates the given input vector by the maximum change limits.  If the
 // given input vector will exceed the given max, the limit bool return value
 // will be set to false.
@@ -52,10 +63,7 @@ func (a *A) Add(force vector.V) (vector.V, bool) {
 		a.heading,
 	).Theta()
 
-	delta := D{
-		Force:  vector.Magnitude(force) * math.Cos(theta),
-		Torque: a.radius * vector.Magnitude(force) * math.Sin(theta),
-	}
+	delta := a.d(force)
 
 	remainder := D{
 		Force:  math.Max(0, a.limit.Force-a.accumulator.Force),
@@ -63,48 +71,31 @@ func (a *A) Add(force vector.V) (vector.V, bool) {
 	}
 
 	df := D{
-		Force: math.Copysign(
-			math.Min(math.Abs(delta.Force), remainder.Force),
-			delta.Force,
-		),
+		Force: math.Min(math.Abs(delta.Force), remainder.Force),
 		Torque: math.Copysign(
 			math.Min(math.Abs(delta.Torque), remainder.Torque),
 			delta.Torque,
 		),
 	}
 
-	a.accumulator = D{
-		Force:  a.accumulator.Force + math.Abs(df.Force),
-		Torque: a.accumulator.Torque + math.Abs(df.Torque),
+	if epsilon.Relative(1e-5).Within(df.Force, 0) {
+		return *vector.New(0, 0), true
 	}
 
-	// rtheta is the relative angle between the returned force vector and
-	// the agent heading.
-	rtheta := math.Atan2(df.Torque, a.radius*df.Force)
+	// Preserve the input force angle, but shrink the output force vector to
+	// ensure we meet the torque limit criteria.
+	m := df.Force
+	if !epsilon.Absolute(1e-5).Within(math.Remainder(theta, math.Pi), 0) {
+		m = math.Min(df.Force, df.Torque/a.radius/math.Sin(theta))
+	}
 
-	// rforce is the resultant force vector relative to the agent heading.
-	rforce := *polar.New(
-		// Note that
-		//
-		//   F = F_r / cos(𝜃) = T / r / sin(𝜃)
-		//
-		// At the extrema of sin and cos, we can use the other as a
-		// fallback, ensuring we always get a sensible net force value
-		// for all angles.
-		map[bool]float64{
-			true:  df.Force / math.Cos(rtheta),
-			false: df.Torque / a.radius / math.Sin(rtheta),
-			// We are picking a relatively large cutoff branching value
-			// (compared to absolute floating precision) because dividing by
-			// very small numbers can still lead to rather large errors.
-		}[epsilon.Absolute(1e-5).Within(math.Sin(rtheta), 0)],
-		rtheta,
-	)
+	truncated := vector.Scale(m, vector.Unit(force))
+	d := a.d(truncated)
 
-	return polar.Cartesian(
-		polar.Add(
-			*polar.New(0, a.heading.Theta()),
-			rforce,
-		),
-	), a.accumulator.Force < a.limit.Force && a.accumulator.Torque < a.limit.Torque
+	a.accumulator = D{
+		Force:  a.accumulator.Force + d.Force,
+		Torque: a.accumulator.Torque + math.Abs(d.Torque),
+	}
+
+	return truncated, a.accumulator.Force < a.limit.Force && a.accumulator.Torque < a.limit.Torque
 }

@@ -19,10 +19,10 @@ func TestAdd(t *testing.T) {
 		succ  bool
 	}{
 		{
-			name: "Magnitude/Within/Torque",
+			name: "Torque/Within",
 			a: New(
 				D{
-					Force:  1,
+					Force:  2,
 					Torque: 10,
 				},
 				1,
@@ -35,10 +35,10 @@ func TestAdd(t *testing.T) {
 			succ:  true,
 		},
 		{
-			name: "Magnitude/Truncated/Torque",
+			name: "Torque/Truncated",
 			a: New(
 				D{
-					Force:  1,
+					Force:  0.4,
 					Torque: 0.5, // rF * sin(𝜃)
 				},
 				1,
@@ -46,11 +46,11 @@ func TestAdd(t *testing.T) {
 				*polar.New(1, 0),
 			),
 			force: *vector.New(0, 1),
-			want:  *vector.New(0, 0.5),
+			want:  *vector.New(0, 0.4),
 			succ:  false,
 		},
 		{
-			name: "Magnitude/Within/Force",
+			name: "Magnitude/Within",
 			a: New(
 				D{
 					Force:  10,
@@ -64,7 +64,7 @@ func TestAdd(t *testing.T) {
 			succ:  true,
 		},
 		{
-			name: "Magnitude/Truncated/Force",
+			name: "Magnitude/Truncated",
 			a: New(
 				D{
 					Force:  1,
@@ -80,7 +80,7 @@ func TestAdd(t *testing.T) {
 			succ:  false,
 		},
 		{
-			name: "Magnitude/Truncated/Force/Brake",
+			name: "Magnitude/Truncated/Brake",
 			a: New(
 				D{
 					Force:  1,

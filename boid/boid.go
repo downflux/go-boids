@@ -45,13 +45,13 @@ func Step(o O) []Mutation {
 	for _, a := range kd.Agents(kd.Data(o.T)) {
 		r = math.Max(r, a.R())
 	}
+
 	for _, a := range kd.Agents(kd.Data(o.T)) {
+		vision := o.Tau*a.MaxVelocity().R() + 7*r
+
 		neighbors, err := kd.RadialFilter(
 			o.T,
-			*hypersphere.New(
-				vector.V(a.P()),
-				o.Tau*a.MaxVelocity().R()+10*r,
-			),
+			*hypersphere.New(vector.V(a.P()), vision),
 			// TODO(minkezhang): Check for interface equality
 			// instead of coordinate equality, via adding an
 			// Agent.Equal function.
@@ -76,8 +76,9 @@ func Step(o O) []Mutation {
 		cs = append(cs,
 			cc.New(cc.O{
 				Obstacles: obstacles,
-				K:         10,
+				K:         1,
 				Tau:       o.Tau,
+				MaxRange:  vision,
 			}),
 			ca.New(ca.O{
 				K:   1,

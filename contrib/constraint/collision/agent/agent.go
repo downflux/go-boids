@@ -1,10 +1,8 @@
 package agent
 
 import (
-	"fmt"
 	"math"
 	"math/rand"
-	"os"
 
 	"github.com/downflux/go-boids/agent"
 	"github.com/downflux/go-boids/constraint"
@@ -21,6 +19,11 @@ type O struct {
 	Obstacle agent.A
 	K        float64
 	Tau      float64
+
+	// MaxRange represents the furthest away another agent can be -- this is
+	// used to smooth out the force curve, which allows us to dampen sharp
+	// turns at the boundary.
+	MaxRange float64
 }
 
 func New(o O) *C {
@@ -43,11 +46,10 @@ func jitter() vector.V {
 // https://gamedevelopment.tutsplus.com/tutorials/understanding-steering-behaviors-collision-avoidance--gamedev-7777
 // for more details.
 func (c C) Force(a agent.A) vector.V {
-	v := vector.Sub(c.o.Obstacle.V(), a.V())
 	p := vector.Sub(c.o.Obstacle.P(), a.P())
 
 	// r is the effective radius of avoidance
-	r := c.o.Obstacle.R() + a.R() + vector.Magnitude(v)
+	r := math.Min(c.o.Obstacle.R()+a.R(), c.o.MaxRange)
 
 	ahead := vector.Add(a.P(), a.V())
 	approach := math.Min(
@@ -67,11 +69,10 @@ func (c C) Force(a agent.A) vector.V {
 		if vector.Within(f, *vector.New(0, 0)) {
 			return *vector.New(0, 0)
 		}
-		separation := math.Max(1e-5, approach)
-		fmt.Fprintf(os.Stderr, "DEBUG(agent.Force): f: %v, separation: %v\n", f, separation)
+		separation := math.Max(1e-5, approach-r)
 
 		return vector.Scale(
-			c.o.K*a.Mass()/separation, vector.Unit(f),
+			c.o.K*a.Mass()/separation/separation, vector.Unit(f),
 		)
 
 	}

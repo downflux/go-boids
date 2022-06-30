@@ -140,10 +140,10 @@ func GenerateGrid(h int, w int) config.C {
 				Mass:         mass,
 				Heading:      heading,
 				MaxNetTorque: MaxNetTorque,
-				MaxNetForce:  MaxNetForce * math.Pow(mass/Mass, 2),
+				MaxNetForce:  MaxNetForce * math.Pow(mass/Mass, 4),
 				MaxVelocity: *polar.New(
-					MaxVelocity.R()/math.Pow(mass/Mass, 2),
-					MaxVelocity.Theta()/math.Pow(mass/Mass, 2),
+					MaxVelocity.R() / math.Pow(mass/Mass, 1.5),
+					MaxVelocity.Theta() / math.Pow(mass/Mass, 1.5),
 				),
 			},
 		})

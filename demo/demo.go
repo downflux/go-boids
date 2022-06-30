@@ -12,17 +12,14 @@ import (
 	"github.com/downflux/go-boids/agent"
 	"github.com/downflux/go-boids/boid"
 	"github.com/downflux/go-boids/demo/config"
-	"github.com/downflux/go-boids/internal/geometry/2d/vector/polar"
-	"github.com/downflux/go-geometry/2d/line"
-	"github.com/downflux/go-geometry/2d/segment"
 	"github.com/downflux/go-geometry/nd/hyperrectangle"
 	"github.com/downflux/go-geometry/nd/vector"
 	"github.com/downflux/go-kd/kd"
 	"github.com/downflux/go-kd/point"
 
+	agentdraw "github.com/downflux/go-boids/demo/draw/agent"
 	bkd "github.com/downflux/go-boids/kd"
 	v2d "github.com/downflux/go-geometry/2d/vector"
-	examplesdraw "github.com/downflux/go-orca/examples/draw"
 )
 
 const (
@@ -55,17 +52,17 @@ func (p *P) P() vector.V     { return vector.V(p.Agent().P()) }
 func (p *P) Agent() agent.RO { return (*config.A)(p) }
 
 type Environment struct {
-	points []point.P
+	points map[agent.ID]point.P
 
 	height float64
 	width  float64
 }
 
 func New(c config.C) *Environment {
-	ps := make([]point.P, 0, len(c.Agents))
+	ps := map[agent.ID]point.P{}
 	for _, a := range c.Agents {
 		p := P(*a)
-		ps = append(ps, &p)
+		ps[a.ID()] = &p
 	}
 	return &Environment{
 		points: ps,
@@ -74,7 +71,14 @@ func New(c config.C) *Environment {
 	}
 }
 
-func (e *Environment) Points() []point.P { return e.points }
+func (e *Environment) Points() map[agent.ID]point.P { return e.points }
+func (e *Environment) Data() []point.P {
+	var ps []point.P
+	for _, p := range e.Points() {
+		ps = append(ps, p)
+	}
+	return ps
+}
 
 func (e *Environment) Bound() hyperrectangle.R {
 	return *hyperrectangle.New(
@@ -103,24 +107,26 @@ func main() {
 
 	e := generate(*fnInput)
 
-	t, err := kd.New(e.Points())
+	t, err := kd.New(e.Data())
 	if err != nil {
 		panic(fmt.Sprintf("could not construct tree: %v", err))
 	}
 
-	// trailbuf keeps the last N positions of agents in memory for
-	// visualization.
-	var trailbuf [50][]v2d.V
-	var frames []*image.Paletted
+	drawers := map[agent.ID]*agentdraw.D{}
+	for _, p := range e.Data() {
+		drawers[p.(*P).Agent().ID()] = agentdraw.New(agentdraw.O{
+			VelocityColor: blue,
+			HeadingColor:  red,
+			AgentColor:    black,
+			TrailColor:    gray,
+		})
+	}
+
 	b := e.Bound()
 
+	var frames []*image.Paletted
 	for i := 0; i < *n; i++ {
 		fmt.Fprintf(os.Stderr, "DEBUG(demo.go): frame == %v\n", i)
-		// Overwrite trail buffer.
-		trailbuf[i%len(trailbuf)] = nil
-		for _, p := range e.Points() {
-			trailbuf[i%len(trailbuf)] = append(trailbuf[i%len(trailbuf)], p.(*P).Agent().P())
-		}
 
 		img := image.NewPaletted(
 			image.Rectangle{
@@ -167,30 +173,7 @@ func main() {
 				y = v2d.V(b.Min()).Y() + d
 			}
 			a.SetP(*v2d.New(x, y))
-
-			// Draw visualization lines.
-			examplesdraw.Line(img, *segment.New(
-				*line.New(a.P(), v2d.Scale(0.25, a.V())), 0, 1), black)
-			examplesdraw.Line(img, *segment.New(
-				*line.New(v2d.Add(a.P(), v2d.Scale(0.25, a.V())), v2d.Scale(0.25, m.Steering)), 0, 1), green)
-		}
-
-		// Draw historical agent paths.
-		for _, buf := range trailbuf {
-			examplesdraw.Trail(img, *v2d.New(0, 0), buf, gray)
-		}
-
-		// Draw agents.
-		for _, p := range e.Points() {
-			a := p.(*P).Agent()
-
-			// Draw circle.
-			examplesdraw.Circle(img, a.P(), int(a.R()), black)
-
-			// Draw heading.
-			examplesdraw.Line(img, *segment.New(
-				*line.New(a.P(), polar.Cartesian(a.Heading())), 0, 2*a.R()), red,
-			)
+			drawers[a.ID()].Draw(a, img)
 		}
 
 		frames = append(frames, img)

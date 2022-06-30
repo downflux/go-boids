@@ -14,6 +14,7 @@ import (
 var _ agent.RW = &A{}
 
 type O struct {
+	ID           agent.ID
 	P            vector.V
 	V            vector.V
 	R            float64
@@ -29,6 +30,7 @@ type A struct {
 	O
 }
 
+func (a *A) ID() agent.ID          { return a.O.ID }
 func (a *A) P() vector.V           { return a.O.P }
 func (a *A) V() vector.V           { return a.O.V }
 func (a *A) R() float64            { return a.O.R }
@@ -59,6 +61,7 @@ func (a *A) Locomotion(steering vector.V, tau float64) {
 			"a.V()":       fmt.Sprintf("%.3f, %.3f)", a.V().X(), a.V().Y()),
 		},
 		"", "  ")
+
 	fmt.Fprintf(os.Stderr, "DEBUG(config.Step): before %s\n", data)
 
 	v := vector.Add(a.V(), steering)
@@ -146,6 +149,7 @@ func (a *A) SetP(p vector.V) { a.O.P = p }
 
 func (a *A) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&O{
+		ID:           a.ID(),
 		P:            a.P(),
 		V:            a.V(),
 		R:            a.R(),

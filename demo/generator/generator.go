@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"os"
 
+	"github.com/downflux/go-boids/agent"
 	"github.com/downflux/go-boids/demo/config"
 	"github.com/downflux/go-boids/internal/geometry/2d/vector/polar"
 	"github.com/downflux/go-geometry/2d/vector"
@@ -52,6 +53,7 @@ func GenerateSimple() config.C {
 		Width:  200,
 		Agents: []*config.A{
 			&config.A{O: config.O{
+				ID:           agent.ID("A"),
 				P:            *vector.New(90, 50),
 				V:            *vector.New(0, 0),
 				R:            r,
@@ -63,6 +65,7 @@ func GenerateSimple() config.C {
 				MaxVelocity:  MaxVelocity,
 			}},
 			&config.A{O: config.O{
+				ID:           agent.ID("B"),
 				P:            *vector.New(100, 50),
 				V:            *vector.New(0, 0),
 				R:            r,
@@ -73,30 +76,30 @@ func GenerateSimple() config.C {
 				MaxNetForce:  MaxNetForce,
 				MaxVelocity:  MaxVelocity,
 			}},
-			/*
-				&config.A{O: config.O{
-					P:            *vector.New(25, 150),
-					V:            *vector.New(0, 0),
-					R:            r,
-					Goal:         *vector.New(175, 150),
-					Mass:         10,
-					Heading:      *polar.New(1, math.Pi),
-					MaxNetTorque: MaxNetTorque,
-					MaxNetForce:  MaxNetForce,
-					MaxVelocity:  MaxVelocity,
-				}},
-				&config.A{O: config.O{
-					P:            *vector.New(175, 150),
-					V:            *vector.New(0, 0),
-					R:            r,
-					Goal:         *vector.New(25, 150),
-					Mass:         10,
-					Heading:      *polar.New(1, 0),
-					MaxNetTorque: MaxNetTorque,
-					MaxNetForce:  MaxNetForce,
-					MaxVelocity:  MaxVelocity,
-				}},
-			*/
+			&config.A{O: config.O{
+				ID:           agent.ID("C"),
+				P:            *vector.New(25, 150),
+				V:            *vector.New(0, 0),
+				R:            r,
+				Goal:         *vector.New(175, 150),
+				Mass:         10,
+				Heading:      *polar.New(1, math.Pi),
+				MaxNetTorque: MaxNetTorque,
+				MaxNetForce:  MaxNetForce,
+				MaxVelocity:  MaxVelocity,
+			}},
+			&config.A{O: config.O{
+				ID:           agent.ID("D"),
+				P:            *vector.New(175, 150),
+				V:            *vector.New(0, 0),
+				R:            r,
+				Goal:         *vector.New(25, 150),
+				Mass:         10,
+				Heading:      *polar.New(1, 0),
+				MaxNetTorque: MaxNetTorque,
+				MaxNetForce:  MaxNetForce,
+				MaxVelocity:  MaxVelocity,
+			}},
 		},
 	}
 }
@@ -129,6 +132,7 @@ func GenerateGrid(h int, w int) config.C {
 		}[vector.Within(velocity, *vector.New(0, 0))]
 		c.Agents = append(c.Agents, &config.A{
 			O: config.O{
+				ID:           agent.ID(fmt.Sprintf("(%i, %i)", p.X(), p.Y())),
 				P:            p,
 				V:            velocity,
 				R:            Radius * math.Pow(mass/Mass, 1.5),
@@ -136,7 +140,7 @@ func GenerateGrid(h int, w int) config.C {
 				Mass:         mass,
 				Heading:      heading,
 				MaxNetTorque: MaxNetTorque,
-				MaxNetForce:  MaxNetForce * math.Pow(mass / Mass, 2),
+				MaxNetForce:  MaxNetForce * math.Pow(mass/Mass, 2),
 				MaxVelocity: *polar.New(
 					MaxVelocity.R()/math.Pow(mass/Mass, 2),
 					MaxVelocity.Theta()/math.Pow(mass/Mass, 2),

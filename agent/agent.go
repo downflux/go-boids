@@ -28,6 +28,9 @@ import (
 	"github.com/downflux/go-geometry/2d/vector"
 )
 
+type ID string
+func (id ID) Equal(other ID) bool { return id == other }
+
 type RW interface {
 	RO
 	WO
@@ -42,6 +45,8 @@ type WO interface {
 }
 
 type RO interface {
+	ID() ID
+
 	P() vector.V
 	V() vector.V
 	R() float64

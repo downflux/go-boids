@@ -9,6 +9,7 @@ import (
 var _ agent.RO = &Mock{}
 
 type O struct {
+	ID agent.ID
 	P    vector.V
 	V    vector.V
 	R    float64
@@ -31,6 +32,7 @@ func New(o O) *Mock {
 	return &Mock{O: o}
 }
 
+func (a *Mock) ID() agent.ID { return a.ID }
 func (a *Mock) P() vector.V           { return a.O.P }
 func (a *Mock) V() vector.V           { return a.O.V }
 func (a *Mock) R() float64            { return a.O.R }

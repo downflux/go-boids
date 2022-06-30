@@ -15,8 +15,7 @@ type C struct {
 }
 
 type O struct {
-	K   float64
-	Tau float64
+	K float64
 }
 
 func New(o O) *C {

@@ -18,9 +18,8 @@ type C struct {
 }
 
 type O struct {
-	Obstacle agent.A
 	K        float64
-	Tau      float64
+	Obstacle agent.A
 }
 
 func New(o O) *C {

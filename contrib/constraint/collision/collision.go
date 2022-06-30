@@ -1,12 +1,17 @@
 package collision
 
 import (
+	"fmt"
+
 	"github.com/downflux/go-boids/agent"
 	"github.com/downflux/go-boids/constraint"
 	"github.com/downflux/go-boids/internal/constraint/weighted"
-	"github.com/downflux/go-geometry/2d/vector"
+	"github.com/downflux/go-boids/kd"
+	"github.com/downflux/go-geometry/nd/hypersphere"
+	"github.com/downflux/go-geometry/nd/vector"
 
 	ca "github.com/downflux/go-boids/contrib/constraint/collision/agent"
+	v2d "github.com/downflux/go-geometry/2d/vector"
 )
 
 var _ constraint.C = C{}
@@ -16,9 +21,11 @@ type C struct {
 }
 
 type O struct {
-	Obstacles []agent.A
-	K         float64
-	Tau       float64
+	T *kd.T
+	K float64
+
+	Cutoff float64
+	Filter func(a agent.A) bool
 }
 
 func New(o O) *C {
@@ -28,14 +35,30 @@ func New(o O) *C {
 }
 
 // TOOD(minkezhang): Toy with using a PQ here instead of a weighted average.
-func (c C) Force(a agent.A) vector.V {
+func (c C) Force(a agent.A) v2d.V {
 	var cs []constraint.C
 	var ws []float64
-	for _, o := range c.o.Obstacles {
+
+	neighbors, err := kd.RadialFilter(
+		c.o.T,
+		*hypersphere.New(vector.V(a.P()), c.o.Cutoff),
+		// TODO(minkezhang): Check for interface equality instead of
+		// coordinate equality, via adding an Agent.Equal function.
+		//
+		// This technically may introduce a bug when multiple points are
+		// extremely close together.
+		func(p kd.P) bool {
+			return !vector.Within(p.P(), vector.V(a.P())) && c.o.Filter(p.(kd.P).Agent())
+		},
+	)
+	if err != nil {
+		panic(fmt.Sprintf("could not find neighbors for KD-tree: %v", err))
+	}
+
+	for _, o := range neighbors {
 		cs = append(cs, ca.New(ca.O{
-			Obstacle: o,
 			K:        c.o.K,
-			Tau:      c.o.Tau,
+			Obstacle: o.Agent(),
 		}))
 		ws = append(ws, 1)
 	}

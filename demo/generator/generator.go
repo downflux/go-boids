@@ -28,7 +28,7 @@ var (
 	// be generous and double our maximum velocity.
 	MaxNetForce  = 20000.0
 	MaxNetTorque = 200000.0
-	Mass         = 2000.
+	Mass         = 2000.0
 	MaxVelocity  = *polar.New(60.0, 0.5*math.Pi)
 	Radius       = 5.0
 

@@ -1,24 +1,20 @@
 package boid
 
 import (
-	"fmt"
 	"math"
 
 	"github.com/downflux/go-boids/agent"
 	"github.com/downflux/go-boids/constraint"
-	"github.com/downflux/go-boids/internal/constraint/base"
+	"github.com/downflux/go-boids/internal/constraint/truncated"
 	"github.com/downflux/go-boids/kd"
-	"github.com/downflux/go-geometry/nd/hypersphere"
-	"github.com/downflux/go-geometry/nd/vector"
 
+	ca "github.com/downflux/go-boids/contrib/constraint/arrival"
 	cc "github.com/downflux/go-boids/contrib/constraint/collision"
-	cst "github.com/downflux/go-boids/contrib/constraint/steering/target"
 	v2d "github.com/downflux/go-geometry/2d/vector"
 )
 
 type O struct {
-	T *kd.T
-
+	T   *kd.T
 	Tau float64
 
 	F func(a agent.A) bool
@@ -26,55 +22,38 @@ type O struct {
 
 type Mutation struct {
 	Agent    agent.A
-	Velocity v2d.V
+	Steering v2d.V
+
+	// Visualzation-only fields.
+	Acceleration v2d.V
 }
 
+// Step iterates through a single simulation step, but does not mutate the given
+// state.
+//
+// TODO(minkezhang): Make this concurrent.
 func Step(o O) []Mutation {
 	var mutations []Mutation
+	// TODO(minkezhang): Find a better way to get the global variable here.
+	r := 0.0
 	for _, a := range kd.Agents(kd.Data(o.T)) {
-		neighbors, err := kd.RadialFilter(
-			o.T,
-			*hypersphere.New(
-				vector.V(a.P()),
-				o.Tau*a.MaxSpeed()+3*a.R(),
-			),
-			// TODO(minkezhang): Check for interface equality
-			// instead of coordinate equality, via adding an
-			// Agent.Equal function.
-			//
-			// This technically may introduce a bug when multiple
-			// points are extremely close together.
-			func(p kd.P) bool {
-				return !vector.Within(p.P(), vector.V(a.P())) && o.F(p.(kd.P).Agent())
-			},
-		)
-		if err != nil {
-			panic(fmt.Sprintf("could not generate simulation step: %v", err))
-		}
+		r = math.Max(r, a.R())
+	}
 
-		var cs []constraint.C
-
-		var obstacles []agent.A
-		for _, b := range kd.Agents(neighbors) {
-			obstacles = append(obstacles, b)
-		}
-
-		cs = append(cs,
+	for _, a := range kd.Agents(kd.Data(o.T)) {
+		cs := []constraint.C{
 			cc.New(cc.O{
-				Obstacles: obstacles,
-				K:         2,
-				Tau:       o.Tau,
+				T:      o.T,
+				K:      50,
+				Cutoff: o.Tau*a.MaxVelocity().R() + 5*r,
+				Filter: o.F,
 			}),
-			cst.New(cst.O{
-				K:   1,
-				Tau: o.Tau,
+			ca.New(ca.O{
+				K: 6,
 			}),
-		)
+		}
 
-		mutations = append(mutations, Mutation{
-			Agent:    a,
-			Velocity: v2d.Scale(o.Tau, Steer(a, base.New(cs).A(a))),
-		})
+		mutations = append(mutations, Steer(a, truncated.New(cs).Force(a), o.Tau))
 	}
 
 	return mutations
@@ -82,37 +61,28 @@ func Step(o O) []Mutation {
 
 // Steer returns the desired velocity for the next tick for a given agent with
 // the calculated input Boid force.
-func Steer(a agent.A, acceleration v2d.V) v2d.V {
-	// Tau is a pseudo constant with units of time. This allows unit
-	// matching, which makes the overall code easier to read.
-	const tau = 1.0
-
-	// TODO(minkezhang): Implement agent heading API.
-	// TODO(minkezhang): Implement agent mass API. Since steering is a
-	// force, we want to take into account the agent mass here.
-	steering := v2d.Scale(tau, v2d.Sub(v2d.Scale(tau, acceleration), a.V()))
-	if v2d.Within(steering, *v2d.New(0, 0)) {
-		return *v2d.New(0, 0)
+func Steer(a agent.A, force v2d.V, tau float64) Mutation {
+	desired := *v2d.New(0, 0)
+	if !v2d.Within(force, *v2d.New(0, 0)) {
+		// Agent's locomotion directive is to travel as fast as possible
+		// in the direction indicated by the force vector.
+		desired = v2d.Scale(a.MaxVelocity().R(), v2d.Unit(force))
 	}
 
-	steering = v2d.Scale(
-		math.Min(
-			a.MaxNetForce(),
-			v2d.Magnitude(steering),
-		),
-		v2d.Unit(steering),
-	)
-
-	v := v2d.Add(a.V(), v2d.Scale(tau, steering))
-	if v2d.Within(v, *v2d.New(0, 0)) {
-		return *v2d.New(0, 0)
+	steering := *v2d.New(0, 0)
+	if !v2d.Within(desired, a.V()) {
+		steering = v2d.Scale(
+			math.Min(
+				tau*a.MaxNetForce()/a.Mass(),
+				v2d.Magnitude(v2d.Sub(desired, a.V())),
+			),
+			v2d.Unit(v2d.Sub(desired, a.V())),
+		)
 	}
 
-	return v2d.Scale(
-		math.Min(
-			a.MaxSpeed(),
-			v2d.Magnitude(v),
-		),
-		v2d.Unit(v),
-	)
+	return Mutation{
+		Agent:        a,
+		Steering:     steering,
+		Acceleration: v2d.Scale(1/tau, desired),
+	}
 }

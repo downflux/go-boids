@@ -24,7 +24,7 @@ func New(o O) *C {
 	}
 }
 
-func (c C) Force(a agent.A) vector.V {
+func (c C) Force(a agent.RO) vector.V {
 	r := vector.Sub(a.Goal(), a.P())
 	d := vector.Magnitude(r)
 

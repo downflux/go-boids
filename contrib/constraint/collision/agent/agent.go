@@ -19,7 +19,7 @@ type C struct {
 
 type O struct {
 	K        float64
-	Obstacle agent.A
+	Obstacle agent.RO
 }
 
 func New(o O) *C {
@@ -41,7 +41,7 @@ func jitter() vector.V {
 // the side of a sphere. See
 // https://gamedevelopment.tutsplus.com/tutorials/understanding-steering-behaviors-collision-avoidance--gamedev-7777
 // for more details.
-func (c C) Force(a agent.A) vector.V {
+func (c C) Force(a agent.RO) vector.V {
 	p := vector.Sub(a.P(), c.o.Obstacle.P())
 	if vector.Within(p, *vector.New(0, 0)) {
 		p = jitter()

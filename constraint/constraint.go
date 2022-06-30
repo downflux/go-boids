@@ -9,5 +9,5 @@ type C interface {
 	// Force returns a force vector for the input agent given the constraint
 	// parameters. Importantly, the force returned is independent of the
 	// actual timestep tau.
-	Force(a agent.A) vector.V
+	Force(a agent.RO) vector.V
 }

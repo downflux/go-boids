@@ -6,7 +6,7 @@ import (
 	"github.com/downflux/go-geometry/2d/vector"
 )
 
-var _ agent.A = &Mock{}
+var _ agent.RO = &Mock{}
 
 type O struct {
 	P    vector.V

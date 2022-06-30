@@ -39,7 +39,7 @@ func (a *A) MaxVelocity() polar.V  { return a.O.MaxVelocity }
 func (a *A) MaxNetTorque() float64 { return a.O.MaxNetTorque }
 func (a *A) MaxNetForce() float64  { return a.O.MaxNetForce }
 
-// Step advances the Boid simulation by a single step.
+// Locomotion advances the Boid simulation by a single step.
 //
 // The implemented agent will turn in place if the magnitude of the velocity is
 // zero.
@@ -50,7 +50,7 @@ func (a *A) MaxNetForce() float64  { return a.O.MaxNetForce }
 // The input velocity is the incremental velocity, and will need to be added to
 // the current one.
 // The angular component of the input vector is relative to the agent heading.
-func (a *A) Step(steering vector.V, tau float64) {
+func (a *A) Locomotion(steering vector.V, tau float64) {
 	data, _ := json.MarshalIndent(
 		map[string]string{
 			"steering":    fmt.Sprintf("%.3f, %.3f)", steering.X(), steering.Y()),

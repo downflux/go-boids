@@ -51,8 +51,8 @@ var (
 
 type P config.A
 
-func (p *P) P() vector.V    { return vector.V(p.Agent().P()) }
-func (p *P) Agent() agent.A { return (*config.A)(p) }
+func (p *P) P() vector.V     { return vector.V(p.Agent().P()) }
+func (p *P) Agent() agent.RO { return (*config.A)(p) }
 
 type Environment struct {
 	points []point.P
@@ -147,12 +147,12 @@ func main() {
 		mutations := boid.Step(boid.O{
 			T:   bkd.Lift(t),
 			Tau: tau,
-			F:   func(a agent.A) bool { return true },
+			F:   func(a agent.RO) bool { return true },
 		})
 		for _, m := range mutations {
 			a := m.Agent.(*config.A)
 
-			a.Step(m.Steering, tau)
+			a.Locomotion(m.Steering, tau)
 
 			// Model the system as a 2D toroid.
 			x, y := a.P().X(), a.P().Y()
@@ -173,9 +173,6 @@ func main() {
 				*line.New(a.P(), v2d.Scale(0.25, a.V())), 0, 1), black)
 			examplesdraw.Line(img, *segment.New(
 				*line.New(v2d.Add(a.P(), v2d.Scale(0.25, a.V())), v2d.Scale(0.25, m.Steering)), 0, 1), green)
-			examplesdraw.Line(img, *segment.New(
-				*line.New(a.P(), v2d.Scale(0.25, m.Acceleration)), 0, 1), blue)
-
 		}
 
 		// Draw historical agent paths.

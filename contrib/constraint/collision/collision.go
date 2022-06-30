@@ -60,7 +60,7 @@ func (c C) Force(a agent.RO) v2d.V {
 			K:        c.o.K,
 			Obstacle: o.Agent(),
 		}))
-		ws = append(ws, 1)
+		ws = append(ws, 1.0/v2d.Magnitude(v2d.Sub(a.P(), o.Agent().P())))
 	}
 	return weighted.New(cs, ws).Force(a)
 }

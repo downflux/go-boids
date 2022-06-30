@@ -46,7 +46,6 @@ func (d data) Len() int           { return len(d) }
 func (d data) Swap(i, j int)      { d[i], d[j] = d[j], d[i] }
 func (d data) Less(i, j int) bool { return d[i].distance < d[j].distance }
 
-// TOOD(minkezhang): Toy with using a PQ here instead of a weighted average.
 func (c C) Force(a agent.RO) v2d.V {
 	neighbors, err := kd.RadialFilter(
 		c.o.T,

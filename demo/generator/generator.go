@@ -121,8 +121,8 @@ func GenerateGrid(h int, w int) config.C {
 	rand.Shuffle(len(goals), func(i, j int) { goals[i], goals[j] = goals[j], goals[i] })
 
 	for i, p := range positions {
-		radius := float64(Radius) * math.Pow(rn(1, 1.5), 2)
-		velocity := rv(-0.5, 0.5)
+		mass := Mass * rn(1.0, 2.0)
+		velocity := rv(-10, 10)
 		heading := map[bool]polar.V{
 			true:  *polar.New(1, 0),
 			false: polar.Polar(vector.Unit(velocity)),
@@ -131,13 +131,16 @@ func GenerateGrid(h int, w int) config.C {
 			O: config.O{
 				P:            p,
 				V:            velocity,
-				R:            radius,
+				R:            Radius * math.Pow(mass/Mass, 1.5),
 				Goal:         goals[i],
-				Mass:         Mass,
+				Mass:         mass,
 				Heading:      heading,
 				MaxNetTorque: MaxNetTorque,
-				MaxNetForce:  MaxNetForce,
-				MaxVelocity:  MaxVelocity,
+				MaxNetForce:  MaxNetForce * math.Pow(mass / Mass, 2),
+				MaxVelocity: *polar.New(
+					MaxVelocity.R()/math.Pow(mass/Mass, 2),
+					MaxVelocity.Theta()/math.Pow(mass/Mass, 2),
+				),
 			},
 		})
 	}

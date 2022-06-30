@@ -29,6 +29,7 @@ import (
 )
 
 type ID string
+
 func (id ID) Equal(other ID) bool { return id == other }
 
 type RW interface {

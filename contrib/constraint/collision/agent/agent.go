@@ -60,5 +60,5 @@ func (c C) Force(a agent.RO) vector.V {
 	separation := math.Max(
 		1e-5, vector.SquaredMagnitude(p)/r/r)
 
-	return vector.Scale(c.o.K/separation/separation*a.Mass()*(c.o.Obstacle.Mass()/a.Mass()), vector.Unit(p))
+	return vector.Scale(c.o.K/separation/separation*a.Mass(), vector.Unit(p))
 }

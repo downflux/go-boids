@@ -17,15 +17,16 @@ type O struct {
 	T   *kd.T
 	Tau float64
 
-	F func(a agent.A) bool
+	F func(a agent.RO) bool
 }
 
 type Mutation struct {
-	Agent    agent.A
-	Steering v2d.V
+	Agent agent.RO
 
-	// Visualzation-only fields.
-	Acceleration v2d.V
+	// Steering is the desired velocity for the next tick passed back to the
+	// agent. The agent is responsible for fulfilling this velocity request
+	// via the locomotion layer.
+	Steering v2d.V
 }
 
 // Step iterates through a single simulation step, but does not mutate the given
@@ -53,36 +54,11 @@ func Step(o O) []Mutation {
 			}),
 		}
 
-		mutations = append(mutations, Steer(a, truncated.New(cs).Force(a), o.Tau))
+		mutations = append(mutations, Mutation{
+			Agent:    a,
+			Steering: agent.Steer(a, truncated.New(cs).Force(a), o.Tau),
+		})
 	}
 
 	return mutations
-}
-
-// Steer returns the desired velocity for the next tick for a given agent with
-// the calculated input Boid force.
-func Steer(a agent.A, force v2d.V, tau float64) Mutation {
-	desired := *v2d.New(0, 0)
-	if !v2d.Within(force, *v2d.New(0, 0)) {
-		// Agent's locomotion directive is to travel as fast as possible
-		// in the direction indicated by the force vector.
-		desired = v2d.Scale(a.MaxVelocity().R(), v2d.Unit(force))
-	}
-
-	steering := *v2d.New(0, 0)
-	if !v2d.Within(desired, a.V()) {
-		steering = v2d.Scale(
-			math.Min(
-				tau*a.MaxNetForce()/a.Mass(),
-				v2d.Magnitude(v2d.Sub(desired, a.V())),
-			),
-			v2d.Unit(v2d.Sub(desired, a.V())),
-		)
-	}
-
-	return Mutation{
-		Agent:        a,
-		Steering:     steering,
-		Acceleration: v2d.Scale(1/tau, desired),
-	}
 }

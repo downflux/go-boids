@@ -12,8 +12,8 @@ import (
 func TestForce(t *testing.T) {
 	configs := []struct {
 		name     string
-		obstacle agent.A
-		agent    agent.A
+		obstacle agent.RO
+		agent    agent.RO
 		k        float64
 		tau      float64
 		maxRange float64

@@ -25,7 +25,7 @@ func New(constraints []constraint.C, weights []float64) *C {
 	}
 }
 
-func (c C) Force(a agent.A) vector.V {
+func (c C) Force(a agent.RO) vector.V {
 	if len(c.constraints) == 0 {
 		return *vector.New(0, 0)
 	}

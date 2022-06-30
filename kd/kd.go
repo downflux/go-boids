@@ -20,7 +20,7 @@ import (
 type P interface {
 	point.P
 
-	Agent() agent.A
+	Agent() agent.RO
 }
 
 type T kd.T
@@ -45,8 +45,8 @@ func Downcast(t *T) *kd.T {
 
 func (t *T) Balance() { Downcast(t).Balance() }
 
-func Agents(ps []P) []agent.A {
-	agents := make([]agent.A, 0, len(ps))
+func Agents(ps []P) []agent.RO {
+	agents := make([]agent.RO, 0, len(ps))
 	for _, p := range ps {
 		agents = append(agents, p.Agent())
 	}

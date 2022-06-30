@@ -18,7 +18,7 @@ func New(constraints []constraint.C) *C {
 	return &c
 }
 
-func (c C) Force(a agent.A) vector.V {
+func (c C) Force(a agent.RO) vector.V {
 	acc := accumulator.New(
 		accumulator.D{
 			Force:  a.MaxNetForce(),

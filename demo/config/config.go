@@ -14,6 +14,7 @@ import (
 var _ agent.RW = &A{}
 
 type O struct {
+	ID           agent.ID
 	P            vector.V
 	V            vector.V
 	R            float64
@@ -29,6 +30,7 @@ type A struct {
 	O
 }
 
+func (a *A) ID() agent.ID          { return a.O.ID }
 func (a *A) P() vector.V           { return a.O.P }
 func (a *A) V() vector.V           { return a.O.V }
 func (a *A) R() float64            { return a.O.R }
@@ -39,7 +41,7 @@ func (a *A) MaxVelocity() polar.V  { return a.O.MaxVelocity }
 func (a *A) MaxNetTorque() float64 { return a.O.MaxNetTorque }
 func (a *A) MaxNetForce() float64  { return a.O.MaxNetForce }
 
-// Step advances the Boid simulation by a single step.
+// Locomotion advances the Boid simulation by a single step.
 //
 // The implemented agent will turn in place if the magnitude of the velocity is
 // zero.
@@ -50,7 +52,7 @@ func (a *A) MaxNetForce() float64  { return a.O.MaxNetForce }
 // The input velocity is the incremental velocity, and will need to be added to
 // the current one.
 // The angular component of the input vector is relative to the agent heading.
-func (a *A) Step(steering vector.V, tau float64) {
+func (a *A) Locomotion(steering vector.V, tau float64) {
 	data, _ := json.MarshalIndent(
 		map[string]string{
 			"steering":    fmt.Sprintf("%.3f, %.3f)", steering.X(), steering.Y()),
@@ -59,6 +61,7 @@ func (a *A) Step(steering vector.V, tau float64) {
 			"a.V()":       fmt.Sprintf("%.3f, %.3f)", a.V().X(), a.V().Y()),
 		},
 		"", "  ")
+
 	fmt.Fprintf(os.Stderr, "DEBUG(config.Step): before %s\n", data)
 
 	v := vector.Add(a.V(), steering)
@@ -146,6 +149,7 @@ func (a *A) SetP(p vector.V) { a.O.P = p }
 
 func (a *A) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&O{
+		ID:           a.ID(),
 		P:            a.P(),
 		V:            a.V(),
 		R:            a.R(),

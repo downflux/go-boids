@@ -25,7 +25,7 @@ type O struct {
 	K float64
 
 	Cutoff float64
-	Filter func(a agent.A) bool
+	Filter func(a agent.RO) bool
 }
 
 func New(o O) *C {
@@ -35,7 +35,7 @@ func New(o O) *C {
 }
 
 // TOOD(minkezhang): Toy with using a PQ here instead of a weighted average.
-func (c C) Force(a agent.A) v2d.V {
+func (c C) Force(a agent.RO) v2d.V {
 	var cs []constraint.C
 	var ws []float64
 

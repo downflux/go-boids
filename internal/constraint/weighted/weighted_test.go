@@ -15,13 +15,13 @@ var _ constraint.C = M{}
 
 type M vector.V
 
-func (m M) Force(a agent.A) vector.V { return vector.V(m) }
+func (m M) Force(a agent.RO) vector.V { return vector.V(m) }
 
 func TestForce(t *testing.T) {
 	configs := []struct {
 		name string
 		c    C
-		a    agent.A
+		a    agent.RO
 		want vector.V
 	}{
 		{

@@ -42,7 +42,7 @@ type WO interface {
 	// Step takes as input a polar vector describing the movment and a
 	// timestep. Note that this coordinate system allows for the agent to
 	// turn while stationary.
-	Locomotion(steering vector.V, tau float64)
+	Step(steering vector.V, tau float64)
 }
 
 type RO interface {

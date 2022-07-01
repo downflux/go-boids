@@ -158,7 +158,7 @@ func main() {
 		for _, m := range mutations {
 			a := m.Agent.(*config.A)
 
-			a.Locomotion(m.Steering, tau)
+			a.Step(m.Steering, tau)
 
 			// Model the system as a 2D toroid.
 			x, y := a.P().X(), a.P().Y()

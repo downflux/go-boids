@@ -22,8 +22,6 @@
 package agent
 
 import (
-	"math"
-
 	"github.com/downflux/go-boids/internal/geometry/2d/vector/polar"
 	"github.com/downflux/go-geometry/2d/vector"
 )
@@ -87,30 +85,4 @@ type RO interface {
 	// to limit the angular acceleration α (similar to MaxNetForce limiting
 	// the net radial acceleration ||a||.
 	MaxNetTorque() float64
-}
-
-// Steer returns the desired velocity for the next tick for a given agent with
-// the calculated input Boid force.
-func Steer(a RO, force vector.V, tau float64) vector.V {
-	desired := *vector.New(0, 0)
-	if !vector.Within(force, *vector.New(0, 0)) {
-		// Agent's locomotion directive is to travel as fast as possible
-		// in the direction indicated by the force vector.
-		//
-		// TODO(minkezhang): Ensure MaxVelocity is calculated
-		// dynamically.
-		desired = vector.Scale(a.MaxVelocity().R(), vector.Unit(force))
-	}
-
-	if vector.Within(desired, a.V()) {
-		return *vector.New(0, 0)
-	}
-
-	return vector.Scale(
-		math.Min(
-			tau*a.MaxNetForce()/a.Mass(),
-			vector.Magnitude(vector.Sub(desired, a.V())),
-		),
-		vector.Unit(vector.Sub(desired, a.V())),
-	)
 }

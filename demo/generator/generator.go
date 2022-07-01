@@ -30,7 +30,7 @@ var (
 	MaxNetForce  = 20000.0
 	MaxNetTorque = 200000.0
 	Mass         = 2000.0
-	MaxVelocity  = *polar.New(60.0, 0.5 * math.Pi)
+	MaxVelocity  = *polar.New(60.0, 0.5*math.Pi)
 	Radius       = 5.0
 
 	fn   = flag.String("out", "/dev/stdout", "")
@@ -142,8 +142,8 @@ func GenerateGrid(h int, w int) config.C {
 				MaxNetTorque: MaxNetTorque,
 				MaxNetForce:  MaxNetForce * math.Pow(mass/Mass, 4),
 				MaxVelocity: *polar.New(
-					MaxVelocity.R() / math.Pow(mass/Mass, 1.5),
-					MaxVelocity.Theta() / math.Pow(mass/Mass, 1.5),
+					MaxVelocity.R()/math.Pow(mass/Mass, 1.5),
+					MaxVelocity.Theta()/math.Pow(mass/Mass, 1.5),
 				),
 			},
 		})

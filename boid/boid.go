@@ -4,6 +4,7 @@ import (
 	"math"
 
 	"github.com/downflux/go-boids/agent"
+	"github.com/downflux/go-boids/x/steering"
 	"github.com/downflux/go-boids/constraint"
 	"github.com/downflux/go-boids/internal/constraint/truncated"
 	"github.com/downflux/go-boids/kd"
@@ -56,7 +57,7 @@ func Step(o O) []Mutation {
 
 		mutations = append(mutations, Mutation{
 			Agent:    a,
-			Steering: agent.Steer(a, truncated.New(cs).Force(a), o.Tau),
+			Steering: steering.S(a, truncated.New(cs).Force(a), o.Tau),
 		})
 	}
 

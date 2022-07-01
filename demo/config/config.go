@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 
 	"github.com/downflux/go-boids/agent"
-	"github.com/downflux/go-boids/x/locomotion"
 	"github.com/downflux/go-boids/internal/geometry/2d/vector/polar"
+	"github.com/downflux/go-boids/x/locomotion"
 	"github.com/downflux/go-geometry/2d/vector"
 )
 

@@ -53,7 +53,7 @@ func (a *A) Add(force vector.V) (vector.V, bool) {
 	// does not overly-constrain the torque accumulator. We wish to emulate
 	// this behavior, and not that the maximum amount of torque is applied
 	// at right angle π/2 to the heading.
-	if f.Theta() <= -math.Pi/2 || f.Theta() > math.Pi/2 {
+	if f.Theta() < -math.Pi/2 || f.Theta() > math.Pi/2 {
 		fmt.Printf("DEBUG: Theta == %v, math.Pi / 2 == %v\n", f.Theta(), math.Pi/2)
 		f = *polar.New(
 			-f.R(),

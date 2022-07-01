@@ -1,0 +1,4 @@
+github.com/downflux/go-boids v0.0.0-20220630213652-cebf31e947e8 h1:KkzddMs4vgFjJH2C5+elr5VrO05LIU2gO2xJB+Uje1I=
+github.com/downflux/go-boids v0.0.0-20220630213652-cebf31e947e8/go.mod h1:Cy4NPaIFsvetlMtwbVlwQfe0lx1NIJJr01EPDYY1wOE=
+github.com/downflux/go-geometry v0.10.1 h1:gvzKZAlzPAyZHiy1AmzfNGTsEknmvbNIDBf+EH634Qk=
+github.com/downflux/go-geometry v0.10.1/go.mod h1:XWTzSaMiRMAxupAR+cXAsa1Q75TCSp1Shc/ydsJ0xVE=

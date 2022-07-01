@@ -1,7 +1,6 @@
 package accumulator
 
 import (
-	"fmt"
 	"math"
 
 	"github.com/downflux/go-boids/internal/geometry/2d/vector/polar"
@@ -41,8 +40,6 @@ func (a *A) Add(force vector.V) (vector.V, bool) {
 		),
 	)
 
-	fmt.Printf("DEBUG: force == %v, f == %v\n", force, f)
-
 	// We know the torque on an object is defined as
 	//
 	//   T = || r x F || => ||T|| = rF * sin(𝜃)
@@ -53,13 +50,15 @@ func (a *A) Add(force vector.V) (vector.V, bool) {
 	// does not overly-constrain the torque accumulator. We wish to emulate
 	// this behavior, and not that the maximum amount of torque is applied
 	// at right angle π/2 to the heading.
-	if f.Theta() < -math.Pi/2 || f.Theta() > math.Pi/2 {
-		fmt.Printf("DEBUG: Theta == %v, math.Pi / 2 == %v\n", f.Theta(), math.Pi/2)
+
+	if math.Mod(math.Abs(f.Theta()), 2*math.Pi) > math.Pi/2 {
 		f = *polar.New(
 			-f.R(),
-			math.Mod(math.Pi+f.Theta(), 2*math.Pi),
+			math.Mod(
+				f.Theta()-math.Copysign(math.Pi, f.Theta()),
+				2*math.Pi,
+			),
 		)
-		fmt.Printf("DEBUG: rotated force(polar) == %v\n", f)
 	}
 
 	remainder := *polar.New(
@@ -94,8 +93,6 @@ func (a *A) Add(force vector.V) (vector.V, bool) {
 	)
 
 	truncated := *polar.New(f.R(), f.Theta()+a.heading.Theta())
-
-	fmt.Printf("DEBUG: truncated(polar) == %v\n", truncated)
 
 	return polar.Cartesian(truncated), a.accumulator.R() < a.limit.R() && a.accumulator.Theta() < a.limit.Theta()
 }

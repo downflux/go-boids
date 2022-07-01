@@ -35,7 +35,7 @@ func (a *A) Add(force vector.V) (vector.V, bool) {
 	// force.
 	f := *polar.New(
 		polar.Polar(force).R(),
-		math.Remainder(
+		math.Mod(
 			polar.Polar(force).Theta()-a.heading.Theta(),
 			2*math.Pi,
 		),
@@ -57,7 +57,7 @@ func (a *A) Add(force vector.V) (vector.V, bool) {
 		fmt.Printf("DEBUG: Theta == %v, math.Pi / 2 == %v\n", f.Theta(), math.Pi/2)
 		f = *polar.New(
 			-f.R(),
-			math.Remainder(math.Pi+f.Theta(), 2*math.Pi),
+			math.Mod(math.Pi+f.Theta(), 2*math.Pi),
 		)
 		fmt.Printf("DEBUG: rotated force(polar) == %v\n", f)
 	}

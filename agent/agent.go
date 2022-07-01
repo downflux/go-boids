@@ -61,28 +61,5 @@ type RO interface {
 	// velocity.
 	MaxVelocity() polar.V
 
-	// MaxNetForce is the total radial force that an agent can experience
-	// for a single step. Here, the radial component is aligned with the
-	// agent heading.
-	//
-	// We know that
-	//
-	//   F = ma
-	//
-	// Therefore, we can limit the maximum radial acceleration via this
-	// constant.
-	MaxNetForce() float64
-
-	// MaxNetTorque is the total torque an agent can experience for a single
-	// step. Note that
-	//
-	//   T = r x F => ||T|| = rF * sin(𝜃)
-	//   T = Iα
-	//
-	// Where 𝜃 is the angle between the agent heading and the force.
-	//
-	// This is the rotational analogue to the MaxNetForce, and can be used
-	// to limit the angular acceleration α (similar to MaxNetForce limiting
-	// the net radial acceleration ||a||.
-	MaxNetTorque() float64
+	MaxAcceleration() polar.V
 }

@@ -46,7 +46,7 @@ func (c C) Force(a agent.RO) vector.V {
 	}
 	return vector.Scale(
 		math.Min(
-			a.MaxNetForce(),
+			a.MaxAcceleration().R(),
 			vector.Magnitude(v),
 		), vector.Unit(v))
 }

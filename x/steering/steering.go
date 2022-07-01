@@ -26,7 +26,7 @@ func S(a agent.RO, force vector.V, tau float64) vector.V {
 
 	return vector.Scale(
 		math.Min(
-			tau*a.MaxNetForce()/a.Mass(),
+			tau*a.MaxAcceleration().R(),
 			vector.Magnitude(vector.Sub(desired, a.V())),
 		),
 		vector.Unit(vector.Sub(desired, a.V())),

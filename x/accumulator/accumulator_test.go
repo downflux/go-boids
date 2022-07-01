@@ -1,13 +1,12 @@
 package accumulator
 
 import (
-	//	"math"
+	"math"
 	"testing"
 
 	"github.com/downflux/go-boids/internal/geometry/2d/vector/polar"
 	"github.com/downflux/go-geometry/2d/vector"
-
-	e "github.com/downflux/go-geometry/epsilon"
+	"github.com/downflux/go-geometry/epsilon"
 )
 
 func TestAdd(t *testing.T) {
@@ -19,44 +18,60 @@ func TestAdd(t *testing.T) {
 		succ  bool
 	}{
 		{
-			name: "Torque/Within",
+			name: "Angular/Within",
 			a: New(
-				D{
-					Force:  2,
-					Torque: 10,
-				},
-				1,
-
+				/* limit = */ *polar.New(2, 10),
 				// Agent is directed towards the +X axis.
-				*polar.New(1, 0),
+				/* heading = */ *polar.New(1, 0),
 			),
 			force: *vector.New(0, 1),
 			want:  *vector.New(0, 1),
 			succ:  true,
 		},
 		{
-			name: "Torque/Truncated",
+			name: "Angular/Within/Clockwise",
 			a: New(
-				D{
-					Force:  0.4,
-					Torque: 0.5, // rF * sin(𝜃)
-				},
-				1,
-
+				*polar.New(2, 10),
+				*polar.New(1, 0),
+			),
+			force: *vector.New(0, -1),
+			want:  *vector.New(0, -1),
+			succ:  true,
+		},
+		{
+			name: "Angular/Within/Brake",
+			a: New(
+				*polar.New(2, 10),
+				*polar.New(1, 0),
+			),
+			force: *vector.New(-1, 0),
+			want:  *vector.New(-1, 0),
+			succ:  true,
+		},
+		{
+			name: "Angular/Truncated",
+			a: New(
+				*polar.New(2, math.Pi/6),
 				*polar.New(1, 0),
 			),
 			force: *vector.New(0, 1),
-			want:  *vector.New(0, 0.4),
+			want:  *vector.New(math.Sqrt(3)/2.0, 0.5),
+			succ:  false,
+		},
+		{
+			name: "Angular/Truncated/Clockwise",
+			a: New(
+				*polar.New(2, math.Pi/6),
+				*polar.New(1, 0),
+			),
+			force: *vector.New(0, -1),
+			want:  *vector.New(math.Sqrt(3)/2.0, -0.5),
 			succ:  false,
 		},
 		{
 			name: "Magnitude/Within",
 			a: New(
-				D{
-					Force:  10,
-					Torque: 1,
-				},
-				5,
+				*polar.New(10, 1),
 				*polar.New(1, 0),
 			),
 			force: *vector.New(1, 0),
@@ -64,42 +79,40 @@ func TestAdd(t *testing.T) {
 			succ:  true,
 		},
 		{
-			name: "Magnitude/Truncated",
+			name: "Magnitude/Within/Brake",
 			a: New(
-				D{
-					Force:  1,
-					Torque: 1,
-				},
-				5,
-
-				// Agent is directed towards the +X axis.
+				*polar.New(10, 1),
 				*polar.New(1, 0),
 			),
-			force: *vector.New(10, 0),
-			want:  *vector.New(1, 0),
+			force: *vector.New(-1, 0),
+			want:  *vector.New(-1, 0),
+			succ:  true,
+		},
+		{
+			name: "Magnitude/Truncated",
+			a: New(
+				*polar.New(10, 1),
+				*polar.New(1, 0),
+			),
+			force: *vector.New(11, 0),
+			want:  *vector.New(10, 0),
 			succ:  false,
 		},
 		{
 			name: "Magnitude/Truncated/Brake",
 			a: New(
-				D{
-					Force:  1,
-					Torque: 1,
-				},
-				5,
-
-				// Agent is directed towards the +X axis.
+				*polar.New(10, 1),
 				*polar.New(1, 0),
 			),
-			force: *vector.New(-10, 0),
-			want:  *vector.New(-1, 0),
+			force: *vector.New(-11, 0),
+			want:  *vector.New(-10, 0),
 			succ:  false,
 		},
 	}
 
 	for _, c := range configs {
 		t.Run(c.name, func(t *testing.T) {
-			if got, ok := c.a.Add(c.force); !vector.WithinEpsilon(got, c.want, e.Absolute(1e-5)) || ok != c.succ {
+			if got, ok := c.a.Add(c.force); !vector.WithinEpsilon(got, c.want, epsilon.Absolute(1e-5)) || ok != c.succ {
 				t.Errorf("Add() = %v, %v, want = %v, %v", got, ok, c.want, c.succ)
 			}
 		})

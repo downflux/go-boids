@@ -84,6 +84,5 @@ func (a *A) Add(force vector.V) (vector.V, bool) {
 
 	truncated := *polar.New(f.R(), f.Theta()+a.heading.Theta())
 
-	return polar.Cartesian(truncated), polar.WithinEpsilon(
-		a.accumulator, a.limit, epsilon.Absolute(1e-5))
+	return polar.Cartesian(truncated), a.accumulator.R() < a.limit.R() && a.accumulator.Theta() < a.limit.Theta()
 }

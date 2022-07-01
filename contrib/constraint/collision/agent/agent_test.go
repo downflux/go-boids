@@ -16,7 +16,6 @@ func TestForce(t *testing.T) {
 		agent    agent.RO
 		k        float64
 		tau      float64
-		maxRange float64
 		want     vector.V
 	}{
 		{
@@ -33,10 +32,8 @@ func TestForce(t *testing.T) {
 				R:    1,
 				Mass: 1,
 			}),
-			k:        1,
-			tau:      1,
-			maxRange: 2,
-			want:     *vector.New(0, 0),
+			k:    1,
+			want: *vector.New(0, 0),
 		},
 		{
 			name: "Miss/Slide",
@@ -52,10 +49,8 @@ func TestForce(t *testing.T) {
 				R:    1,
 				Mass: 1,
 			}),
-			k:        1,
-			tau:      1,
-			maxRange: 2,
-			want:     *vector.New(0, 0),
+			k:    1,
+			want: *vector.New(0, 0),
 		},
 		{
 			name: "Collide/Direct",
@@ -71,10 +66,8 @@ func TestForce(t *testing.T) {
 				R:    1,
 				Mass: 1,
 			}),
-			k:        1,
-			tau:      1,
-			maxRange: 2,
-			want:     *vector.New(1e10, 0),
+			k:    1,
+			want: *vector.New(1e10, 0),
 		},
 		{
 			name: "Collide/Direct/NonTouching",
@@ -90,10 +83,8 @@ func TestForce(t *testing.T) {
 				R:    1,
 				Mass: 1,
 			}),
-			k:        1,
-			tau:      1,
-			maxRange: 10,
-			want:     *vector.New(1e10, 0),
+			k:    1,
+			want: *vector.New(1e10, 0),
 		},
 	}
 
@@ -102,8 +93,6 @@ func TestForce(t *testing.T) {
 			if got := New(O{
 				Obstacle: c.obstacle,
 				K:        c.k,
-				Tau:      c.tau,
-				MaxRange: c.maxRange,
 			}).Force(c.agent); !vector.Within(got, c.want) {
 				t.Errorf("A() = %v, want = %v", got, c.want)
 			}

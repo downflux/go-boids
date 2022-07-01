@@ -1,6 +1,7 @@
 package accumulator
 
 import (
+	"fmt"
 	"math"
 
 	"github.com/downflux/go-boids/internal/geometry/2d/vector/polar"
@@ -34,8 +35,13 @@ func (a *A) Add(force vector.V) (vector.V, bool) {
 	// force.
 	f := *polar.New(
 		polar.Polar(force).R(),
-		polar.Polar(force).Theta()-a.heading.Theta(),
+		math.Remainder(
+			polar.Polar(force).Theta()-a.heading.Theta(),
+			2*math.Pi,
+		),
 	)
+
+	fmt.Printf("DEBUG: force == %v, f == %v\n", force, f)
 
 	// We know the torque on an object is defined as
 	//
@@ -48,13 +54,12 @@ func (a *A) Add(force vector.V) (vector.V, bool) {
 	// this behavior, and not that the maximum amount of torque is applied
 	// at right angle π/2 to the heading.
 	if f.Theta() <= -math.Pi/2 || f.Theta() > math.Pi/2 {
+		fmt.Printf("DEBUG: Theta == %v, math.Pi / 2 == %v\n", f.Theta(), math.Pi/2)
 		f = *polar.New(
 			-f.R(),
-			math.Copysign(
-				math.Abs(f.Theta())-math.Pi,
-				f.Theta(),
-			),
+			math.Remainder(math.Pi+f.Theta(), 2*math.Pi),
 		)
+		fmt.Printf("DEBUG: rotated force(polar) == %v\n", f)
 	}
 
 	remainder := *polar.New(
@@ -63,7 +68,13 @@ func (a *A) Add(force vector.V) (vector.V, bool) {
 	)
 
 	f = *polar.New(
-		math.Min(f.R(), remainder.R()),
+		math.Copysign(
+			math.Min(
+				math.Abs(f.R()),
+				remainder.R(),
+			),
+			f.R(),
+		),
 		math.Copysign(
 			math.Min(
 				math.Abs(f.Theta()),
@@ -83,6 +94,8 @@ func (a *A) Add(force vector.V) (vector.V, bool) {
 	)
 
 	truncated := *polar.New(f.R(), f.Theta()+a.heading.Theta())
+
+	fmt.Printf("DEBUG: truncated(polar) == %v\n", truncated)
 
 	return polar.Cartesian(truncated), a.accumulator.R() < a.limit.R() && a.accumulator.Theta() < a.limit.Theta()
 }

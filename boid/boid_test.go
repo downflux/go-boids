@@ -18,6 +18,13 @@ import (
 	v2d "github.com/downflux/go-geometry/2d/vector"
 )
 
+const (
+	MinN = int(1e3)
+	// TODO(minkezhang): Make k-D tree more performant so that we can
+	// increase this max N.
+	MaxN = int(1e3)
+)
+
 var _ bkd.P = p{}
 
 type p struct {
@@ -67,7 +74,7 @@ func BenchmarkStep(b *testing.B) {
 	}
 
 	configs := []config{}
-	for n := 1000; n < 1000000; n = n * 10 {
+	for n := MinN; n <= MaxN; n = n * 10 {
 		for size := 1; size <= n && size < 128; size = size << 1 {
 			configs = append(configs, config{
 				name: fmt.Sprintf("PoolSize=%v/N=%v", size, n),
@@ -81,14 +88,14 @@ func BenchmarkStep(b *testing.B) {
 		b.Run(c.name, func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				Step(O{
-					PoolSize: c.size,
-					T:        bkd.Lift(c.t),
-					Tau:      1e-2,
+					PoolSize:  c.size,
+					T:         bkd.Lift(c.t),
+					Tau:       1e-2,
 					MaxRadius: 20,
 
 					CollisionWeight: 50,
 					CollisionFilter: func(a agent.RO) bool { return true },
-					ArrivalWeight: 6,
+					ArrivalWeight:   6,
 				})
 			}
 		})

@@ -7,6 +7,7 @@ import (
 	"github.com/downflux/go-boids/constraint"
 	"github.com/downflux/go-boids/internal/constraint/truncated"
 	"github.com/downflux/go-boids/kd"
+	"github.com/downflux/go-boids/contrib/steering"
 
 	ca "github.com/downflux/go-boids/contrib/constraint/arrival"
 	cc "github.com/downflux/go-boids/contrib/constraint/collision"
@@ -45,7 +46,7 @@ func Step(o O) []Mutation {
 		cs := []constraint.C{
 			cc.New(cc.O{
 				T:      o.T,
-				K:      50,
+				K:      15,
 				Cutoff: o.Tau*a.MaxVelocity().R() + 5*r,
 				Filter: o.F,
 			}),
@@ -56,7 +57,7 @@ func Step(o O) []Mutation {
 
 		mutations = append(mutations, Mutation{
 			Agent:    a,
-			Steering: agent.Steer(a, truncated.New(cs).Force(a), o.Tau),
+			Steering: steering.S(a, truncated.New(cs).Force(a), o.Tau),
 		})
 	}
 

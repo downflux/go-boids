@@ -155,7 +155,7 @@ func TestStep(t *testing.T) {
 
 			heading: *polar.New(1, 0),
 			v:       *vector.New(-1, 0),
-			p:       *vector.New(0, 0),
+			p:       *vector.New(99, 0),
 		},
 	}
 

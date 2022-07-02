@@ -126,8 +126,6 @@ func main() {
 
 	var frames []*image.Paletted
 	for i := 0; i < *n; i++ {
-		fmt.Fprintf(os.Stderr, "DEBUG(demo.go): frame == %v\n", i)
-
 		img := image.NewPaletted(
 			image.Rectangle{
 				image.Point{
@@ -158,7 +156,7 @@ func main() {
 		for _, m := range mutations {
 			a := m.Agent.(*config.A)
 
-			a.Locomotion(m.Steering, tau)
+			a.Step(m.Steering, tau)
 
 			// Model the system as a 2D toroid.
 			x, y := a.P().X(), a.P().Y()

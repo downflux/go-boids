@@ -8,44 +8,17 @@ import (
 	"github.com/downflux/go-geometry/epsilon"
 )
 
-type D struct {
-	// Force is the total force accumulated during the time step, i.e. the
-	// actual force magnitude (not just the radial component).
-	Force float64
-
-	// Torque may be calculated via
-	//
-	//   T = || r x F || => ||T|| = rF * sin(𝜃)
-	//
-	// Where F is the input force. Note that this is in essence just
-	// factoring in the tangential force relative to the agent.
-	Torque float64
-}
-
 type A struct {
-	limit       D
-	accumulator D
-
-	heading polar.V
-	radius  float64
+	limit       polar.V
+	accumulator polar.V
+	heading     polar.V
 }
 
-func New(limit D, radius float64, heading polar.V) *A {
+func New(limit polar.V, heading polar.V) *A {
 	return &A{
 		limit:       limit,
-		accumulator: D{},
+		accumulator: *polar.New(0, 0),
 		heading:     heading,
-		radius:      radius,
-	}
-}
-
-// d calculates the incremental force and torque of the given input force.
-func (a *A) d(f vector.V) D {
-	// theta is the relative angle directed from the heading to the force.
-	theta := polar.Sub(polar.Polar(f), a.heading).Theta()
-	return D{
-		Force:  vector.Magnitude(f),
-		Torque: a.radius * vector.Magnitude(f) * math.Sin(theta),
 	}
 }
 
@@ -57,45 +30,69 @@ func (a *A) Add(force vector.V) (vector.V, bool) {
 		return *vector.New(0, 0), true
 	}
 
-	// theta is the relative angle directed from the heading to the force.
-	theta := polar.Sub(
-		polar.Polar(force),
-		a.heading,
-	).Theta()
-
-	delta := a.d(force)
-
-	remainder := D{
-		Force:  math.Max(0, a.limit.Force-a.accumulator.Force),
-		Torque: math.Max(0, a.limit.Torque-a.accumulator.Torque),
-	}
-
-	df := D{
-		Force: math.Min(math.Abs(delta.Force), remainder.Force),
-		Torque: math.Copysign(
-			math.Min(math.Abs(delta.Torque), remainder.Torque),
-			delta.Torque,
+	// f.Theta() here is the relative angle directed from the heading to the
+	// force.
+	f := *polar.New(
+		polar.Polar(force).R(),
+		math.Mod(
+			polar.Polar(force).Theta()-a.heading.Theta(),
+			2*math.Pi,
 		),
+	)
+
+	// We know the torque on an object is defined as
+	//
+	//   T = || r x F || => ||T|| = rF * sin(𝜃)
+	//   T = Iα
+	//
+	// Where F is the total (i.e. non-perpendicular) force applied, relative
+	// to the agent heading. Note that critically, negative acceleration
+	// does not overly-constrain the torque accumulator. We wish to emulate
+	// this behavior, and not that the maximum amount of torque is applied
+	// at right angle π/2 to the heading.
+
+	if math.Mod(math.Abs(f.Theta()), 2*math.Pi) > math.Pi/2 {
+		f = *polar.New(
+			-f.R(),
+			math.Mod(
+				f.Theta()-math.Copysign(math.Pi, f.Theta()),
+				2*math.Pi,
+			),
+		)
 	}
 
-	if epsilon.Relative(1e-5).Within(df.Force, 0) {
+	remainder := *polar.New(
+		math.Max(0, a.limit.R()-a.accumulator.R()),
+		math.Max(0, a.limit.Theta()-a.accumulator.Theta()),
+	)
+
+	f = *polar.New(
+		math.Copysign(
+			math.Min(
+				math.Abs(f.R()),
+				remainder.R(),
+			),
+			f.R(),
+		),
+		math.Copysign(
+			math.Min(
+				math.Abs(f.Theta()),
+				remainder.Theta(),
+			),
+			f.Theta(),
+		),
+	)
+
+	if epsilon.Absolute(1e-5).Within(math.Abs(f.R()), 0) {
 		return *vector.New(0, 0), true
 	}
 
-	// Preserve the input force angle, but shrink the output force vector to
-	// ensure we meet the torque limit criteria.
-	m := df.Force
-	if !epsilon.Absolute(1e-5).Within(math.Remainder(theta, math.Pi), 0) {
-		m = math.Min(df.Force, df.Torque/a.radius/math.Sin(theta))
-	}
+	a.accumulator = *polar.New(
+		a.accumulator.R()+math.Abs(f.R()),
+		a.accumulator.Theta()+math.Abs(f.Theta()),
+	)
 
-	truncated := vector.Scale(m, vector.Unit(force))
-	d := a.d(truncated)
+	truncated := *polar.New(f.R(), f.Theta()+a.heading.Theta())
 
-	a.accumulator = D{
-		Force:  a.accumulator.Force + d.Force,
-		Torque: a.accumulator.Torque + math.Abs(d.Torque),
-	}
-
-	return truncated, a.accumulator.Force < a.limit.Force && a.accumulator.Torque < a.limit.Torque
+	return polar.Cartesian(truncated), a.accumulator.R() < a.limit.R() && a.accumulator.Theta() < a.limit.Theta()
 }

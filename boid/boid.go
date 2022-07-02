@@ -4,13 +4,10 @@ import (
 	"math"
 
 	"github.com/downflux/go-boids/agent"
-	"github.com/downflux/go-boids/constraint"
-	"github.com/downflux/go-boids/internal/constraint/truncated"
-	"github.com/downflux/go-boids/kd"
+	"github.com/downflux/go-boids/contrib/constraint/base"
 	"github.com/downflux/go-boids/contrib/steering"
+	"github.com/downflux/go-boids/kd"
 
-	ca "github.com/downflux/go-boids/contrib/constraint/arrival"
-	cc "github.com/downflux/go-boids/contrib/constraint/collision"
 	v2d "github.com/downflux/go-geometry/2d/vector"
 )
 
@@ -18,7 +15,10 @@ type O struct {
 	T   *kd.T
 	Tau float64
 
-	F func(a agent.RO) bool
+	CollisionWeight float64
+	CollisionFilter func(a agent.RO) bool
+
+	ArrivalWeight float64
 }
 
 type Mutation struct {
@@ -43,21 +43,22 @@ func Step(o O) []Mutation {
 	}
 
 	for _, a := range kd.Agents(kd.Data(o.T)) {
-		cs := []constraint.C{
-			cc.New(cc.O{
-				T:      o.T,
-				K:      15,
-				Cutoff: o.Tau*a.MaxVelocity().R() + 5*r,
-				Filter: o.F,
-			}),
-			ca.New(ca.O{
-				K: 6,
-			}),
-		}
-
 		mutations = append(mutations, Mutation{
-			Agent:    a,
-			Steering: steering.S(a, truncated.New(cs).Force(a), o.Tau),
+			Agent: a,
+			Steering: steering.S(
+				a,
+				base.New(base.O{
+					T:   o.T,
+					R:   r,
+					Tau: o.Tau,
+
+					CollisionWeight: o.CollisionWeight,
+					CollisionFilter: o.CollisionFilter,
+
+					ArrivalWeight: o.ArrivalWeight,
+				}).Force(a),
+				o.Tau,
+			),
 		})
 	}
 

@@ -151,7 +151,11 @@ func main() {
 		mutations := boid.Step(boid.O{
 			T:   bkd.Lift(t),
 			Tau: tau,
-			F:   func(a agent.RO) bool { return true },
+
+			CollisionWeight: 15,
+			CollisionFilter: func(a agent.RO) bool { return true },
+
+			ArrivalWeight: 6,
 		})
 		for _, m := range mutations {
 			a := m.Agent.(*config.A)

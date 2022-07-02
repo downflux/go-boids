@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 
 	"github.com/downflux/go-boids/agent"
-	"github.com/downflux/go-boids/internal/geometry/2d/vector/polar"
 	"github.com/downflux/go-boids/contrib/locomotion"
+	"github.com/downflux/go-boids/internal/geometry/2d/vector/polar"
 	"github.com/downflux/go-geometry/2d/vector"
 )
 
@@ -72,7 +72,8 @@ func (a *A) MarshalJSON() ([]byte, error) {
 func (a *A) UnmarshalJSON(data []byte) error { return json.Unmarshal(data, &a.O) }
 
 type C struct {
-	Agents []*A
-	Height float64
-	Width  float64
+	Agents    []*A
+	Height    float64
+	Width     float64
+	MaxRadius float64
 }

@@ -8,6 +8,7 @@ import (
 	"image/color"
 	"image/gif"
 	"os"
+	"runtime"
 
 	"github.com/downflux/go-boids/agent"
 	"github.com/downflux/go-boids/boid"
@@ -28,7 +29,6 @@ const (
 
 var (
 	// Color palette for drawing.
-
 	black = color.Black
 	white = color.White
 	red   = color.RGBA{255, 0, 0, 255}
@@ -56,6 +56,7 @@ type Environment struct {
 
 	height float64
 	width  float64
+	radius float64
 }
 
 func New(c config.C) *Environment {
@@ -68,6 +69,7 @@ func New(c config.C) *Environment {
 		points: ps,
 		height: c.Height,
 		width:  c.Width,
+		radius: c.MaxRadius,
 	}
 }
 
@@ -151,7 +153,14 @@ func main() {
 		mutations := boid.Step(boid.O{
 			T:   bkd.Lift(t),
 			Tau: tau,
-			F:   func(a agent.RO) bool { return true },
+
+			CollisionWeight: 15,
+			CollisionFilter: func(a agent.RO) bool { return true },
+
+			ArrivalWeight: 6,
+
+			PoolSize:  4 * runtime.GOMAXPROCS(0),
+			MaxRadius: e.radius,
 		})
 		for _, m := range mutations {
 			a := m.Agent.(*config.A)

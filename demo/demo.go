@@ -8,6 +8,7 @@ import (
 	"image/color"
 	"image/gif"
 	"os"
+	"runtime"
 
 	"github.com/downflux/go-boids/agent"
 	"github.com/downflux/go-boids/boid"
@@ -28,7 +29,6 @@ const (
 
 var (
 	// Color palette for drawing.
-
 	black = color.Black
 	white = color.White
 	red   = color.RGBA{255, 0, 0, 255}
@@ -156,6 +156,8 @@ func main() {
 			CollisionFilter: func(a agent.RO) bool { return true },
 
 			ArrivalWeight: 6,
+
+			PoolSize: 4 * runtime.GOMAXPROCS(0),
 		})
 		for _, m := range mutations {
 			a := m.Agent.(*config.A)

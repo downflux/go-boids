@@ -80,8 +80,9 @@ func rv(min, max float64) vector.V {
 func GenerateSimple() config.C {
 	const r = 5.0
 	return config.C{
-		Height: 200,
-		Width:  200,
+		Height:    200,
+		Width:     200,
+		MaxRadius: r,
 		Agents: []*config.A{
 			&config.A{O: config.O{
 				ID:           agent.ID("A"),
@@ -161,6 +162,13 @@ func GenerateGrid(h int, w int) config.C {
 			MassMultiplier: rn(1, 2),
 		}.Agent())
 	}
+
+	r := math.Inf(-1)
+	for _, a := range c.Agents {
+		r = math.Max(r, a.R())
+	}
+	c.MaxRadius = r
+
 	return *c
 }
 

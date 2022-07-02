@@ -17,8 +17,9 @@ type O struct {
 	// of cores on the system for fastest processing times.
 	PoolSize int
 
-	T   *kd.T
-	Tau float64
+	T         *kd.T
+	Tau       float64
+	MaxRadius float64
 
 	CollisionWeight float64
 	CollisionFilter func(a agent.RO) bool
@@ -45,12 +46,6 @@ type result struct {
 func Step(o O) []Mutation {
 	agents := kd.Agents(kd.Data(o.T))
 
-	// TODO(minkezhang): Find a better way to get the global variable here.
-	r := 0.0
-	for _, a := range agents {
-		r = math.Max(r, a.R())
-	}
-
 	ach := make(chan agent.RO, 8*o.PoolSize)
 	mch := make(chan Mutation, 8*o.PoolSize)
 
@@ -67,7 +62,7 @@ func Step(o O) []Mutation {
 	// parallel.
 	opts := base.O{
 		T:   o.T,
-		R:   r,
+		R:   o.MaxRadius,
 		Tau: o.Tau,
 
 		CollisionWeight: o.CollisionWeight,

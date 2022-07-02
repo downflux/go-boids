@@ -72,7 +72,8 @@ func (a *A) MarshalJSON() ([]byte, error) {
 func (a *A) UnmarshalJSON(data []byte) error { return json.Unmarshal(data, &a.O) }
 
 type C struct {
-	Agents []*A
-	Height float64
-	Width  float64
+	Agents    []*A
+	Height    float64
+	Width     float64
+	MaxRadius float64
 }

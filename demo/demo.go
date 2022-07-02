@@ -56,6 +56,7 @@ type Environment struct {
 
 	height float64
 	width  float64
+	radius float64
 }
 
 func New(c config.C) *Environment {
@@ -68,6 +69,7 @@ func New(c config.C) *Environment {
 		points: ps,
 		height: c.Height,
 		width:  c.Width,
+		radius: c.MaxRadius,
 	}
 }
 
@@ -157,7 +159,8 @@ func main() {
 
 			ArrivalWeight: 6,
 
-			PoolSize: 4 * runtime.GOMAXPROCS(0),
+			PoolSize:  4 * runtime.GOMAXPROCS(0),
+			MaxRadius: e.radius,
 		})
 		for _, m := range mutations {
 			a := m.Agent.(*config.A)

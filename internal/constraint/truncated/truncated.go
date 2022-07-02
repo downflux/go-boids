@@ -3,7 +3,7 @@ package truncated
 import (
 	"github.com/downflux/go-boids/agent"
 	"github.com/downflux/go-boids/constraint"
-	"github.com/downflux/go-boids/x/accumulator"
+	"github.com/downflux/go-boids/internal/accumulator"
 	"github.com/downflux/go-geometry/2d/vector"
 )
 

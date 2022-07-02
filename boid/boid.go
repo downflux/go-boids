@@ -7,7 +7,7 @@ import (
 	"github.com/downflux/go-boids/constraint"
 	"github.com/downflux/go-boids/internal/constraint/truncated"
 	"github.com/downflux/go-boids/kd"
-	"github.com/downflux/go-boids/x/steering"
+	"github.com/downflux/go-boids/contrib/steering"
 
 	ca "github.com/downflux/go-boids/contrib/constraint/arrival"
 	cc "github.com/downflux/go-boids/contrib/constraint/collision"

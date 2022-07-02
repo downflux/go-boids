@@ -35,7 +35,10 @@ func TestForce(t *testing.T) {
 			c: *New([]constraint.C{
 				M(*vector.New(10, 10)),
 			}, []float64{100}),
-			a:    mock.New(mock.O{MaxNetForce: math.Sqrt(2)}),
+			a: mock.New(mock.O{
+				MaxNetForce: math.Sqrt(2),
+				Mass:        10,
+			}),
 			want: *vector.New(1, 1),
 		},
 		{
@@ -55,7 +58,10 @@ func TestForce(t *testing.T) {
 				1,
 				2,
 			}),
-			a:    mock.New(mock.O{MaxNetForce: math.Sqrt(2)}),
+			a: mock.New(mock.O{
+				MaxNetForce: math.Sqrt(2),
+				Mass:        10,
+			}),
 			want: *vector.New(1, 1),
 		},
 	}

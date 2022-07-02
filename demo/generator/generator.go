@@ -132,7 +132,7 @@ func GenerateGrid(h int, w int) config.C {
 		}[vector.Within(velocity, *vector.New(0, 0))]
 		c.Agents = append(c.Agents, &config.A{
 			O: config.O{
-				ID:           agent.ID(fmt.Sprintf("(%i, %i)", p.X(), p.Y())),
+				ID:           agent.ID(fmt.Sprintf("(%d, %d)", p.X(), p.Y())),
 				P:            p,
 				V:            velocity,
 				R:            Radius * math.Pow(mass/Mass, 1.5),

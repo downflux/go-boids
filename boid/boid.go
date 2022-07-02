@@ -46,7 +46,7 @@ func Step(o O) []Mutation {
 		cs := []constraint.C{
 			cc.New(cc.O{
 				T:      o.T,
-				K:      50,
+				K:      15,
 				Cutoff: o.Tau*a.MaxVelocity().R() + 5*r,
 				Filter: o.F,
 			}),

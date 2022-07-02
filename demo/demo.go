@@ -126,8 +126,6 @@ func main() {
 
 	var frames []*image.Paletted
 	for i := 0; i < *n; i++ {
-		fmt.Fprintf(os.Stderr, "DEBUG(demo.go): frame == %v\n", i)
-
 		img := image.NewPaletted(
 			image.Rectangle{
 				image.Point{

@@ -1,9 +1,9 @@
 package steering
 
 import (
-	"math"
-
 	"github.com/downflux/go-boids/agent"
+	"github.com/downflux/go-boids/internal/accumulator"
+	"github.com/downflux/go-boids/internal/geometry/2d/vector/polar"
 	"github.com/downflux/go-geometry/2d/vector"
 )
 
@@ -20,15 +20,21 @@ func S(a agent.RO, force vector.V, tau float64) vector.V {
 		desired = vector.Scale(a.MaxVelocity().R(), vector.Unit(force))
 	}
 
-	if vector.Within(desired, a.V()) {
+	// steering here represents the total acceleration over the arbitrary time
+	// scalar.
+	steering := vector.Sub(desired, a.V())
+	if vector.Within(steering, *vector.New(0, 0)) {
 		return *vector.New(0, 0)
 	}
 
-	return vector.Scale(
-		math.Min(
+	// We need to guarantee our steering acceleration does not exceed the
+	// maximum allowable change for the next timestep.
+	steering, _ = accumulator.New(
+		*polar.New(
 			tau*a.MaxAcceleration().R(),
-			vector.Magnitude(vector.Sub(desired, a.V())),
+			tau*a.MaxAcceleration().Theta(),
 		),
-		vector.Unit(vector.Sub(desired, a.V())),
-	)
+		a.Heading(),
+	).Add(steering)
+	return steering
 }

@@ -36,11 +36,6 @@ type Mutation struct {
 	Steering v2d.V
 }
 
-type result struct {
-	Mutation Mutation
-	Error    error
-}
-
 // Step iterates through a single simulation step, but does not mutate the given
 // state.
 func Step(o O) []Mutation {

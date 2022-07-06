@@ -17,10 +17,13 @@ func S(a agent.RO, force vector.V, tau float64) vector.V {
 		//
 		// TODO(minkezhang): Ensure MaxVelocity is calculated
 		// dynamically.
+		//
+		// TODO(minkezhang): Clamp the desired velocity to within the
+		// absolute turning force.
 		desired = vector.Scale(a.MaxVelocity().R(), vector.Unit(force))
 	}
 
-	// steering here represents the total acceleration over the arbitrary time
+	// steering represents the total acceleration over the arbitrary time
 	// scalar.
 	steering := vector.Sub(desired, a.V())
 	if vector.Within(steering, *vector.New(0, 0)) {

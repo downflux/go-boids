@@ -18,10 +18,8 @@ type O struct {
 
 	Heading polar.V
 
-	MaxVelocity polar.V
-
-	MaxNetForce  float64
-	MaxNetTorque float64
+	MaxVelocity     polar.V
+	MaxAcceleration polar.V
 }
 
 type Mock struct {
@@ -32,17 +30,13 @@ func New(o O) *Mock {
 	return &Mock{O: o}
 }
 
-func (a *Mock) ID() agent.ID         { return a.O.ID }
-func (a *Mock) P() vector.V          { return a.O.P }
-func (a *Mock) V() vector.V          { return a.O.V }
-func (a *Mock) R() float64           { return a.O.R }
-func (a *Mock) Goal() vector.V       { return a.O.Goal }
-func (a *Mock) Heading() polar.V     { return a.O.Heading }
-func (a *Mock) MaxVelocity() polar.V { return a.O.MaxVelocity }
-func (a *Mock) MaxAcceleration() polar.V {
-	return *polar.New(
-		a.O.MaxNetForce/a.Mass(),
-		a.O.MaxNetTorque/(0.5*a.Mass()*a.R()*a.R()),
-	)
-}
+func (a *Mock) ID() agent.ID             { return a.O.ID }
+func (a *Mock) P() vector.V              { return a.O.P }
+func (a *Mock) V() vector.V              { return a.O.V }
+func (a *Mock) R() float64               { return a.O.R }
+func (a *Mock) Goal() vector.V           { return a.O.Goal }
+func (a *Mock) Heading() polar.V         { return a.O.Heading }
+func (a *Mock) MaxVelocity() polar.V     { return a.O.MaxVelocity }
+func (a *Mock) MaxAcceleration() polar.V { return a.O.MaxAcceleration }
+
 func (a *Mock) Mass() float64 { return a.O.Mass }

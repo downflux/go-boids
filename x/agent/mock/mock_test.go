@@ -44,7 +44,7 @@ func TestStep(t *testing.T) {
 			want: New(O{
 				V:       *vector.New(10, -10),
 				P:       *vector.New(105, 95),
-				Heading: *polar.New(1, -math.Pi / 4),
+				Heading: *polar.New(1, -math.Pi/4),
 			}),
 		},
 		{
@@ -59,7 +59,7 @@ func TestStep(t *testing.T) {
 			want: New(O{
 				V:       *vector.New(20, -20),
 				P:       *vector.New(110, 90),
-				Heading: *polar.New(1, -math.Pi / 4),
+				Heading: *polar.New(1, -math.Pi/4),
 			}),
 		},
 	}

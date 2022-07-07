@@ -14,7 +14,8 @@ func Step(a RW, acceleration vector.V, tau float64) {
 	a.SetP(vector.Add(a.P(), vector.Scale(tau, a.V())))
 
 	if !vector.Within(a.V(), *vector.New(0, 0)) {
-		a.SetHeading(*polar.New(1, polar.Polar(a.V()).Theta()))
+		// Set the heading parallel to the last moved tick direction.
+		a.SetHeading(*polar.New(1, polar.Polar(vector.Scale(tau, a.V())).Theta()))
 	}
 }
 

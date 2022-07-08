@@ -22,6 +22,7 @@ func TestStep(t *testing.T) {
 			a: New(O{
 				V:       *vector.New(0, 0),
 				P:       *vector.New(100, 100),
+				R:       1,
 				Heading: *polar.New(1, math.Pi/2),
 			}),
 			acceleration: *vector.New(0, 0),
@@ -29,6 +30,7 @@ func TestStep(t *testing.T) {
 			want: New(O{
 				V:       *vector.New(0, 0),
 				P:       *vector.New(100, 100),
+				R:       1,
 				Heading: *polar.New(1, math.Pi/2),
 			}),
 		},
@@ -37,6 +39,7 @@ func TestStep(t *testing.T) {
 			a: New(O{
 				V:       *vector.New(10, -10),
 				P:       *vector.New(100, 100),
+				R:       1,
 				Heading: *polar.New(1, math.Pi/2),
 			}),
 			acceleration: *vector.New(0, 0),
@@ -44,6 +47,7 @@ func TestStep(t *testing.T) {
 			want: New(O{
 				V:       *vector.New(10, -10),
 				P:       *vector.New(105, 95),
+				R:       1,
 				Heading: *polar.New(1, -math.Pi/4),
 			}),
 		},
@@ -52,6 +56,7 @@ func TestStep(t *testing.T) {
 			a: New(O{
 				V:       *vector.New(10, -10),
 				P:       *vector.New(100, 100),
+				R:       1,
 				Heading: *polar.New(1, math.Pi/2),
 			}),
 			acceleration: *vector.New(20, -20),
@@ -59,6 +64,7 @@ func TestStep(t *testing.T) {
 			want: New(O{
 				V:       *vector.New(20, -20),
 				P:       *vector.New(110, 90),
+				R:       1,
 				Heading: *polar.New(1, -math.Pi/4),
 			}),
 		},

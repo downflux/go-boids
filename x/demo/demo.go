@@ -10,16 +10,17 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/downflux/go-boids/agent"
-	"github.com/downflux/go-boids/boid"
-	"github.com/downflux/go-boids/demo/config"
+	"github.com/downflux/go-boids/x/agent"
+	"github.com/downflux/go-boids/x/agent/mock"
+	"github.com/downflux/go-boids/x/boid"
+	"github.com/downflux/go-boids/x/demo/config"
 	"github.com/downflux/go-geometry/nd/hyperrectangle"
 	"github.com/downflux/go-geometry/nd/vector"
 	"github.com/downflux/go-kd/kd"
 	"github.com/downflux/go-kd/point"
 
 	agentdraw "github.com/downflux/go-boids/demo/draw/agent"
-	bkd "github.com/downflux/go-boids/kd"
+	bkd "github.com/downflux/go-boids/x/kd"
 	v2d "github.com/downflux/go-geometry/2d/vector"
 )
 
@@ -46,13 +47,13 @@ var (
 	_ bkd.P   = &P{}
 )
 
-type P config.A
+type P mock.A
 
 func (p *P) P() vector.V     { return vector.V(p.Agent().P()) }
-func (p *P) Agent() agent.RO { return (*config.A)(p) }
+func (p *P) Agent() agent.RO { return (*mock.A)(p) }
 
 type Environment struct {
-	points map[agent.ID]point.P
+	points map[mock.DebugID]point.P
 
 	height float64
 	width  float64
@@ -60,10 +61,10 @@ type Environment struct {
 }
 
 func New(c config.C) *Environment {
-	ps := map[agent.ID]point.P{}
+	ps := map[mock.DebugID]point.P{}
 	for _, a := range c.Agents {
 		p := P(*a)
-		ps[a.ID()] = &p
+		ps[a.DebugID()] = &p
 	}
 	return &Environment{
 		points: ps,
@@ -73,7 +74,7 @@ func New(c config.C) *Environment {
 	}
 }
 
-func (e *Environment) Points() map[agent.ID]point.P { return e.points }
+func (e *Environment) Points() map[mock.DebugID]point.P { return e.points }
 func (e *Environment) Data() []point.P {
 	var ps []point.P
 	for _, p := range e.Points() {
@@ -114,9 +115,9 @@ func main() {
 		panic(fmt.Sprintf("could not construct tree: %v", err))
 	}
 
-	drawers := map[agent.ID]*agentdraw.D{}
+	drawers := map[mock.DebugID]*agentdraw.D{}
 	for _, p := range e.Data() {
-		drawers[p.(*P).Agent().ID()] = agentdraw.New(agentdraw.O{
+		drawers[p.(*P).Agent().(*mock.A).DebugID()] = agentdraw.New(agentdraw.O{
 			VelocityColor: blue,
 			HeadingColor:  red,
 			AgentColor:    black,
@@ -163,9 +164,9 @@ func main() {
 			MaxRadius: e.radius,
 		})
 		for _, m := range mutations {
-			a := m.Agent.(*config.A)
+			a := m.Agent.(*mock.A)
 
-			a.Step(m.Steering, tau)
+			agent.Step(a, m.Steering, tau)
 
 			// Model the system as a 2D toroid.
 			x, y := a.P().X(), a.P().Y()
@@ -180,7 +181,7 @@ func main() {
 				y = v2d.V(b.Min()).Y() + d
 			}
 			a.SetP(*v2d.New(x, y))
-			drawers[a.ID()].Draw(a, img)
+			drawers[a.DebugID()].Draw(a, img)
 		}
 
 		frames = append(frames, img)

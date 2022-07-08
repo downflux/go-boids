@@ -22,6 +22,7 @@ func Step(a RW, acceleration vector.V, tau float64) {
 type RO interface {
 	P() vector.V
 	V() vector.V
+	R() float64
 
 	Heading() polar.V
 }

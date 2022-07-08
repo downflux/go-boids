@@ -1,6 +1,7 @@
 package agent
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/downflux/go-boids/internal/geometry/2d/vector/polar"
@@ -17,6 +18,22 @@ func Step(a RW, acceleration vector.V, tau float64) {
 		// Set the heading parallel to the last moved tick direction.
 		a.SetHeading(*polar.New(1, polar.Polar(vector.Scale(tau, a.V())).Theta()))
 	}
+}
+
+func Validate(a RO) error {
+	if a.P() == nil {
+		return fmt.Errorf("agent position must be non-nil")
+	}
+	if a.V() == nil {
+		return fmt.Errorf("agent velocity must be non-nil")
+	}
+	if a.R() <= 0 {
+		return fmt.Errorf("agent radius must be a positive value, but got %v", a.R())
+	}
+	if a.Heading() == nil {
+		return fmt.Errorf("agent heading must be non-nil")
+	}
+	return nil
 }
 
 type RO interface {

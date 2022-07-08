@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"math"
 	"math/rand"
 
@@ -44,8 +45,9 @@ func GenerateGrid(h int, w int) C {
 
 	for _, p := range positions {
 		c.Agents = append(c.Agents, mock.Lamborghini(mock.O{
-			P: p,
-			V: *vector.New(0, 0),
+			ID: mock.DebugID(fmt.Sprintf("(%.2f, %.2f)", p.X(), p.Y())),
+			P:  p,
+			V:  rv(-20, 20),
 		}))
 	}
 

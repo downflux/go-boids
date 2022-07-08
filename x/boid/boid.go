@@ -26,14 +26,21 @@ type O struct {
 type Mutation struct {
 	Agent agent.RO
 
-	// Steering is the desired velocity for the next tick passed back to the
-	// agent. The agent is responsible for fulfilling this velocity request
-	// via the locomotion layer.
+	// Steering is the acceleration for the next tick passed back to the
+	// agent. The agent is responsible for fulfilling this acceleration
+	// request via the locomotion layer.
 	Steering v2d.V
 }
 
 // Step iterates through a single simulation step, but does not mutate the given
 // state.
 func Step(o O) []Mutation {
-	return nil
+	var ms []Mutation
+	for _, p := range kd.Agents(kd.Data(o.T)) {
+		ms = append(ms, Mutation{
+			Agent:    p,
+			Steering: *v2d.New(0, 0),
+		})
+	}
+	return ms
 }

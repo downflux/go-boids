@@ -9,6 +9,70 @@ import (
 	"github.com/downflux/go-geometry/2d/vector"
 )
 
+func TestSteer(t *testing.T) {
+	configs := []struct {
+		name         string
+		a            agent.RO
+		acceleration vector.V
+		tau          float64
+		want         vector.V
+	}{
+		{
+			name: "NullAcceleration/Brake",
+			a: New(O{
+				V:           *vector.New(1, 1),
+				P:           *vector.New(0, 0),
+				R:           1,
+				Mass:        1,
+				MaxNetForce: 100,
+				MaxSpeed:    10,
+				Heading:     *polar.New(1, 0),
+			}),
+			acceleration: *vector.New(0, 0),
+			tau:          2,
+			want:         *vector.New(-1, -1),
+		},
+		{
+			name: "Accelerate",
+			a: New(O{
+				V:           *vector.New(1, 1),
+				P:           *vector.New(0, 0),
+				R:           1,
+				Mass:        1,
+				MaxNetForce: 100,
+				MaxSpeed:    10,
+				Heading:     *polar.New(1, 0),
+			}),
+			acceleration: *vector.New(1, 1),
+			tau:          2,
+			want:         vector.Scale(20*math.Sqrt(2)/2-1, *vector.New(1, 1)),
+		},
+		{
+			name: "Accelerate/ScaleInvariant",
+			a: New(O{
+				V:           *vector.New(1, 1),
+				P:           *vector.New(0, 0),
+				R:           1,
+				Mass:        1,
+				MaxNetForce: 100,
+				MaxSpeed:    10,
+				Heading:     *polar.New(1, 0),
+			}),
+			acceleration: *vector.New(10, 10),
+			tau:          2,
+			want:         vector.Scale(20*math.Sqrt(2)/2-1, *vector.New(1, 1)),
+		},
+	}
+
+	for _, c := range configs {
+		t.Run(c.name, func(t *testing.T) {
+			if got := agent.Steer(c.a, c.acceleration, c.tau); !vector.Within(got, c.want) {
+				t.Errorf("Steer() = %v, want = %v", got, c.want)
+			}
+		})
+	}
+}
+
 func TestStep(t *testing.T) {
 	configs := []struct {
 		name         string
@@ -20,52 +84,64 @@ func TestStep(t *testing.T) {
 		{
 			name: "Stationary",
 			a: New(O{
-				V:       *vector.New(0, 0),
-				P:       *vector.New(100, 100),
-				R:       1,
-				Heading: *polar.New(1, math.Pi/2),
+				V:           *vector.New(0, 0),
+				P:           *vector.New(100, 100),
+				R:           1,
+				MaxNetForce: 100,
+				Mass:        1,
+				Heading:     *polar.New(1, math.Pi/2),
 			}),
 			acceleration: *vector.New(0, 0),
 			tau:          0.5,
 			want: New(O{
-				V:       *vector.New(0, 0),
-				P:       *vector.New(100, 100),
-				R:       1,
-				Heading: *polar.New(1, math.Pi/2),
+				V:           *vector.New(0, 0),
+				P:           *vector.New(100, 100),
+				R:           1,
+				MaxNetForce: 100,
+				Mass:        1,
+				Heading:     *polar.New(1, math.Pi/2),
 			}),
 		},
 		{
 			name: "NoAcceleration",
 			a: New(O{
-				V:       *vector.New(10, -10),
-				P:       *vector.New(100, 100),
-				R:       1,
-				Heading: *polar.New(1, math.Pi/2),
+				V:           *vector.New(10, -10),
+				P:           *vector.New(100, 100),
+				R:           1,
+				MaxNetForce: 100,
+				Mass:        1,
+				Heading:     *polar.New(1, math.Pi/2),
 			}),
 			acceleration: *vector.New(0, 0),
 			tau:          0.5,
 			want: New(O{
-				V:       *vector.New(10, -10),
-				P:       *vector.New(105, 95),
-				R:       1,
-				Heading: *polar.New(1, -math.Pi/4),
+				V:           *vector.New(10, -10),
+				P:           *vector.New(105, 95),
+				R:           1,
+				MaxNetForce: 100,
+				Mass:        1,
+				Heading:     *polar.New(1, -math.Pi/4),
 			}),
 		},
 		{
 			name: "Acceleration",
 			a: New(O{
-				V:       *vector.New(10, -10),
-				P:       *vector.New(100, 100),
-				R:       1,
-				Heading: *polar.New(1, math.Pi/2),
+				V:           *vector.New(10, -10),
+				P:           *vector.New(100, 100),
+				R:           1,
+				MaxNetForce: 100,
+				Mass:        1,
+				Heading:     *polar.New(1, math.Pi/2),
 			}),
 			acceleration: *vector.New(20, -20),
 			tau:          0.5,
 			want: New(O{
-				V:       *vector.New(20, -20),
-				P:       *vector.New(110, 90),
-				R:       1,
-				Heading: *polar.New(1, -math.Pi/4),
+				V:           *vector.New(20, -20),
+				P:           *vector.New(110, 90),
+				R:           1,
+				MaxNetForce: 100,
+				Mass:        1,
+				Heading:     *polar.New(1, -math.Pi/4),
 			}),
 		},
 	}

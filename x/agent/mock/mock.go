@@ -77,12 +77,17 @@ func New(o O) *A {
 
 func (a *A) DebugID() DebugID { return a.o.ID }
 
-func (a *A) P() vector.V                 { return a.o.P }
-func (a *A) V() vector.V                 { return a.o.V }
-func (a *A) R() float64                  { return a.o.R }
-func (a *A) Heading() polar.V            { return a.o.Heading }
-func (a *A) MaxNetAcceleration() float64 { return a.o.MaxNetForce / a.o.Mass }
-func (a *A) MaxSpeed() float64           { return a.o.MaxSpeed }
+func (a *A) P() vector.V      { return a.o.P }
+func (a *A) V() vector.V      { return a.o.V }
+func (a *A) R() float64       { return a.o.R }
+func (a *A) Heading() polar.V { return a.o.Heading }
+func (a *A) MaxNetAcceleration() float64 {
+	if a.o.Mass == 0 {
+		panic("cannot find max acceleration for a mock object with zero mass")
+	}
+	return a.o.MaxNetForce / a.o.Mass
+}
+func (a *A) MaxSpeed() float64 { return a.o.MaxSpeed }
 
 func (a *A) SetP(v vector.V)      { a.o.P = v }
 func (a *A) SetV(v vector.V)      { a.o.V = v }

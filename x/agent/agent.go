@@ -6,9 +6,37 @@ import (
 
 	"github.com/downflux/go-boids/internal/geometry/2d/vector/polar"
 	"github.com/downflux/go-geometry/2d/vector"
+	"github.com/downflux/go-geometry/epsilon"
 )
 
 func Tau(t time.Duration) float64 { return float64(t) / float64(time.Second) }
+
+// Clamp ensures a 2D vector lies within the given bounds.
+//
+// TODO(minkezhang): Implement angular bounds check.
+func Clamp(v vector.V, min float64, max float64) vector.V {
+	m := vector.Magnitude(v)
+	if epsilon.Within(m, 0) {
+		return *vector.New(0, 0)
+	}
+	if m < min {
+		m = min
+	} else if m > max {
+		m = max
+	}
+	return vector.Scale(m, vector.Unit(v))
+}
+
+// Steer returns a steering acceleration for the agent, given a desired
+// acceleration vector. This returned acceleration is clamped by the maximum
+// acceleration possible over the given time period.
+func Steer(a RO, acceleration vector.V, tau float64) vector.V {
+	desired := *vector.New(0, 0)
+	if !epsilon.Within(vector.SquaredMagnitude(acceleration), 0) {
+		desired = vector.Scale(tau*a.MaxSpeed(), vector.Unit(acceleration))
+	}
+	return Clamp(vector.Sub(desired, a.V()), 0, tau*a.MaxNetAcceleration())
+}
 
 func Step(a RW, acceleration vector.V, tau float64) {
 	a.SetV(vector.Add(a.V(), vector.Scale(tau, acceleration)))
@@ -33,6 +61,12 @@ func Validate(a RO) error {
 	if a.Heading() == nil {
 		return fmt.Errorf("agent heading must be non-nil")
 	}
+	if a.MaxSpeed() < 0 {
+		return fmt.Errorf("agent must have a non-negative max speed, but got %v", a.MaxSpeed())
+	}
+	if a.MaxNetAcceleration() < 0 {
+		return fmt.Errorf("agent must have a non-negative max net acceleration, but got %v", a.MaxNetAcceleration())
+	}
 	return nil
 }
 
@@ -40,8 +74,10 @@ type RO interface {
 	P() vector.V
 	V() vector.V
 	R() float64
-
 	Heading() polar.V
+
+	MaxSpeed() float64
+	MaxNetAcceleration() float64
 }
 
 type WO interface {

@@ -39,7 +39,7 @@ func Steer(a RO, acceleration vector.V, tau float64) vector.V {
 }
 
 func Step(a RW, acceleration vector.V, tau float64) {
-	a.SetV(vector.Add(a.V(), vector.Scale(tau, acceleration)))
+	a.SetV(Clamp(vector.Add(a.V(), vector.Scale(tau, acceleration)), 0, a.MaxSpeed()))
 	a.SetP(vector.Add(a.P(), vector.Scale(tau, a.V())))
 
 	if !vector.Within(a.V(), *vector.New(0, 0)) {

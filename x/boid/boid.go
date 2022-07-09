@@ -39,7 +39,7 @@ func Step(o O) []Mutation {
 	for _, p := range kd.Agents(kd.Data(o.T)) {
 		ms = append(ms, Mutation{
 			Agent:    p,
-			Steering: *v2d.New(0, 0),
+			Steering: agent.Steer(p, *v2d.New(1, 0), 1),
 		})
 	}
 	return ms

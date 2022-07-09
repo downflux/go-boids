@@ -76,7 +76,7 @@ type RO interface {
 	V() vector.V
 	R() float64
 	Heading() polar.V
-	Logger() log.Logger
+	Logger() *log.Logger
 
 	MaxSpeed() float64
 	MaxNetAcceleration() float64

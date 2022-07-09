@@ -7,7 +7,9 @@ import (
 	"image"
 	"image/color"
 	"image/gif"
+	"log"
 	"os"
+	"path"
 	"runtime"
 
 	"github.com/downflux/go-boids/x/agent"
@@ -39,6 +41,7 @@ var (
 
 	fnInput  = flag.String("in", "/dev/stdin", "")
 	fnOutput = flag.String("out", "/dev/stdout", "")
+	logDir   = flag.String("log_dir", "", "")
 	n        = flag.Int("frames", 1500, "")
 )
 
@@ -60,9 +63,18 @@ type Environment struct {
 	radius float64
 }
 
-func New(c config.C) *Environment {
+func New(c config.C, logDir string) *Environment {
 	ps := map[mock.DebugID]point.P{}
-	for _, a := range c.Agents {
+	for i, a := range c.Agents {
+		fn := "/dev/null"
+		if logDir != "" {
+			fn = path.Join(logDir, fmt.Sprintf("%v.log", i))
+		}
+		fp, err := os.Create(fn)
+		if err != nil {
+			panic(fmt.Sprintf("could not create log file: %v", err))
+		}
+		a.Log = log.New(fp, "", 0)
 		p := P(*a)
 		ps[a.DebugID()] = &p
 	}
@@ -90,7 +102,7 @@ func (e *Environment) Bound() hyperrectangle.R {
 	)
 }
 
-func generate(fn string) *Environment {
+func generate(fn string, logDir string) *Environment {
 	fp, err := os.Open(fn)
 	if err != nil {
 		panic(fmt.Sprintf("could not open config file: %v", err))
@@ -102,13 +114,13 @@ func generate(fn string) *Environment {
 		panic(fmt.Sprintf("could not decode config file: %v", err))
 	}
 
-	return New(c)
+	return New(c, logDir)
 }
 
 func main() {
 	flag.Parse()
 
-	e := generate(*fnInput)
+	e := generate(*fnInput, *logDir)
 
 	t, err := kd.New(e.Data())
 	if err != nil {

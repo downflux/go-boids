@@ -1,4 +1,4 @@
-package clamp
+package clamped
 
 import (
 	"github.com/downflux/go-boids/x/agent"

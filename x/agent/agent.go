@@ -2,6 +2,7 @@ package agent
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/downflux/go-boids/internal/geometry/2d/vector/polar"
@@ -75,6 +76,7 @@ type RO interface {
 	V() vector.V
 	R() float64
 	Heading() polar.V
+	Logger() log.Logger
 
 	MaxSpeed() float64
 	MaxNetAcceleration() float64

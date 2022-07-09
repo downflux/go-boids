@@ -3,6 +3,7 @@ package mock
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 
 	"github.com/downflux/go-boids/internal/geometry/2d/vector/polar"
 	"github.com/downflux/go-boids/x/agent"
@@ -39,6 +40,7 @@ type O struct {
 	V       vector.V
 	Heading polar.V
 	R       float64
+	Logger  log.Logger
 
 	Mass        float64
 	MaxNetForce float64
@@ -77,10 +79,11 @@ func New(o O) *A {
 
 func (a *A) DebugID() DebugID { return a.o.ID }
 
-func (a *A) P() vector.V      { return a.o.P }
-func (a *A) V() vector.V      { return a.o.V }
-func (a *A) R() float64       { return a.o.R }
-func (a *A) Heading() polar.V { return a.o.Heading }
+func (a *A) P() vector.V        { return a.o.P }
+func (a *A) V() vector.V        { return a.o.V }
+func (a *A) R() float64         { return a.o.R }
+func (a *A) Heading() polar.V   { return a.o.Heading }
+func (a *A) Logger() log.Logger { return a.o.Logger }
 func (a *A) MaxNetAcceleration() float64 {
 	if a.o.Mass == 0 {
 		panic("cannot find max acceleration for a mock object with zero mass")

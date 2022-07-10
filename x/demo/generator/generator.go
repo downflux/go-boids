@@ -24,7 +24,8 @@ func main() {
 	defer fp.Close()
 
 	c, ok := map[string]config.C{
-		"grid": config.GenerateGrid(10, 10),
+		"grid":      config.GenerateGrid(10, 10),
+		"collision": config.GenerateCollision(),
 	}[*mode]
 	if !ok {
 		panic(fmt.Sprintf("unsupported mode %v", *mode))

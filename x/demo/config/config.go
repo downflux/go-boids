@@ -25,6 +25,31 @@ func rv(min, max float64) vector.V {
 	)
 }
 
+func GenerateCollision() C {
+	return C{
+		Height:    200,
+		Width:     200,
+		MaxRadius: 10,
+		Agents: []*mock.A{
+			mock.Lamborghini(mock.O{
+				ID: mock.DebugID("A"),
+				P:  *vector.New(50, 100),
+				V:  *vector.New(10, 0),
+			}),
+			mock.Lamborghini(mock.O{
+				ID: mock.DebugID("B"),
+				P:  *vector.New(70, 100),
+				V:  *vector.New(-10, 0),
+			}),
+			mock.Lamborghini(mock.O{
+				ID: mock.DebugID("C"),
+				P:  *vector.New(65, 130),
+				V:  *vector.New(0, -10),
+			}),
+		},
+	}
+}
+
 func GenerateGrid(h int, w int) C {
 	const tile = 50.0
 	c := &C{
@@ -43,9 +68,9 @@ func GenerateGrid(h int, w int) C {
 	}
 	rand.Shuffle(len(goals), func(i, j int) { goals[i], goals[j] = goals[j], goals[i] })
 
-	for _, p := range positions {
+	for i, p := range positions {
 		c.Agents = append(c.Agents, mock.Lamborghini(mock.O{
-			ID: mock.DebugID(fmt.Sprintf("(%.2f, %.2f)", p.X(), p.Y())),
+			ID: mock.DebugID(fmt.Sprintf("%v", i)),
 			P:  p,
 			V:  rv(-20, 20),
 		}))

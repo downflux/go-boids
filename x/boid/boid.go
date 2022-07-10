@@ -2,6 +2,7 @@ package boid
 
 import (
 	"github.com/downflux/go-boids/x/agent"
+	"github.com/downflux/go-boids/x/constraint/contrib/base"
 	"github.com/downflux/go-boids/x/kd"
 
 	v2d "github.com/downflux/go-geometry/2d/vector"
@@ -35,11 +36,23 @@ type Mutation struct {
 // Step iterates through a single simulation step, but does not mutate the given
 // state.
 func Step(o O) []Mutation {
+	opts := base.O{
+		T:   o.T,
+		R:   o.MaxRadius,
+		Tau: o.Tau,
+
+		CollisionWeight: o.CollisionWeight,
+		CollisionFilter: o.CollisionFilter,
+
+		ArrivalWeight: o.ArrivalWeight,
+	}
+
 	var ms []Mutation
 	for _, p := range kd.Agents(kd.Data(o.T)) {
+
 		ms = append(ms, Mutation{
 			Agent:    p,
-			Steering: agent.Steer(p, *v2d.New(1, 0), 1),
+			Steering: base.New(opts).Steer(p),
 		})
 	}
 	return ms

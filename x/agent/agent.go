@@ -47,6 +47,17 @@ func Step(a RW, acceleration vector.V, tau float64) {
 		// Set the heading parallel to the last moved tick direction.
 		a.SetHeading(*polar.New(1, polar.Polar(vector.Scale(tau, a.V())).Theta()))
 	}
+	if !epsilon.Within(vector.Magnitude(acceleration), 0) {
+		a.Logger().Printf(
+			"DEBUG(agent.Step): p == (%.2f, %.2f), acceleration == (%.2f, %.2f), v == (%.2f, %.2f)",
+			a.P().X(),
+			a.P().Y(),
+			acceleration.X(),
+			acceleration.Y(),
+			a.V().X(),
+			a.V().Y(),
+		)
+	}
 }
 
 func Validate(a RO) error {

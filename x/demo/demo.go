@@ -65,16 +65,16 @@ type Environment struct {
 
 func New(c config.C, logDir string) *Environment {
 	ps := map[mock.DebugID]point.P{}
-	for i, a := range c.Agents {
+	for _, a := range c.Agents {
 		fn := "/dev/null"
 		if logDir != "" {
-			fn = path.Join(logDir, fmt.Sprintf("%v.log", i))
+			fn = path.Join(logDir, fmt.Sprintf("%v.log", a.DebugID()))
 		}
 		fp, err := os.Create(fn)
 		if err != nil {
 			panic(fmt.Sprintf("could not create log file: %v", err))
 		}
-		a.Log = log.New(fp, "", 0)
+		a.Log = log.New(fp, "", log.Ldate|log.Ltime)
 		p := P(*a)
 		ps[a.DebugID()] = &p
 	}
@@ -161,6 +161,10 @@ func main() {
 				gray,
 			},
 		)
+
+		for _, a := range e.Data() {
+			a.(*P).Agent().(*mock.A).Logger().Printf("DEBUG(demo.main): frame == %v", i)
+		}
 
 		tau := 1.0 / float64(framerate)
 		mutations := boid.Step(boid.O{

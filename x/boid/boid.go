@@ -52,7 +52,7 @@ func Step(o O) []Mutation {
 
 		ms = append(ms, Mutation{
 			Agent:    p,
-			Steering: base.New(opts).Steer(p),
+			Steering: base.New(opts).Accelerate(p),
 		})
 	}
 	return ms

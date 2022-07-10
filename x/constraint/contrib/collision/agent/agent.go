@@ -4,11 +4,14 @@ import (
 	"math"
 	"math/rand"
 
+	"github.com/downflux/go-boids/x/constraint"
 	"github.com/downflux/go-boids/internal/geometry/2d/vector/polar"
 	"github.com/downflux/go-boids/x/agent"
 	"github.com/downflux/go-geometry/2d/vector"
 	"github.com/downflux/go-geometry/epsilon"
 )
+
+var _ constraint.C = C{}
 
 type C struct {
 	o O
@@ -38,7 +41,7 @@ func jitter() vector.V {
 // the side of a sphere. See
 // https://gamedevelopment.tutsplus.com/tutorials/understanding-steering-behaviors-collision-avoidance--gamedev-7777
 // for more details.
-func (c C) Steer(a agent.RO) vector.V {
+func (c C) Accelerate(a agent.RO) vector.V {
 	p := vector.Sub(a.P(), c.o.Obstacle.P())
 	if vector.Within(p, *vector.New(0, 0)) {
 		p = jitter()

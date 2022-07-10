@@ -2,6 +2,7 @@ package weighted
 
 import (
 	"math"
+	"fmt"
 
 	"github.com/downflux/go-boids/x/agent"
 	"github.com/downflux/go-boids/x/constraint"
@@ -9,12 +10,23 @@ import (
 	"github.com/downflux/go-geometry/epsilon"
 )
 
+var _ constraint.C = C{}
+
 type C struct {
-	cs []constraint.Steer
+	cs []constraint.C
 	ws []float64
 }
 
-func (c C) Steer(a agent.RO) vector.V {
+func New(cs []constraint.C, ws []float64) *C {
+	if len(cs) != len(ws) {
+		panic(fmt.Sprintf("mismatching constraint and weight lengths: %v != %v", len(cs), len(ws)))
+	}
+	return &C{
+		cs: cs,
+		ws: ws,
+	}
+}
+func (c C) Accelerate(a agent.RO) vector.V {
 	if len(c.cs) == 0 {
 		return *vector.New(0, 0)
 	}
@@ -26,7 +38,7 @@ func (c C) Steer(a agent.RO) vector.V {
 
 	n := *vector.New(0, 0)
 	for i, d := range c.cs {
-		n = vector.Add(n, vector.Scale(c.ws[i]/parts, d(a)))
+		n = vector.Add(n, vector.Scale(c.ws[i]/parts, d.Accelerate(a)))
 	}
 	if epsilon.Within(vector.SquaredMagnitude(n), 0) {
 		return *vector.New(0, 0)

@@ -9,6 +9,8 @@ import (
 	"github.com/downflux/go-geometry/2d/vector"
 )
 
+var _ constraint.C = C{}
+
 type O struct {
 	T   *kd.T
 	R   float64
@@ -30,13 +32,15 @@ func New(o O) *C {
 	}
 }
 
-func (c C) Steer(a agent.RO) vector.V {
-	return clamped.New([]constraint.Steer{
-		collision.New(collision.O{
-			T:      c.o.T,
-			K:      c.o.CollisionWeight,
-			Cutoff: a.MaxSpeed() + 5*c.o.R,
-			Filter: c.o.CollisionFilter,
-		}).Steer,
-	}).Steer(a)
+func (c C) Accelerate(a agent.RO) vector.V {
+	return clamped.New([]constraint.C{
+		constraint.Steer(
+			collision.New(collision.O{
+				T:      c.o.T,
+				K:      c.o.CollisionWeight,
+				Cutoff: c.o.Tau * a.MaxSpeed() + 5*c.o.R,
+				Filter: c.o.CollisionFilter,
+			}),
+		),
+	}).Accelerate(a)
 }

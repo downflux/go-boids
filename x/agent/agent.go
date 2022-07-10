@@ -31,6 +31,10 @@ func Clamp(v vector.V, min float64, max float64) vector.V {
 // Steer returns a steering acceleration for the agent, given a desired
 // acceleration vector. This returned acceleration is clamped by the maximum
 // acceleration possible over the given time period.
+//
+// Note that the steering vector is not well-defined when the input acceleration
+// is 0 -- in fact, with our implementation, a desired acceleration of 0
+// actually slows down the agent.
 func Steer(a RO, acceleration vector.V, tau float64) vector.V {
 	desired := *vector.New(0, 0)
 	if !epsilon.Within(vector.SquaredMagnitude(acceleration), 0) {

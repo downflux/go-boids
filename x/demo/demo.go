@@ -162,10 +162,6 @@ func main() {
 			},
 		)
 
-		for _, a := range e.Data() {
-			a.(*P).Agent().(*mock.A).Logger().Printf("DEBUG(demo.main): frame == %v", i)
-		}
-
 		tau := 1.0 / float64(framerate)
 		mutations := boid.Step(boid.O{
 			T:   bkd.Lift(t),

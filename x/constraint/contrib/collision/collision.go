@@ -15,6 +15,8 @@ import (
 	v2d "github.com/downflux/go-geometry/2d/vector"
 )
 
+var _ constraint.C = C{}
+
 type C struct {
 	o O
 }
@@ -34,7 +36,7 @@ func New(o O) *C {
 }
 
 type datum struct {
-	c        constraint.Steer
+	c        constraint.C
 	distance float64
 }
 
@@ -44,7 +46,11 @@ func (d data) Len() int           { return len(d) }
 func (d data) Swap(i, j int)      { d[i], d[j] = d[j], d[i] }
 func (d data) Less(i, j int) bool { return d[i].distance < d[j].distance }
 
-func (c C) Steer(a agent.RO) v2d.V {
+// Accelerate returns a net desired acceleration pointing towards the best-guess
+// collision-free zone. The collision constraint here will prioritize the
+// closest collisions and ignore any additional acceleration requests if the
+// allocated acceleration bin has been saturated.
+func (c C) Accelerate(a agent.RO) v2d.V {
 	neighbors, err := kd.RadialFilter(
 		c.o.T,
 		*hypersphere.New(vector.V(a.P()), c.o.Cutoff),
@@ -71,16 +77,16 @@ func (c C) Steer(a agent.RO) v2d.V {
 			c: ca.New(ca.O{
 				K:        c.o.K,
 				Obstacle: o.Agent(),
-			}).Steer,
+			}),
 			distance: v2d.SquaredMagnitude(v2d.Sub(a.P(), o.Agent().P())),
 		})
 	}
 	sort.Sort(data(ds))
 
-	var cs []constraint.Steer
+	var cs []constraint.C
 	for _, d := range ds {
 		cs = append(cs, d.c)
 	}
 
-	return clamped.New(cs).Steer(a)
+	return clamped.New(cs).Accelerate(a)
 }

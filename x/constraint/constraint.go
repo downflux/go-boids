@@ -13,6 +13,7 @@ type C interface {
 }
 
 type steer func(a agent.RO) vector.V
+
 func (s steer) Accelerate(a agent.RO) vector.V {
 	return agent.Steer(a, s(a), 1)
 }

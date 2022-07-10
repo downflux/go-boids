@@ -1,8 +1,8 @@
 package weighted
 
 import (
-	"math"
 	"fmt"
+	"math"
 
 	"github.com/downflux/go-boids/x/agent"
 	"github.com/downflux/go-boids/x/constraint"

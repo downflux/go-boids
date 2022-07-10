@@ -2,19 +2,21 @@ package boid
 
 import (
 	"fmt"
+	"log"
 	"math"
 	"math/rand"
+	"os"
 	"runtime"
 	"testing"
 
-	"github.com/downflux/go-boids/agent"
 	"github.com/downflux/go-boids/internal/geometry/2d/vector/polar"
+	"github.com/downflux/go-boids/x/agent"
+	"github.com/downflux/go-boids/x/agent/mock"
 	"github.com/downflux/go-geometry/nd/vector"
 	"github.com/downflux/go-kd/kd"
 	"github.com/downflux/go-kd/point"
 
-	mock "github.com/downflux/go-boids/agent/mock"
-	bkd "github.com/downflux/go-boids/kd"
+	bkd "github.com/downflux/go-boids/x/kd"
 	v2d "github.com/downflux/go-geometry/2d/vector"
 )
 
@@ -38,18 +40,18 @@ func rn(min, max float64) float64 { return min + rand.Float64()*(max-min) }
 func rv() v2d.V                   { return *v2d.New(rn(0, 200), rn(0, 200)) }
 func rp() polar.V                 { return *polar.New(rn(0, 200), rn(0, 2*math.Pi)) }
 func ra(i int) agent.RO {
-	return mock.New(mock.O{
-		ID:           agent.ID(fmt.Sprintf("%v", i)),
-		P:            rv(),
-		V:            rv(),
-		R:            rn(10, 20),
-		Mass:         rn(10, 20),
-		Goal:         rv(),
-		Heading:      *polar.New(1, rp().Theta()),
-		MaxVelocity:  rp(),
-		MaxNetForce:  rn(0, 2000),
-		MaxNetTorque: rn(0, 20000),
+	a := mock.New(mock.O{
+		P:           rv(),
+		V:           rv(),
+		R:           rn(10, 20),
+		Mass:        rn(10, 20),
+		Heading:     *polar.New(1, rp().Theta()),
+		MaxSpeed:    rn(0, 200),
+		MaxNetForce: rn(0, 2000),
 	})
+	fp, _ := os.Create(os.DevNull)
+	a.Log = log.New(fp, "", 0)
+	return a
 }
 
 func rt(n int) *kd.T {

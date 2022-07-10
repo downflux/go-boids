@@ -4,9 +4,9 @@ import (
 	"math"
 	"math/rand"
 
-	"github.com/downflux/go-boids/x/constraint"
 	"github.com/downflux/go-boids/internal/geometry/2d/vector/polar"
 	"github.com/downflux/go-boids/x/agent"
+	"github.com/downflux/go-boids/x/constraint"
 	"github.com/downflux/go-geometry/2d/vector"
 	"github.com/downflux/go-geometry/epsilon"
 )

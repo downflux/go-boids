@@ -38,7 +38,7 @@ func (c C) Accelerate(a agent.RO) vector.V {
 			collision.New(collision.O{
 				T:      c.o.T,
 				K:      c.o.CollisionWeight,
-				Cutoff: c.o.Tau * a.MaxSpeed() + 5*c.o.R,
+				Cutoff: c.o.Tau*a.MaxSpeed() + 5*c.o.R,
 				Filter: c.o.CollisionFilter,
 			}),
 		),

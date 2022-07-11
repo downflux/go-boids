@@ -44,6 +44,7 @@ func ra(i int) agent.RO {
 		P:           rv(),
 		V:           rv(),
 		R:           rn(10, 20),
+		Goal:        *v2d.New(0, 0),
 		Mass:        rn(10, 20),
 		Heading:     *polar.New(1, rp().Theta()),
 		MaxSpeed:    rn(0, 200),

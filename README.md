@@ -5,15 +5,15 @@ Golang implementation of Boid flocking
 
 ```bash
 go run \
-  github.com/downflux/go-boids/demo/generator | go run \
-  github.com/downflux/go-boids/demo > demo.gif
+  github.com/downflux/go-boids/demo/generator --mode=grid | go run \
+  github.com/downflux/go-boids/demo --frames=1500 --log_dir=demo/output/log/ > collision.gif
 ```
 
 ![collision.gif](demo/output/collision.gif)
 
 ## Profiling
 
-```
+```bash
 go test -v \
   github.com/downflux/go-boids/... \
   -benchmem \

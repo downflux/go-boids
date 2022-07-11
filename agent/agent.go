@@ -1,65 +1,102 @@
-// Package agent provides an interface for a non-holonomic robot used for the
-// Boid simulation.
-//
-// We are modeling this robot with a maximum speed and angular velocity, which
-// means the robot will have a non-zero turning radius. This should lead to
-// smoother movement over naive disks, which tend to have very "jerky" behavior
-// due to the lack of limit on angular velocity.
-//
-// We model the agent as a uniform disk which is turning about its center of
-// mass -- this means its moment of intertia I can be defined as
-//
-//   I = 1/2 mr ** 2
-//
-// Note that we could also trivially redefine the "wheels" of the agent to be
-// pivoting from the edge of the robot, i.e.
-//
-//   I = 1/3 mr ** 3, where r is the radius of the agent
-//
-// In this case however, the locomotion layer must take into account that
-// movement will stem from the wheel well (i.e. the edge of the circle with the
-// given heading) and calculate the center of mass accordingly.
 package agent
 
 import (
+	"fmt"
+	"log"
+	"time"
+
 	"github.com/downflux/go-boids/internal/geometry/2d/vector/polar"
 	"github.com/downflux/go-geometry/2d/vector"
+	"github.com/downflux/go-geometry/epsilon"
 )
 
-type ID string
+func Tau(t time.Duration) float64 { return float64(t) / float64(time.Second) }
 
-func (id ID) Equal(other ID) bool { return id == other }
+// Clamp ensures a 2D vector lies within the given bounds.
+//
+// TODO(minkezhang): Implement angular bounds check.
+func Clamp(v vector.V, min float64, max float64) vector.V {
+	m := vector.Magnitude(v)
+	if epsilon.Within(m, 0) {
+		return *vector.New(0, 0)
+	}
+	if m < min {
+		m = min
+	} else if m > max {
+		m = max
+	}
+	return vector.Scale(m, vector.Unit(v))
+}
+
+// Steer returns a steering acceleration for the agent, given a desired heading
+// vector. This returned acceleration is clamped by the maximum acceleration
+// possible over the given time period.
+//
+// If no heading is provided, we sensibly return no acceleration -- that is, the
+// agent should continue on its current trajectory.
+func Steer(a RO, heading vector.V, tau float64) vector.V {
+	if epsilon.Within(vector.SquaredMagnitude(heading), 0) {
+		return *vector.New(0, 0)
+	}
+	desired := vector.Scale(tau*a.MaxSpeed(), vector.Unit(heading))
+	return Clamp(vector.Sub(desired, a.V()), 0, tau*a.MaxNetAcceleration())
+}
+
+func Step(a RW, acceleration vector.V, tau float64) {
+	a.SetV(Clamp(vector.Add(a.V(), vector.Scale(tau, acceleration)), 0, a.MaxSpeed()))
+	a.SetP(vector.Add(a.P(), vector.Scale(tau, a.V())))
+
+	if !vector.Within(a.V(), *vector.New(0, 0)) {
+		// Set the heading parallel to the last moved tick direction.
+		a.SetHeading(*polar.New(1, polar.Polar(vector.Scale(tau, a.V())).Theta()))
+	}
+}
+
+func Validate(a RO) error {
+	if a.P() == nil {
+		return fmt.Errorf("agent position must be non-nil")
+	}
+	if a.V() == nil {
+		return fmt.Errorf("agent velocity must be non-nil")
+	}
+	if a.Goal() == nil {
+		return fmt.Errorf("agent goal must be non-nil")
+	}
+	if a.R() <= 0 {
+		return fmt.Errorf("agent radius must be a positive value, but got %v", a.R())
+	}
+	if a.Heading() == nil {
+		return fmt.Errorf("agent heading must be non-nil")
+	}
+	if a.MaxSpeed() < 0 {
+		return fmt.Errorf("agent must have a non-negative max speed, but got %v", a.MaxSpeed())
+	}
+	if a.MaxNetAcceleration() < 0 {
+		return fmt.Errorf("agent must have a non-negative max net acceleration, but got %v", a.MaxNetAcceleration())
+	}
+	return nil
+}
+
+type RO interface {
+	P() vector.V
+	V() vector.V
+	R() float64
+	Goal() vector.V
+	Heading() polar.V
+	Logger() *log.Logger
+
+	MaxSpeed() float64
+	MaxNetAcceleration() float64
+}
+
+type WO interface {
+	SetP(v vector.V)
+	SetV(v vector.V)
+
+	SetHeading(v polar.V)
+}
 
 type RW interface {
 	RO
 	WO
-}
-
-// WO is the locomotion layer of the simulation.
-type WO interface {
-	// Step takes as input a polar vector describing the movment and a
-	// timestep. Note that this coordinate system allows for the agent to
-	// turn while stationary.
-	Step(steering vector.V, tau float64)
-}
-
-type RO interface {
-	ID() ID
-
-	P() vector.V
-	V() vector.V
-	R() float64
-	Mass() float64
-	Goal() vector.V
-
-	// Heading is a unit polar vector oriented towards the current direction
-	// the agent is facing. Note that by necessity, the angular component is
-	// relative to the global axis.
-	Heading() polar.V
-
-	// MaxVelocity constraints the agent with a maximum speed and angular
-	// velocity.
-	MaxVelocity() polar.V
-
-	MaxAcceleration() polar.V
 }

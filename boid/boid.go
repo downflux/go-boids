@@ -4,8 +4,7 @@ import (
 	"math"
 
 	"github.com/downflux/go-boids/agent"
-	"github.com/downflux/go-boids/contrib/constraint/base"
-	"github.com/downflux/go-boids/contrib/steering"
+	"github.com/downflux/go-boids/constraint/contrib/base"
 	"github.com/downflux/go-boids/kd"
 
 	v2d "github.com/downflux/go-geometry/2d/vector"
@@ -30,15 +29,10 @@ type O struct {
 type Mutation struct {
 	Agent agent.RO
 
-	// Steering is the desired velocity for the next tick passed back to the
-	// agent. The agent is responsible for fulfilling this velocity request
-	// via the locomotion layer.
+	// Steering is the acceleration for the next tick passed back to the
+	// agent. The agent is responsible for fulfilling this acceleration
+	// request via the locomotion layer.
 	Steering v2d.V
-}
-
-type result struct {
-	Mutation Mutation
-	Error    error
 }
 
 // Step iterates through a single simulation step, but does not mutate the given
@@ -55,7 +49,6 @@ func Step(o O) []Mutation {
 			ch <- a
 		}
 	}(ach)
-
 	n := int(math.Min(float64(len(agents)), float64(o.PoolSize)))
 
 	// Start up a number of workers to find the iterative velocity in
@@ -75,7 +68,7 @@ func Step(o O) []Mutation {
 			for a := range ich {
 				och <- Mutation{
 					Agent:    a,
-					Steering: steering.S(a, base.New(opts).Force(a), o.Tau),
+					Steering: base.New(opts).Accelerate(a),
 				}
 			}
 		}(ach, mch)

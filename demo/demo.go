@@ -7,10 +7,13 @@ import (
 	"image"
 	"image/color"
 	"image/gif"
+	"log"
 	"os"
+	"path"
 	"runtime"
 
 	"github.com/downflux/go-boids/agent"
+	"github.com/downflux/go-boids/agent/mock"
 	"github.com/downflux/go-boids/boid"
 	"github.com/downflux/go-boids/demo/config"
 	"github.com/downflux/go-geometry/nd/hyperrectangle"
@@ -38,6 +41,7 @@ var (
 
 	fnInput  = flag.String("in", "/dev/stdin", "")
 	fnOutput = flag.String("out", "/dev/stdout", "")
+	logDir   = flag.String("log_dir", "", "")
 	n        = flag.Int("frames", 1500, "")
 )
 
@@ -46,24 +50,33 @@ var (
 	_ bkd.P   = &P{}
 )
 
-type P config.A
+type P mock.A
 
 func (p *P) P() vector.V     { return vector.V(p.Agent().P()) }
-func (p *P) Agent() agent.RO { return (*config.A)(p) }
+func (p *P) Agent() agent.RO { return (*mock.A)(p) }
 
 type Environment struct {
-	points map[agent.ID]point.P
+	points map[mock.DebugID]point.P
 
 	height float64
 	width  float64
 	radius float64
 }
 
-func New(c config.C) *Environment {
-	ps := map[agent.ID]point.P{}
+func New(c config.C, logDir string) *Environment {
+	ps := map[mock.DebugID]point.P{}
 	for _, a := range c.Agents {
+		fn := "/dev/null"
+		if logDir != "" {
+			fn = path.Join(logDir, fmt.Sprintf("%v.log", a.DebugID()))
+		}
+		fp, err := os.Create(fn)
+		if err != nil {
+			panic(fmt.Sprintf("could not create log file: %v", err))
+		}
+		a.Log = log.New(fp, "", log.Ldate|log.Ltime)
 		p := P(*a)
-		ps[a.ID()] = &p
+		ps[a.DebugID()] = &p
 	}
 	return &Environment{
 		points: ps,
@@ -73,7 +86,7 @@ func New(c config.C) *Environment {
 	}
 }
 
-func (e *Environment) Points() map[agent.ID]point.P { return e.points }
+func (e *Environment) Points() map[mock.DebugID]point.P { return e.points }
 func (e *Environment) Data() []point.P {
 	var ps []point.P
 	for _, p := range e.Points() {
@@ -89,7 +102,7 @@ func (e *Environment) Bound() hyperrectangle.R {
 	)
 }
 
-func generate(fn string) *Environment {
+func generate(fn string, logDir string) *Environment {
 	fp, err := os.Open(fn)
 	if err != nil {
 		panic(fmt.Sprintf("could not open config file: %v", err))
@@ -101,22 +114,22 @@ func generate(fn string) *Environment {
 		panic(fmt.Sprintf("could not decode config file: %v", err))
 	}
 
-	return New(c)
+	return New(c, logDir)
 }
 
 func main() {
 	flag.Parse()
 
-	e := generate(*fnInput)
+	e := generate(*fnInput, *logDir)
 
 	t, err := kd.New(e.Data())
 	if err != nil {
 		panic(fmt.Sprintf("could not construct tree: %v", err))
 	}
 
-	drawers := map[agent.ID]*agentdraw.D{}
+	drawers := map[mock.DebugID]*agentdraw.D{}
 	for _, p := range e.Data() {
-		drawers[p.(*P).Agent().ID()] = agentdraw.New(agentdraw.O{
+		drawers[p.(*P).Agent().(*mock.A).DebugID()] = agentdraw.New(agentdraw.O{
 			VelocityColor: blue,
 			HeadingColor:  red,
 			AgentColor:    black,
@@ -163,9 +176,9 @@ func main() {
 			MaxRadius: e.radius,
 		})
 		for _, m := range mutations {
-			a := m.Agent.(*config.A)
+			a := m.Agent.(*mock.A)
 
-			a.Step(m.Steering, tau)
+			agent.Step(a, m.Steering, tau)
 
 			// Model the system as a 2D toroid.
 			x, y := a.P().X(), a.P().Y()
@@ -180,7 +193,7 @@ func main() {
 				y = v2d.V(b.Min()).Y() + d
 			}
 			a.SetP(*v2d.New(x, y))
-			drawers[a.ID()].Draw(a, img)
+			drawers[a.DebugID()].Draw(a, img)
 		}
 
 		frames = append(frames, img)

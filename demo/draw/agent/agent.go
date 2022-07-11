@@ -4,13 +4,19 @@ import (
 	"image"
 	"image/color"
 
-	"github.com/downflux/go-boids/agent"
 	"github.com/downflux/go-boids/internal/geometry/2d/vector/polar"
 	"github.com/downflux/go-geometry/2d/line"
 	"github.com/downflux/go-geometry/2d/segment"
 	"github.com/downflux/go-geometry/2d/vector"
 	"github.com/downflux/go-orca/examples/draw"
 )
+
+type A interface {
+	R() float64
+	P() vector.V
+	V() vector.V
+	Heading() polar.V
+}
 
 type O struct {
 	VelocityColor color.Color
@@ -32,7 +38,7 @@ type D struct {
 	trailbuffer []vector.V
 }
 
-func (d *D) Draw(a agent.RO, img *image.Paletted) {
+func (d *D) Draw(a A, img *image.Paletted) {
 	if d.frame < 50 {
 		d.trailbuffer = append(d.trailbuffer, a.P())
 	} else {

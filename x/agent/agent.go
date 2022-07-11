@@ -28,18 +28,17 @@ func Clamp(v vector.V, min float64, max float64) vector.V {
 	return vector.Scale(m, vector.Unit(v))
 }
 
-// Steer returns a steering acceleration for the agent, given a desired
-// acceleration vector. This returned acceleration is clamped by the maximum
-// acceleration possible over the given time period.
+// Steer returns a steering acceleration for the agent, given a desired heading
+// vector. This returned acceleration is clamped by the maximum acceleration
+// possible over the given time period.
 //
-// Note that the steering vector is not well-defined when the input acceleration
-// is 0 -- in fact, with our implementation, a desired acceleration of 0
-// actually slows down the agent.
-func Steer(a RO, acceleration vector.V, tau float64) vector.V {
-	desired := *vector.New(0, 0)
-	if !epsilon.Within(vector.SquaredMagnitude(acceleration), 0) {
-		desired = vector.Scale(tau*a.MaxSpeed(), vector.Unit(acceleration))
+// If no heading is provided, we sensibly return no acceleration -- that is, the
+// agent should continue on its current trajectory.
+func Steer(a RO, heading vector.V, tau float64) vector.V {
+	if epsilon.Within(vector.SquaredMagnitude(heading), 0) {
+		return *vector.New(0, 0)
 	}
+	desired := vector.Scale(tau*a.MaxSpeed(), vector.Unit(heading))
 	return Clamp(vector.Sub(desired, a.V()), 0, tau*a.MaxNetAcceleration())
 }
 

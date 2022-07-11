@@ -11,11 +11,11 @@ import (
 
 func TestSteer(t *testing.T) {
 	configs := []struct {
-		name         string
-		a            agent.RO
-		acceleration vector.V
-		tau          float64
-		want         vector.V
+		name    string
+		a       agent.RO
+		heading vector.V
+		tau     float64
+		want    vector.V
 	}{
 		{
 			name: "NullAcceleration/Brake",
@@ -29,9 +29,9 @@ func TestSteer(t *testing.T) {
 				MaxSpeed:    10,
 				Heading:     *polar.New(1, 0),
 			}),
-			acceleration: *vector.New(0, 0),
-			tau:          2,
-			want:         *vector.New(-1, -1),
+			heading: *vector.New(0, 0),
+			tau:     2,
+			want:    *vector.New(0, 0),
 		},
 		{
 			name: "Accelerate",
@@ -45,9 +45,9 @@ func TestSteer(t *testing.T) {
 				MaxSpeed:    10,
 				Heading:     *polar.New(1, 0),
 			}),
-			acceleration: *vector.New(1, 1),
-			tau:          2,
-			want:         vector.Scale(20*math.Sqrt(2)/2-1, *vector.New(1, 1)),
+			heading: *vector.New(1, 1),
+			tau:     2,
+			want:    vector.Scale(20*math.Sqrt(2)/2-1, *vector.New(1, 1)),
 		},
 		{
 			name: "Accelerate/ScaleInvariant",
@@ -61,15 +61,15 @@ func TestSteer(t *testing.T) {
 				MaxSpeed:    10,
 				Heading:     *polar.New(1, 0),
 			}),
-			acceleration: *vector.New(10, 10),
-			tau:          2,
-			want:         vector.Scale(20*math.Sqrt(2)/2-1, *vector.New(1, 1)),
+			heading: *vector.New(10, 10),
+			tau:     2,
+			want:    vector.Scale(20*math.Sqrt(2)/2-1, *vector.New(1, 1)),
 		},
 	}
 
 	for _, c := range configs {
 		t.Run(c.name, func(t *testing.T) {
-			if got := agent.Steer(c.a, c.acceleration, c.tau); !vector.Within(got, c.want) {
+			if got := agent.Steer(c.a, c.heading, c.tau); !vector.Within(got, c.want) {
 				t.Errorf("Steer() = %v, want = %v", got, c.want)
 			}
 		})

@@ -67,10 +67,6 @@ func (c C) Accelerate(a agent.RO) v2d.V {
 		panic(fmt.Sprintf("could not find neighbors for KD-tree: %v", err))
 	}
 
-	if len(neighbors) > 0 {
-		a.Logger().Printf("DEBUG(collision.Steer): neighbors == %v", len(neighbors))
-	}
-
 	var ds []datum
 	for _, o := range neighbors {
 		ds = append(ds, datum{

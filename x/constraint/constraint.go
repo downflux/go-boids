@@ -12,12 +12,18 @@ type C interface {
 	Accelerate(a agent.RO) vector.V
 }
 
-type steer func(a agent.RO) vector.V
-
-func (s steer) Accelerate(a agent.RO) vector.V {
-	return agent.Steer(a, s(a), 1)
+type steer struct {
+	f func(a agent.RO) vector.V
+	w float64
 }
 
-func Steer(c C) C {
-	return steer(c.Accelerate)
+func (s steer) Accelerate(a agent.RO) vector.V {
+	return vector.Scale(s.w, agent.Steer(a, s.f(a), 1))
+}
+
+func Steer(c C, weight float64) C {
+	return steer{
+		f: c.Accelerate,
+		w: weight,
+	}
 }

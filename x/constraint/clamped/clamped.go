@@ -18,14 +18,15 @@ func New(constraints []constraint.C) *C {
 }
 
 func (c C) Accelerate(a agent.RO) vector.V {
-	acc := 0.0
+	accum := 0.0
 
 	n := *vector.New(0, 0)
-
 	for _, d := range c {
-		n = vector.Add(
-			n, agent.Clamp(d.Accelerate(a), 0, a.MaxNetAcceleration()-acc),
-		)
+		if accum < a.MaxNetAcceleration() {
+			accel := agent.Clamp(d.Accelerate(a), 0, a.MaxNetAcceleration()-accum)
+			accum += vector.Magnitude(accel)
+			n = vector.Add(n, accel)
+		}
 	}
 	return n
 }

@@ -58,9 +58,7 @@ func (c C) Accelerate(a agent.RO) vector.V {
 
 	r := c.o.Obstacle.R() + a.R()
 	separation := math.Max(
-		1e-5, vector.SquaredMagnitude(p)/r/r)
-
-	a.Logger().Printf("DEBUG(agent.Steer): separation = %.3f, d = %.3f", separation, vector.Magnitude(p))
+		1e-5, vector.Magnitude(p)/r)
 
 	return vector.Scale(c.o.K/separation, vector.Unit(p))
 }

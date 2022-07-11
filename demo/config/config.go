@@ -1,79 +1,90 @@
 package config
 
 import (
-	"encoding/json"
+	"fmt"
+	"math"
+	"math/rand"
 
-	"github.com/downflux/go-boids/agent"
-	"github.com/downflux/go-boids/contrib/locomotion"
-	"github.com/downflux/go-boids/internal/geometry/2d/vector/polar"
+	"github.com/downflux/go-boids/agent/mock"
 	"github.com/downflux/go-geometry/2d/vector"
 )
 
-var _ agent.RW = &A{}
-
-type O struct {
-	ID           agent.ID
-	P            vector.V
-	V            vector.V
-	R            float64
-	Goal         vector.V
-	Heading      polar.V
-	Mass         float64
-	MaxNetForce  float64
-	MaxNetTorque float64
-	MaxVelocity  polar.V
-}
-
-type A struct {
-	O
-}
-
-func (a *A) ID() agent.ID         { return a.O.ID }
-func (a *A) P() vector.V          { return a.O.P }
-func (a *A) V() vector.V          { return a.O.V }
-func (a *A) R() float64           { return a.O.R }
-func (a *A) Goal() vector.V       { return a.O.Goal }
-func (a *A) Heading() polar.V     { return a.O.Heading }
-func (a *A) Mass() float64        { return a.O.Mass }
-func (a *A) MaxVelocity() polar.V { return a.O.MaxVelocity }
-func (a *A) MaxAcceleration() polar.V {
-	return *polar.New(
-		a.O.MaxNetForce/a.Mass(),
-		a.O.MaxNetTorque/(0.5*a.Mass()*a.R()*a.R()),
-	)
-}
-
-// Step advances the Boid simulation by a single step.
-func (a *A) Step(steering vector.V, tau float64) {
-	b := locomotion.L(a, steering, tau)
-
-	a.O.P = b.P()
-	a.O.Heading = b.Heading()
-	a.O.V = b.V()
-}
-
-func (a *A) SetP(p vector.V) { a.O.P = p }
-
-func (a *A) MarshalJSON() ([]byte, error) {
-	return json.Marshal(&O{
-		ID:           a.ID(),
-		P:            a.P(),
-		V:            a.V(),
-		R:            a.R(),
-		Goal:         a.Goal(),
-		Heading:      a.Heading(),
-		Mass:         a.Mass(),
-		MaxVelocity:  a.MaxVelocity(),
-		MaxNetForce:  a.O.MaxNetForce,
-		MaxNetTorque: a.O.MaxNetTorque,
-	})
-}
-
-func (a *A) UnmarshalJSON(data []byte) error { return json.Unmarshal(data, &a.O) }
-
 type C struct {
-	Agents    []*A
+	Agents    []*mock.A
 	Height    float64
 	Width     float64
 	MaxRadius float64
+}
+
+func rn(min, max float64) float64 { return min + (max-min)*rand.Float64() }
+
+func rv(min, max float64) vector.V {
+	return vector.Scale(
+		rn(min, max),
+		vector.Unit(*vector.New(rn(-1, 1), rn(-1, 1))),
+	)
+}
+
+func GenerateCollision() C {
+	return C{
+		Height:    200,
+		Width:     200,
+		MaxRadius: 10,
+		Agents: []*mock.A{
+			mock.Lamborghini(mock.O{
+				ID:   mock.DebugID("A"),
+				P:    *vector.New(50, 100),
+				V:    *vector.New(10, 0),
+				Goal: *vector.New(100, 100),
+			}),
+			mock.Lamborghini(mock.O{
+				ID:   mock.DebugID("B"),
+				P:    *vector.New(70, 100),
+				V:    *vector.New(-10, 0),
+				Goal: *vector.New(0, 100),
+			}),
+			mock.Lamborghini(mock.O{
+				ID:   mock.DebugID("C"),
+				P:    *vector.New(65, 130),
+				V:    *vector.New(0, -10),
+				Goal: *vector.New(65, 20),
+			}),
+		},
+	}
+}
+
+func GenerateGrid(h int, w int) C {
+	const tile = 50.0
+	c := &C{
+		Height: tile * (float64(h) + 1.0),
+		Width:  tile * (float64(w) + 1.0),
+	}
+
+	var positions []vector.V
+	var goals []vector.V
+
+	for i := 0; i < h; i++ {
+		for j := 0; j < w; j++ {
+			positions = append(positions, *vector.New(float64(i+1)*tile, float64(j+1)*tile))
+			goals = append(goals, *vector.New(float64(i+1)*tile, float64(j+1)*tile))
+		}
+	}
+	rand.Shuffle(len(goals), func(i, j int) { goals[i], goals[j] = goals[j], goals[i] })
+
+	for i, p := range positions {
+		c.Agents = append(c.Agents, mock.Lamborghini(mock.O{
+			ID:   mock.DebugID(fmt.Sprintf("%v", i)),
+			P:    p,
+			V:    rv(-20, 20),
+			Goal: goals[i],
+		}))
+	}
+
+	r := math.Inf(-1)
+	for range c.Agents {
+		r = math.Max(r, 0)
+	}
+	c.MaxRadius = r
+
+	return *c
 }

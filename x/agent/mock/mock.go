@@ -39,6 +39,7 @@ type O struct {
 	ID      DebugID
 	P       vector.V
 	V       vector.V
+	Goal    vector.V
 	Heading polar.V
 	R       float64
 
@@ -60,6 +61,7 @@ func Lamborghini(o O) *A {
 		P:           o.P,
 		V:           o.V,
 		R:           Radius,
+		Goal:        o.Goal,
 		Mass:        Mass,
 		MaxNetForce: MaxNetForce,
 		MaxSpeed:    MaxSpeed,
@@ -83,6 +85,7 @@ func (a *A) P() vector.V         { return a.o.P }
 func (a *A) V() vector.V         { return a.o.V }
 func (a *A) R() float64          { return a.o.R }
 func (a *A) Heading() polar.V    { return a.o.Heading }
+func (a *A) Goal() vector.V      { return a.o.Goal }
 func (a *A) Logger() *log.Logger { return a.Log }
 func (a *A) MaxNetAcceleration() float64 {
 	if a.o.Mass == 0 {
@@ -103,6 +106,7 @@ func (a *A) MarshalJSON() ([]byte, error) {
 		V:           a.V(),
 		R:           a.R(),
 		Mass:        a.o.Mass,
+		Goal:        a.Goal(),
 		MaxSpeed:    a.MaxSpeed(),
 		MaxNetForce: a.o.MaxNetForce,
 		Heading:     a.Heading(),

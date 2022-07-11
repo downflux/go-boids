@@ -60,6 +60,9 @@ func Validate(a RO) error {
 	if a.V() == nil {
 		return fmt.Errorf("agent velocity must be non-nil")
 	}
+	if a.Goal() == nil {
+		return fmt.Errorf("agent goal must be non-nil")
+	}
 	if a.R() <= 0 {
 		return fmt.Errorf("agent radius must be a positive value, but got %v", a.R())
 	}
@@ -79,6 +82,7 @@ type RO interface {
 	P() vector.V
 	V() vector.V
 	R() float64
+	Goal() vector.V
 	Heading() polar.V
 	Logger() *log.Logger
 

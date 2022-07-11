@@ -32,19 +32,22 @@ func GenerateCollision() C {
 		MaxRadius: 10,
 		Agents: []*mock.A{
 			mock.Lamborghini(mock.O{
-				ID: mock.DebugID("A"),
-				P:  *vector.New(50, 100),
-				V:  *vector.New(10, 0),
+				ID:   mock.DebugID("A"),
+				P:    *vector.New(50, 100),
+				V:    *vector.New(10, 0),
+				Goal: *vector.New(100, 100),
 			}),
 			mock.Lamborghini(mock.O{
-				ID: mock.DebugID("B"),
-				P:  *vector.New(70, 100),
-				V:  *vector.New(-10, 0),
+				ID:   mock.DebugID("B"),
+				P:    *vector.New(70, 100),
+				V:    *vector.New(-10, 0),
+				Goal: *vector.New(0, 100),
 			}),
 			mock.Lamborghini(mock.O{
-				ID: mock.DebugID("C"),
-				P:  *vector.New(65, 130),
-				V:  *vector.New(0, -10),
+				ID:   mock.DebugID("C"),
+				P:    *vector.New(65, 130),
+				V:    *vector.New(0, -10),
+				Goal: *vector.New(65, 20),
 			}),
 		},
 	}
@@ -70,9 +73,10 @@ func GenerateGrid(h int, w int) C {
 
 	for i, p := range positions {
 		c.Agents = append(c.Agents, mock.Lamborghini(mock.O{
-			ID: mock.DebugID(fmt.Sprintf("%v", i)),
-			P:  p,
-			V:  rv(-20, 20),
+			ID:   mock.DebugID(fmt.Sprintf("%v", i)),
+			P:    p,
+			V:    rv(-20, 20),
+			Goal: goals[i],
 		}))
 	}
 

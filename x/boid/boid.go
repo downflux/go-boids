@@ -1,6 +1,8 @@
 package boid
 
 import (
+	"math"
+
 	"github.com/downflux/go-boids/x/agent"
 	"github.com/downflux/go-boids/x/constraint/contrib/base"
 	"github.com/downflux/go-boids/x/kd"
@@ -36,6 +38,21 @@ type Mutation struct {
 // Step iterates through a single simulation step, but does not mutate the given
 // state.
 func Step(o O) []Mutation {
+	agents := kd.Agents(kd.Data(o.T))
+
+	ach := make(chan agent.RO, 8*o.PoolSize)
+	mch := make(chan Mutation, 8*o.PoolSize)
+
+	go func(ch chan<- agent.RO) {
+		defer close(ch)
+		for _, a := range agents {
+			ch <- a
+		}
+	}(ach)
+	n := int(math.Min(float64(len(agents)), float64(o.PoolSize)))
+
+	// Start up a number of workers to find the iterative velocity in
+	// parallel.
 	opts := base.O{
 		T:   o.T,
 		R:   o.MaxRadius,
@@ -46,14 +63,20 @@ func Step(o O) []Mutation {
 
 		ArrivalWeight: o.ArrivalWeight,
 	}
-
-	var ms []Mutation
-	for _, p := range kd.Agents(kd.Data(o.T)) {
-
-		ms = append(ms, Mutation{
-			Agent:    p,
-			Steering: base.New(opts).Accelerate(p),
-		})
+	for i := 0; i < n; i++ {
+		go func(ich <-chan agent.RO, och chan<- Mutation) {
+			for a := range ich {
+				och <- Mutation{
+					Agent:    a,
+					Steering: base.New(opts).Accelerate(a),
+				}
+			}
+		}(ach, mch)
 	}
-	return ms
+
+	mutations := make([]Mutation, 0, len(agents))
+	for i := 0; i < len(agents); i++ {
+		mutations = append(mutations, <-mch)
+	}
+	return mutations
 }

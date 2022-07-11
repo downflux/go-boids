@@ -37,7 +37,7 @@ func (c C) Accelerate(a agent.RO) vector.V {
 	return clamped.New([]constraint.C{
 		constraint.Steer(
 			collision.New(collision.O{
-				T: c.o.T,
+				T:      c.o.T,
 				Cutoff: a.MaxSpeed() + 5*c.o.R,
 				Filter: c.o.CollisionFilter,
 			}),

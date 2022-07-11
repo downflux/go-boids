@@ -18,7 +18,6 @@ type C struct {
 }
 
 type O struct {
-	K        float64
 	Obstacle agent.RO
 }
 
@@ -60,5 +59,5 @@ func (c C) Accelerate(a agent.RO) vector.V {
 	separation := math.Max(
 		1e-5, vector.Magnitude(p)/r)
 
-	return vector.Scale(c.o.K/separation, vector.Unit(p))
+	return vector.Scale(1/separation, vector.Unit(p))
 }

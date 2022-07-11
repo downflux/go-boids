@@ -37,13 +37,10 @@ func (c C) Accelerate(a agent.RO) vector.V {
 	cs := []constraint.C{
 		collision.New(collision.O{
 			T:      c.o.T,
-			K:      c.o.CollisionWeight,
 			Cutoff: a.MaxSpeed() + 5*c.o.R,
 			Filter: c.o.CollisionFilter,
 		}),
-		arrival.New(arrival.O{
-			K: c.o.ArrivalWeight,
-		}),
+		arrival.New(arrival.O{}),
 	}
 	a.Logger().Printf("DEBUG(base.Accelerate): collision force: %v", vector.Magnitude(cs[0].Accelerate(a))*2000)
 	a.Logger().Printf("DEBUG(base.Accelerate): arrival force: %v", vector.Magnitude(cs[1].Accelerate(a))*2000)

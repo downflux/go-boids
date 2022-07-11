@@ -23,7 +23,6 @@ type C struct {
 
 type O struct {
 	T *kd.T
-	K float64
 
 	Cutoff float64
 	Filter func(a agent.RO) bool
@@ -71,7 +70,6 @@ func (c C) Accelerate(a agent.RO) v2d.V {
 	for _, o := range neighbors {
 		ds = append(ds, datum{
 			c: ca.New(ca.O{
-				K:        c.o.K,
 				Obstacle: o.Agent(),
 			}),
 			distance: v2d.SquaredMagnitude(v2d.Sub(a.P(), o.Agent().P())),

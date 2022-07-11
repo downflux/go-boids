@@ -15,7 +15,6 @@ type C struct {
 }
 
 type O struct {
-	K float64
 }
 
 func New(o O) *C {
@@ -48,5 +47,5 @@ func (c C) Accelerate(a agent.RO) vector.V {
 		return *vector.New(0, 0)
 	}
 
-	return vector.Scale(c.o.K*dampening, vector.Unit(r))
+	return vector.Scale(dampening, vector.Unit(r))
 }

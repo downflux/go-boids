@@ -11,6 +11,7 @@ import (
 var _ constraint.C = C{}
 
 type C struct {
+	constraint.Base
 	o O
 }
 
@@ -19,7 +20,8 @@ type O struct {
 
 func New(o O) *C {
 	return &C{
-		o: o,
+		Base: *constraint.New("arrival"),
+		o:    o,
 	}
 }
 

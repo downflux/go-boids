@@ -17,6 +17,8 @@ func New(constraints []constraint.C) *C {
 	return &c
 }
 
+func (c C) Name() string { return "" }
+
 func (c C) Accelerate(a agent.RO) vector.V {
 	accum := 0.0
 

@@ -141,13 +141,6 @@ func main() {
 
 	var frames []*image.Paletted
 	for i := 0; i < *n; i++ {
-		if i%100 == 0 {
-			for _, p := range e.Data() {
-				a := p.(*P).Agent().(*mock.A)
-				a.Logger().Printf("Rendering frame %v / %v of agent %v", i+1, *n, a.DebugID())
-			}
-		}
-
 		img := image.NewPaletted(
 			image.Rectangle{
 				image.Point{
@@ -174,10 +167,10 @@ func main() {
 			T:   bkd.Lift(t),
 			Tau: tau,
 
-			CollisionWeight: 15,
+			CollisionWeight: 30,
 			CollisionFilter: func(a agent.RO) bool { return true },
 
-			ArrivalWeight: 6,
+			ArrivalWeight: 20,
 
 			PoolSize:  4 * runtime.GOMAXPROCS(0),
 			MaxRadius: e.radius,

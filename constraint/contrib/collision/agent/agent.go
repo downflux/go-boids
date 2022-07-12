@@ -1,7 +1,6 @@
 package agent
 
 import (
-	"fmt"
 	"math"
 	"math/rand"
 
@@ -15,6 +14,7 @@ import (
 var _ constraint.C = C{}
 
 type C struct {
+	constraint.Base
 	o O
 }
 
@@ -24,7 +24,8 @@ type O struct {
 
 func New(o O) *C {
 	return &C{
-		o: o,
+		Base: *constraint.New("collision_agent"),
+		o:    o,
 	}
 }
 
@@ -57,22 +58,7 @@ func (c C) Accelerate(a agent.RO) vector.V {
 	}
 
 	r := c.o.Obstacle.R() + a.R()
-	separation := math.Max(
-		1e-5, vector.Magnitude(p)/r)
+	separation := vector.Magnitude(p) / r
 
-	if separation < 1.1 {
-		f := "agent (%.2f, %.2f), r = %.2f with obstacle (%.2f, %.2f) r = %.2f; d = %.2f"
-		if separation < 1 {
-			f = fmt.Sprintf("WARNING Physical collision detected: %v", f)
-		} else {
-			f = fmt.Sprintf("Physical collision incoming: %v", f)
-		}
-		a.Logger().Printf(
-			f,
-			a.P().X(), a.P().Y(), a.R(),
-			c.o.Obstacle.P().X(), c.o.Obstacle.P().Y(), c.o.Obstacle.R(),
-			vector.Magnitude(p))
-	}
-
-	return vector.Scale(1/separation, vector.Unit(p))
+	return vector.Scale(1/math.Max(1e-5, (separation-1.5)), vector.Unit(p))
 }

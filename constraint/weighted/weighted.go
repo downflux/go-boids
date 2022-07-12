@@ -26,6 +26,9 @@ func New(cs []constraint.C, ws []float64) *C {
 		ws: ws,
 	}
 }
+
+func (c C) Name() string { return "" }
+
 func (c C) Accelerate(a agent.RO) vector.V {
 	if len(c.cs) == 0 {
 		return *vector.New(0, 0)

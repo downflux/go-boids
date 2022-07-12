@@ -24,7 +24,7 @@ var (
 	// be generous here and increase the maximum speed.
 	MaxNetForce = 20000.0
 	Mass        = 2000.0
-	MaxSpeed    = 80.0
+	MaxSpeed    = 30.0
 	Radius      = 4.0
 )
 

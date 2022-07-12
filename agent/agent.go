@@ -29,8 +29,10 @@ func Clamp(v vector.V, min float64, max float64) vector.V {
 }
 
 // Steer returns a steering acceleration for the agent, given a desired heading
-// vector. This returned acceleration is clamped by the maximum acceleration
-// possible over the given time period.
+// vector.
+//
+// Note that the returned acceleration is not clamped -- the caller is
+// responsible for additional weighting and clamping on the returned values.
 //
 // If no heading is provided, we sensibly return no acceleration -- that is, the
 // agent should continue on its current trajectory.
@@ -39,7 +41,7 @@ func Steer(a RO, heading vector.V, tau float64) vector.V {
 		return *vector.New(0, 0)
 	}
 	desired := vector.Scale(tau*a.MaxSpeed(), vector.Unit(heading))
-	return Clamp(vector.Sub(desired, a.V()), 0, tau*a.MaxNetAcceleration())
+	return vector.Sub(desired, a.V())
 }
 
 func Step(a RW, acceleration vector.V, tau float64) {

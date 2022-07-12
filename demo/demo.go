@@ -141,6 +141,13 @@ func main() {
 
 	var frames []*image.Paletted
 	for i := 0; i < *n; i++ {
+		if i%100 == 0 {
+			for _, p := range e.Data() {
+				a := p.(*P).Agent().(*mock.A)
+				a.Logger().Printf("Rendering frame %v / %v of agent %v", i+1, *n, a.DebugID())
+			}
+		}
+
 		img := image.NewPaletted(
 			image.Rectangle{
 				image.Point{

@@ -34,11 +34,14 @@ func New(o O) *C {
 }
 
 func (c C) Accelerate(a agent.RO) vector.V {
+	// TODO(minkezhang): Ensure the steering force can be sufficiently
+	// weighted such that the collision force can exceed the maximum
+	// acceleration threshold.
 	return clamped.New([]constraint.C{
 		constraint.Steer(
 			collision.New(collision.O{
 				T:      c.o.T,
-				Cutoff: a.MaxSpeed() + 5*c.o.R,
+				Cutoff: c.o.Tau*a.MaxSpeed() + 5*c.o.R,
 				Filter: c.o.CollisionFilter,
 			}),
 			c.o.CollisionWeight,

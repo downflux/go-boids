@@ -1,6 +1,7 @@
 package agent
 
 import (
+	"fmt"
 	"math"
 	"math/rand"
 
@@ -59,11 +60,18 @@ func (c C) Accelerate(a agent.RO) vector.V {
 	separation := math.Max(
 		1e-5, vector.Magnitude(p)/r)
 
-	if separation < 1 {
+	if separation < 1.1 {
+		f := "agent (%.2f, %.2f), r = %.2f with obstacle (%.2f, %.2f) r = %.2f; d = %.2f"
+		if separation < 1 {
+			f = fmt.Sprintf("WARNING Physical collision detected: %v", f)
+		} else {
+			f = fmt.Sprintf("Physical collision incoming: %v", f)
+		}
 		a.Logger().Printf(
-			"Physical collision detected: (%.2f, %.2f), r = %.2f with (%.2f, %.2f) r = %.2f",
+			f,
 			a.P().X(), a.P().Y(), a.R(),
-			c.o.Obstacle.P().X(), c.o.Obstacle.P().Y(), c.o.Obstacle.R())
+			c.o.Obstacle.P().X(), c.o.Obstacle.P().Y(), c.o.Obstacle.R(),
+			vector.Magnitude(p))
 	}
 
 	return vector.Scale(1/separation, vector.Unit(p))

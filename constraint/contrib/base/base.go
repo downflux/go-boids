@@ -26,14 +26,12 @@ type O struct {
 }
 
 type C struct {
-	constraint.Base
 	o O
 }
 
 func New(o O) *C {
 	return &C{
-		Base: *constraint.New("base"),
-		o:    o,
+		o: o,
 	}
 }
 

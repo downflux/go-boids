@@ -14,7 +14,6 @@ import (
 var _ constraint.C = C{}
 
 type C struct {
-	constraint.Base
 	o O
 }
 
@@ -24,8 +23,7 @@ type O struct {
 
 func New(o O) *C {
 	return &C{
-		Base: *constraint.New("collision_agent"),
-		o:    o,
+		o: o,
 	}
 }
 
@@ -60,5 +58,7 @@ func (c C) Accelerate(a agent.RO) vector.V {
 	r := c.o.Obstacle.R() + a.R()
 	separation := vector.Magnitude(p) / r
 
-	return vector.Scale(1/math.Max(1e-5, (separation-1.5)), vector.Unit(p))
+	// Ensure we account for some buffer space around the agent by shifting
+	// the potential well peak to some physically outside the agent itself.
+	return vector.Scale(1/math.Max(1e-5, (separation-2)), vector.Unit(p))
 }

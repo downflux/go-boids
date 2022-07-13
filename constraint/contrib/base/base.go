@@ -1,6 +1,8 @@
 package base
 
 import (
+	"math"
+
 	"github.com/downflux/go-boids/agent"
 	"github.com/downflux/go-boids/constraint"
 	"github.com/downflux/go-boids/constraint/clamped"
@@ -38,14 +40,16 @@ func (c C) Accelerate(a agent.RO) vector.V {
 		constraint.Steer(
 			collision.New(collision.O{
 				T:      c.o.T,
-				Cutoff: a.MaxSpeed() + 5*c.o.R,
+				Cutoff: 7 * c.o.R,
 				Filter: c.o.CollisionFilter,
 			}),
 			c.o.CollisionWeight,
+			math.Inf(0),
 		),
 		constraint.Steer(
 			arrival.New(arrival.O{}),
 			c.o.ArrivalWeight,
+			a.MaxNetAcceleration(),
 		),
 	}).Accelerate(a)
 }

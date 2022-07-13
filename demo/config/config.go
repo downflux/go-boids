@@ -81,8 +81,8 @@ func GenerateGrid(h int, w int) C {
 	}
 
 	r := math.Inf(-1)
-	for range c.Agents {
-		r = math.Max(r, 0)
+	for _, a := range c.Agents {
+		r = math.Max(r, a.R())
 	}
 	c.MaxRadius = r
 

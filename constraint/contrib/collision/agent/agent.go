@@ -56,15 +56,9 @@ func (c C) Accelerate(a agent.RO) vector.V {
 	}
 
 	r := c.o.Obstacle.R() + a.R()
-	separation := math.Max(
-		1e-5, vector.Magnitude(p)/r)
+	separation := vector.Magnitude(p) / r
 
-	if separation < 1 {
-		a.Logger().Printf(
-			"Physical collision detected: (%.2f, %.2f), r = %.2f with (%.2f, %.2f) r = %.2f",
-			a.P().X(), a.P().Y(), a.R(),
-			c.o.Obstacle.P().X(), c.o.Obstacle.P().Y(), c.o.Obstacle.R())
-	}
-
-	return vector.Scale(1/separation, vector.Unit(p))
+	// Ensure we account for some buffer space around the agent by shifting
+	// the potential well peak to some physically outside the agent itself.
+	return vector.Scale(1/math.Max(1e-5, (separation-2)), vector.Unit(p))
 }

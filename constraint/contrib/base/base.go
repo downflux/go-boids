@@ -41,6 +41,12 @@ func New(o O) *C {
 
 func (c C) Accelerate(a agent.RO) vector.V {
 	return clamped.New([]constraint.C{
+		// TODO(minkezhang): Set the acceleration directly as a
+		// constraint here to re-inforce the near-hard sphere collision.
+		// The radius of influence for this constraint should be
+		// basically a delta function. The collision avoidance potential
+		// is a separate smoothing function layered on top of the actual
+		// collision constraint.
 		constraint.Steer(
 			collision.New(collision.O{
 				T:      c.o.T,

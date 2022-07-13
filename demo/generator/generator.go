@@ -25,6 +25,7 @@ func main() {
 
 	c, ok := map[string]config.C{
 		"grid":      config.GenerateGrid(10, 10),
+		"arrival":   config.GenerateArrival(),
 		"collision": config.GenerateCollision(),
 	}[*mode]
 	if !ok {

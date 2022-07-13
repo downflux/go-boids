@@ -34,19 +34,19 @@ func GenerateCollision() C {
 			mock.Lamborghini(mock.O{
 				ID:   mock.DebugID("A"),
 				P:    *vector.New(50, 100),
-				V:    *vector.New(10, 0),
+				V:    *vector.New(30, 0),
 				Goal: *vector.New(100, 100),
 			}),
 			mock.Lamborghini(mock.O{
 				ID:   mock.DebugID("B"),
 				P:    *vector.New(70, 100),
-				V:    *vector.New(-10, 0),
+				V:    *vector.New(-30, 0),
 				Goal: *vector.New(0, 100),
 			}),
 			mock.Lamborghini(mock.O{
 				ID:   mock.DebugID("C"),
 				P:    *vector.New(65, 130),
-				V:    *vector.New(0, -10),
+				V:    *vector.New(0, -3330),
 				Goal: *vector.New(65, 20),
 			}),
 		},

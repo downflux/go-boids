@@ -25,6 +25,22 @@ func rv(min, max float64) vector.V {
 	)
 }
 
+func GenerateArrival() C {
+	return C{
+		Height:    100,
+		Width:     100,
+		MaxRadius: 10,
+		Agents: []*mock.A{
+			mock.Lamborghini(mock.O{
+				ID:   mock.DebugID("A"),
+				P:    *vector.New(25, 25),
+				V:    *vector.New(-30, 0),
+				Goal: *vector.New(75, 75),
+			}),
+		},
+	}
+}
+
 func GenerateCollision() C {
 	return C{
 		Height:    200,

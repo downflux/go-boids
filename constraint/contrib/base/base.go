@@ -6,6 +6,7 @@ import (
 	"github.com/downflux/go-boids/agent"
 	"github.com/downflux/go-boids/constraint"
 	"github.com/downflux/go-boids/constraint/clamped"
+	"github.com/downflux/go-boids/constraint/contrib/alignment"
 	"github.com/downflux/go-boids/constraint/contrib/arrival"
 	"github.com/downflux/go-boids/constraint/contrib/collision"
 	"github.com/downflux/go-boids/kd"
@@ -23,6 +24,9 @@ type O struct {
 	CollisionFilter func(a agent.RO) bool
 
 	ArrivalWeight float64
+
+	AlignmentWeight float64
+	AlignmentFilter func(a agent.RO) bool
 }
 
 type C struct {
@@ -49,6 +53,15 @@ func (c C) Accelerate(a agent.RO) vector.V {
 		constraint.Steer(
 			arrival.New(arrival.O{}),
 			c.o.ArrivalWeight,
+			a.MaxNetAcceleration(),
+		),
+		constraint.Steer(
+			alignment.New(alignment.O{
+				T:      c.o.T,
+				Cutoff: 10 * c.o.R,
+				Filter: c.o.AlignmentFilter,
+			}),
+			c.o.AlignmentWeight,
 			a.MaxNetAcceleration(),
 		),
 	}).Accelerate(a)

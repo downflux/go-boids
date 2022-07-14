@@ -99,6 +99,9 @@ func BenchmarkStep(b *testing.B) {
 					CollisionWeight: 50,
 					CollisionFilter: func(a agent.RO) bool { return true },
 					ArrivalWeight:   6,
+
+					AlignmentWeight: 6,
+					AlignmentFilter: func(a agent.RO) bool { return true },
 				})
 			}
 		})

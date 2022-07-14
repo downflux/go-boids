@@ -167,10 +167,13 @@ func main() {
 			T:   bkd.Lift(t),
 			Tau: tau,
 
-			CollisionWeight: 30,
+			CollisionWeight: 40,
 			CollisionFilter: func(a agent.RO) bool { return true },
 
-			ArrivalWeight: 20,
+			ArrivalWeight: 10,
+
+			AlignmentWeight: 20,
+			AlignmentFilter: func(a agent.RO) bool { return true },
 
 			PoolSize:  4 * runtime.GOMAXPROCS(0),
 			MaxRadius: e.radius,

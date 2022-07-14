@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math"
 
 	"github.com/downflux/go-boids/agent"
 	"github.com/downflux/go-boids/internal/geometry/2d/vector/polar"
@@ -93,7 +94,12 @@ func (a *A) MaxNetAcceleration() float64 {
 	}
 	return a.o.MaxNetForce / a.o.Mass
 }
-func (a *A) MaxSpeed() float64 { return a.o.MaxSpeed }
+func (a *A) MaxSpeed() float64 {
+	if d := vector.Magnitude(vector.Sub(a.P(), a.Goal())); d < 1.5*a.R() {
+		return math.Min(a.o.MaxSpeed, d*a.o.MaxSpeed)
+	}
+	return a.o.MaxSpeed
+}
 
 func (a *A) SetP(v vector.V)      { a.o.P = v }
 func (a *A) SetV(v vector.V)      { a.o.V = v }

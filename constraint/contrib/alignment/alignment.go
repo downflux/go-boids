@@ -5,10 +5,12 @@ import (
 
 	"github.com/downflux/go-boids/agent"
 	"github.com/downflux/go-boids/constraint"
+	"github.com/downflux/go-boids/constraint/weighted"
 	"github.com/downflux/go-boids/kd"
 	"github.com/downflux/go-geometry/nd/hypersphere"
 	"github.com/downflux/go-geometry/nd/vector"
 
+	ca "github.com/downflux/go-boids/constraint/contrib/alignment/agent"
 	v2d "github.com/downflux/go-geometry/2d/vector"
 )
 
@@ -43,10 +45,12 @@ func (c C) Accelerate(a agent.RO) v2d.V {
 		panic(fmt.Sprintf("could not find neighbors for KD-tree: %v", err))
 	}
 
-	result := *v2d.New(0, 0)
+	var cs []constraint.C
+	var ws []float64
 	for _, n := range neighbors {
-		result = v2d.Add(result, v2d.Scale(1.0/float64(len(neighbors)), n.Agent().V()))
+		cs = append(cs, ca.New(ca.O{Neighbor: n.Agent()}))
+		ws = append(ws, 1)
 	}
 
-	return result
+	return weighted.New(cs, ws).Accelerate(a)
 }

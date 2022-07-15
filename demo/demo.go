@@ -175,6 +175,9 @@ func main() {
 			AlignmentWeight: 20,
 			AlignmentFilter: func(a agent.RO) bool { return true },
 
+			CohesionWeight: 10,
+			CohesionFilter: func(a agent.RO) bool { return true },
+
 			PoolSize:  4 * runtime.GOMAXPROCS(0),
 			MaxRadius: e.radius,
 		})

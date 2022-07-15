@@ -170,7 +170,7 @@ func main() {
 			CollisionWeight: 40,
 			CollisionFilter: func(a agent.RO) bool { return true },
 
-			ArrivalWeight: 10,
+			ArrivalWeight: 30,
 
 			AlignmentWeight: 20,
 			AlignmentFilter: func(a agent.RO) bool { return true },

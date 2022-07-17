@@ -27,6 +27,9 @@ type O struct {
 
 	AlignmentWeight float64
 	AlignmentFilter func(a agent.RO) bool
+
+	CohesionWeight float64
+	CohesionFilter func(a agent.RO) bool
 }
 
 type C struct {
@@ -47,6 +50,8 @@ func (c C) Accelerate(a agent.RO) vector.V {
 		// basically a delta function. The collision avoidance potential
 		// is a separate smoothing function layered on top of the actual
 		// collision constraint.
+		// TODO(minkezhang): Change collision constraint to be
+		// anticipatory.
 		constraint.Steer(
 			collision.New(collision.O{
 				T:      c.o.T,
@@ -68,6 +73,15 @@ func (c C) Accelerate(a agent.RO) vector.V {
 				Filter: c.o.AlignmentFilter,
 			}),
 			c.o.AlignmentWeight,
+			a.MaxNetAcceleration(),
+		),
+		constraint.Steer(
+			collision.New(collision.O{
+				T:      c.o.T,
+				Cutoff: 10 * c.o.R,
+				Filter: c.o.CohesionFilter,
+			}),
+			-c.o.CohesionWeight,
 			a.MaxNetAcceleration(),
 		),
 	}).Accelerate(a)

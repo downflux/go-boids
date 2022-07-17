@@ -8,6 +8,7 @@ import (
 	"github.com/downflux/go-boids/constraint/clamped"
 	"github.com/downflux/go-boids/constraint/contrib/alignment"
 	"github.com/downflux/go-boids/constraint/contrib/arrival"
+	"github.com/downflux/go-boids/constraint/contrib/cohesion"
 	"github.com/downflux/go-boids/constraint/contrib/collision"
 	"github.com/downflux/go-boids/kd"
 	"github.com/downflux/go-geometry/2d/vector"
@@ -76,7 +77,7 @@ func (c C) Accelerate(a agent.RO) vector.V {
 			a.MaxNetAcceleration(),
 		),
 		constraint.Steer(
-			collision.New(collision.O{
+			cohesion.New(cohesion.O{
 				T:      c.o.T,
 				Cutoff: 10 * c.o.R,
 				Filter: c.o.CohesionFilter,

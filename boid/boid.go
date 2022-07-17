@@ -27,6 +27,9 @@ type O struct {
 
 	AlignmentWeight float64
 	AlignmentFilter func(a agent.RO) bool
+
+	CohesionWeight float64
+	CohesionFilter func(a agent.RO) bool
 }
 
 type Mutation struct {
@@ -68,6 +71,9 @@ func Step(o O) []Mutation {
 
 		AlignmentWeight: o.AlignmentWeight,
 		AlignmentFilter: o.AlignmentFilter,
+
+		CohesionWeight: o.CohesionWeight,
+		CohesionFilter: o.CohesionFilter,
 	}
 	for i := 0; i < n; i++ {
 		go func(ich <-chan agent.RO, och chan<- Mutation) {

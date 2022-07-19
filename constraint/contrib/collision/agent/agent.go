@@ -36,15 +36,15 @@ func jitter() vector.V {
 	)
 }
 func (c C) Accelerate(a agent.RO) vector.V {
-	v := vector.Add(a.V(), c.o.Obstacle.V())
+	v := vector.Sub(a.V(), c.o.Obstacle.V())
 	d := *hypersphere.New(c.o.Obstacle.P(), c.o.Obstacle.R()+a.R())
 
 	l := line.New(a.P(), v)
 	if pmin, pmax, ok := l.IntersectCircle(d); ok {
 		t := math.Inf(0)
 		var p vector.V
-		for _, pc := range []vector.V{pmin, pmax} {
-			if tc := l.T(pc); tc >= 0 && tc <= 1 && tc < t {
+		for _, pc := range []vector.V{pmin, a.P(), pmax} {
+			if tc := l.T(pc); tc >= -1 && tc <= 1 && tc < t {
 				t = tc
 				p = pc
 			}
@@ -63,6 +63,5 @@ func (c C) Accelerate(a agent.RO) vector.V {
 			)
 		}
 	}
-
 	return *vector.New(0, 0)
 }

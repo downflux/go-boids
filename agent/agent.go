@@ -44,16 +44,6 @@ func Steer(a RO, heading vector.V, tau float64) vector.V {
 	return vector.Sub(desired, a.V())
 }
 
-func Step(a RW, acceleration vector.V, tau float64) {
-	a.SetV(Clamp(vector.Add(a.V(), vector.Scale(tau, acceleration)), 0, a.MaxSpeed()))
-	a.SetP(vector.Add(a.P(), vector.Scale(tau, a.V())))
-
-	if !vector.Within(a.V(), *vector.New(0, 0)) {
-		// Set the heading parallel to the last moved tick direction.
-		a.SetHeading(*polar.New(1, polar.Polar(vector.Scale(tau, a.V())).Theta()))
-	}
-}
-
 func Validate(a RO) error {
 	if a.P() == nil {
 		return fmt.Errorf("agent position must be non-nil")

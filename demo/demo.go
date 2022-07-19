@@ -16,6 +16,7 @@ import (
 	"github.com/downflux/go-boids/agent/mock"
 	"github.com/downflux/go-boids/boid"
 	"github.com/downflux/go-boids/demo/config"
+	"github.com/downflux/go-boids/locomotion"
 	"github.com/downflux/go-geometry/nd/hyperrectangle"
 	"github.com/downflux/go-geometry/nd/vector"
 	"github.com/downflux/go-kd/kd"
@@ -138,6 +139,7 @@ func main() {
 	}
 
 	b := e.Bound()
+	mover := locomotion.New()
 
 	var frames []*image.Paletted
 	for i := 0; i < *n; i++ {
@@ -181,10 +183,12 @@ func main() {
 			PoolSize:  4 * runtime.GOMAXPROCS(0),
 			MaxRadius: e.radius,
 		})
+
+		// Assuming mutation is applied serially.
 		for _, m := range mutations {
 			a := m.Agent.(*mock.A)
 
-			agent.Step(a, m.Steering, tau)
+			mover.Mutate(a, m.Steering, tau)
 
 			// Model the system as a 2D toroid.
 			x, y := a.P().X(), a.P().Y()

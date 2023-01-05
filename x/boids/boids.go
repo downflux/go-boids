@@ -50,6 +50,7 @@ func (b *B) Tick(d time.Duration) {
 			)(a),
 		})
 		// TODO(minkezhang): ClampAngularVelocity
+		// TODO(minkezhang): Steer
 	}
 
 	for _, r := range results {

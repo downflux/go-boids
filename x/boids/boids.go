@@ -44,6 +44,7 @@ func (b *B) Tick(d time.Duration) {
 			targetVelocity: clamped.Clamped(
 				[]constraint.Accelerator{
 					separation.Separation(b.db, rsep),
+					// TODO(minkezhang): Cohesion.
 					seek.Seek,
 				}, a.MaxAcceleration(),
 			)(a),

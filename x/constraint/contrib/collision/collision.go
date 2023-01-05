@@ -17,9 +17,9 @@ func Collision(db *database.DB, r float64) constraint.Accelerator {
 		aabb := *hyperrectangle.New(
 			vnd.V{
 				x - r,
-				x + r,
-			}, vnd.V{
 				y - r,
+			}, vnd.V{
+				x + r,
 				y + r,
 			},
 		)

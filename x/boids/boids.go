@@ -34,6 +34,7 @@ func New(db *database.DB, o O) *B {
 	}
 }
 
+// TODO(minkezhang): Make concurrent.
 func (b *B) Tick(d time.Duration) {
 	results := make([]result, 0, 256)
 	for a := range b.db.ListAgents() {

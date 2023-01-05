@@ -38,7 +38,7 @@ func New(db *database.DB, o O) *B {
 
 func (b *B) Tick(d time.Duration) {
 	t := float64(d) / float64(time.Second)
-	t = 1
+	t = 2
 
 	results := make([]result, 0, 256)
 	for a := range b.db.ListAgents() {
@@ -49,12 +49,12 @@ func (b *B) Tick(d time.Duration) {
 					[]constraint.Accelerator{
 						collision.Collision(
 							b.db,
-							a.Radius()+vector.Magnitude(vector.Scale(t, a.Velocity())),
+							2*a.Radius()+vector.Magnitude(vector.Scale(t, a.Velocity())),
 						),
 						seek.Seek,
 					}, []float64{
-						3,
 						1,
+						3,
 					}))(a),
 		})
 	}

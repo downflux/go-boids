@@ -24,6 +24,8 @@ func Collision(db *database.DB, r float64) constraint.Accelerator {
 			},
 		)
 
+		// TODO(minkezhang): Only care about closest feature and / or
+		// agent.
 		v := vector.M{0, 0}
 		for _, obstacle := range db.QueryFeatures(aabb, func(f feature.RO) bool { return true }) {
 			v.Add(Feature(a, obstacle))
@@ -31,7 +33,7 @@ func Collision(db *database.DB, r float64) constraint.Accelerator {
 		for _, obstacle := range db.QueryAgents(aabb, func(b agent.RO) bool {
 			return AgentFilter(a, b)
 		}) {
-			v.Add(Agent(a, obstacle))
+			v.Add(SimpleAgent(a, obstacle))
 		}
 
 		return v.V()

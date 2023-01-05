@@ -1,16 +1,22 @@
 package collision
 
 import (
-	"math"
-
 	"github.com/downflux/go-database/agent"
 	"github.com/downflux/go-geometry/2d/vector"
 )
 
-func Agent(source agent.RO, obstacle agent.RO) vector.V {
-	p := vector.Sub(obstacle.Position(), source.Position())
-	r := source.Radius() + obstacle.Radius()
-	separation := vector.Magnitude(p) / r
+func SimpleAgent(source agent.RO, obstacle agent.RO) vector.V {
+	if vector.Dot(source.Velocity(), obstacle.Velocity()) >= 0 {
+		return vector.V{0, 0}
+	}
+
+	f := vector.M{0, 0}
+	f.Copy(source.Position())
+	f.Sub(obstacle.Position())
+	f.Scale(1 / vector.SquaredMagnitude(f.V()))
+
 	m := obstacle.Mass() / source.Mass()
-	return vector.Scale(m/math.Max(1e-5, separation-2), vector.Unit(p))
+	f.Scale(m)
+
+	return f.V()
 }

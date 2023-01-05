@@ -36,6 +36,16 @@ func TestSimpleAgent(t *testing.T) {
 			want:      vector.V{-0.1, 0},
 		},
 		{
+			name:      "Direct/Far/Light",
+			pSource:   vector.V{0, 0},
+			vSource:   vector.V{1, 0},
+			mSource:   1,
+			pObstacle: vector.V{10, 0},
+			vObstacle: vector.V{-1, 0},
+			mObstacle: 10,
+			want:      vector.V{-1, 0},
+		},
+		{
 			name:      "Direct/Near",
 			pSource:   vector.V{0, 0},
 			vSource:   vector.V{1, 0},

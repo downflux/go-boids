@@ -28,10 +28,16 @@ func Collision(db *database.DB, r float64) constraint.Accelerator {
 		for _, obstacle := range db.QueryFeatures(aabb, func(f feature.RO) bool { return true }) {
 			v.Add(Feature(a, obstacle))
 		}
-		for _, obstacle := range db.QueryAgents(aabb, func(a agent.RO) bool { return true }) {
+		for _, obstacle := range db.QueryAgents(aabb, func(b agent.RO) bool {
+			return AgentFilter(a, b)
+		}) {
 			v.Add(Agent(a, obstacle))
 		}
 
 		return v.V()
 	}
+}
+
+func AgentFilter(a, b agent.RO) bool {
+	return a.ID() != b.ID()
 }

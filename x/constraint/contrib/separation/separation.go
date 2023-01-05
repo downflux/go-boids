@@ -1,4 +1,4 @@
-package collision
+package separation
 
 import (
 	"github.com/downflux/go-boids/x/constraint"
@@ -11,7 +11,7 @@ import (
 	vnd "github.com/downflux/go-geometry/nd/vector"
 )
 
-func Collision(db *database.DB, r float64) constraint.Accelerator {
+func Separation(db *database.DB, r float64) constraint.Accelerator {
 	return func(a agent.RO) vector.V {
 		x, y := a.Position().X(), a.Position().Y()
 		aabb := *hyperrectangle.New(
@@ -33,13 +33,14 @@ func Collision(db *database.DB, r float64) constraint.Accelerator {
 		for _, obstacle := range db.QueryAgents(aabb, func(b agent.RO) bool {
 			return AgentFilter(a, b)
 		}) {
-			v.Add(SimpleAgent(a, obstacle))
+			v.Add(SimpleAgentWithSingularity(a, obstacle))
 		}
 
 		return v.V()
 	}
 }
 
+// TODO(minkezhang): Export Squishable, etc. in go-database.
 func AgentFilter(a, b agent.RO) bool {
 	return a.ID() != b.ID()
 }

@@ -1,4 +1,4 @@
-package collision
+package separation
 
 import (
 	"github.com/downflux/go-database/agent"

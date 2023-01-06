@@ -27,3 +27,4 @@ go tool pprof -tree -nodecount=10 cpu.out
 
 1. Parker, Conrad. "Boids Pseudocode."
    http://www.kfish.org/boids/pseudocode.html. 2023.
+1. slsdo. https://slsdo.github.io/steering-behaviors/

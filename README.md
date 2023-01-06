@@ -22,3 +22,8 @@ go test -v \
 
 go tool pprof -tree -nodecount=10 cpu.out
 ```
+
+## Sources
+
+1. Parker, Conrad. "Boids Pseudocode."
+   http://www.kfish.org/boids/pseudocode.html. 2023.

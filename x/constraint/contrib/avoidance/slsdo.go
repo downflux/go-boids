@@ -4,6 +4,7 @@ import (
 	"github.com/downflux/go-database/agent"
 	"github.com/downflux/go-geometry/2d/line"
 	"github.com/downflux/go-geometry/2d/vector"
+	"github.com/downflux/go-geometry/epsilon"
 )
 
 // SLSDO calculates a steering acceleration given an agent-agent interaction.
@@ -19,7 +20,6 @@ func SLSDO(a agent.RO, o agent.RO) vector.V {
 	op := o.Position()
 
 	l := line.New(ap, av)
-
 	buf := vector.M{0, 0}
 
 	// Check that we are traveling in the direction of the opposing agent.
@@ -29,13 +29,23 @@ func SLSDO(a agent.RO, o agent.RO) vector.V {
 		// hits.
 		r := 1.5 * (a.Radius() + o.Radius())
 		if d := l.Distance(op); d < r {
-			// Calculate the projected distance vector between the
-			// agent at passthrough point and the obstacle.
-			//
-			// TODO(minkezhang): Handle direct oncoming collisions.
-			buf.Copy(op)
-			buf.Sub(l.L(t))
-			buf.Unit()
+			// Handle the case of a head-on collision. In this case, we
+			// rotate the distance vector instead.
+			if epsilon.Absolute(1e-5).Within(d, 0) {
+				buf.Copy(op)
+				buf.Sub(ap)
+				buf.Copy(vector.V{
+					-buf.Y(),
+					buf.X(),
+				})
+				buf.Unit()
+			} else {
+				// Calculate the projected distance vector between the
+				// agent at passthrough point and the obstacle.
+				buf.Copy(op)
+				buf.Sub(l.L(t))
+				buf.Unit()
+			}
 			e := (r - d) / r * a.MaxVelocity()
 			e *= om / am
 			buf.Scale(-e)

@@ -1,4 +1,4 @@
-package clamped
+package weighted
 
 import (
 	"testing"
@@ -14,53 +14,46 @@ func mock(v vector.V) constraint.Accelerator {
 	return func(agent.RO) vector.V { return v }
 }
 
-func TestClamped(t *testing.T) {
+func TestWeightedAverage(t *testing.T) {
 	type config struct {
 		name         string
 		accelerators []constraint.Accelerator
-		limit        float64
+		weights      []float64
 		want         vector.V
 	}
 
 	configs := []config{
 		{
-			name:         "Empty",
-			accelerators: nil,
-			limit:        0,
+			name:         "Trivial",
+			accelerators: []constraint.Accelerator{},
+			weights:      []float64{},
 			want:         vector.V{0, 0},
 		},
 		{
-			name: "Trivial",
+			name: "Simple",
 			accelerators: []constraint.Accelerator{
-				mock(vector.V{1, 1}),
+				mock(vector.V{0, 2}),
+				mock(vector.V{2, 0}),
 			},
-			limit: 10,
-			want:  vector.V{1, 1},
+			weights: []float64{1, 1},
+			want:    vector.V{1, 1},
 		},
 		{
-			name: "TooLarge",
+			name: "FilterNoContrib",
 			accelerators: []constraint.Accelerator{
-				mock(vector.V{100, 0}),
+				mock(vector.V{0, 0}),
+				mock(vector.V{2, 0}),
 			},
-			limit: 10,
-			want:  vector.V{10, 0},
-		},
-		{
-			name: "Truncate",
-			accelerators: []constraint.Accelerator{
-				mock(vector.V{-1, 0}),
-				mock(vector.V{10, 0}),
-			},
-			limit: 10,
-			want:  vector.V{8, 0},
+			weights: []float64{1, 1},
+			want:    vector.V{2, 0},
 		},
 	}
 
 	for _, c := range configs {
 		t.Run(c.name, func(t *testing.T) {
-			got := Clamped(c.accelerators, c.limit)(&magent.A{})
+			got := WeightedAverage(c.accelerators, c.weights)(&magent.A{})
 			if !vector.Within(got, c.want) {
-				t.Errorf("Clamped() = %v, want = %v", got, c.want)
+				t.Errorf("WeightedAverage() = %v, want = %v", got, c.want)
 			}
 		})
 	}

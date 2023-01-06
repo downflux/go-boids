@@ -8,6 +8,7 @@ import (
 	"github.com/downflux/go-boids/x/constraint/contrib/seek"
 	"github.com/downflux/go-boids/x/constraint/contrib/separation"
 	"github.com/downflux/go-boids/x/constraint/steer"
+	"github.com/downflux/go-boids/x/constraint/weighted"
 	"github.com/downflux/go-database/agent"
 	"github.com/downflux/go-database/database"
 	"github.com/downflux/go-geometry/2d/vector"
@@ -44,10 +45,16 @@ func (b *B) Tick(d time.Duration) {
 			agent: a,
 			targetVelocity: clamped.Clamped(
 				[]constraint.Accelerator{
-					steer.Steer(separation.Separation(b.db, rsep)),
-					// TODO(minkezhang): Cohesion.
-					seek.Seek,
-				}, a.MaxAcceleration(),
+					weighted.WeightedAverage(
+						[]constraint.Accelerator{
+							steer.Steer(separation.Separation(b.db, rsep)),
+							// TODO(minkezhang): Cohesion.
+							seek.Seek,
+						},
+						[]float64{40, 30},
+					),
+				},
+				a.MaxAcceleration(),
 			)(a),
 		})
 		// TODO(minkezhang): ClampAngularVelocity

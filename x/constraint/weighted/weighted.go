@@ -7,40 +7,38 @@ import (
 	"github.com/downflux/go-geometry/epsilon"
 )
 
-const (
-	tolerance = 1e-5
-)
-
-func GenerateAverage(accelerators []constraint.Accelerator) constraint.Accelerator {
+func Average(accelerators []constraint.Accelerator) constraint.Accelerator {
 	ws := make([]float64, 0, len(accelerators))
 	for i := 0; i < len(ws); i++ {
 		ws[i] = 1
 	}
-	return GenerateWeightedAverage(accelerators, ws)
+	return WeightedAverage(accelerators, ws)
 }
 
-func GenerateWeightedAverage(accelerators []constraint.Accelerator, weights []float64) constraint.Accelerator {
+func WeightedAverage(accelerators []constraint.Accelerator, weights []float64) constraint.Accelerator {
 	if len(accelerators) != len(weights) {
 		panic("mismatching accelerator and weight lengths")
 	}
 
-	sum := 0.0
-	for _, w := range weights {
-		sum += w
-	}
-
 	return func(a agent.RO) vector.V {
+		sum := 0.0
 		v := vector.M{0, 0}
+
 		for i, accel := range accelerators {
 			u := vector.M{0, 0}
 			u.Copy(accel(a))
-			// We are using the weights to scale each vector instead
-			// of its innate magnitude.
-			if !epsilon.Absolute(tolerance).Within(vector.SquaredMagnitude(u.V()), 0) {
-				u.Unit()
-				u.Scale(weights[i] / sum)
+
+			// We will only track accelerators which contribute to
+			// the total.
+			if !epsilon.Absolute(1e-5).Within(vector.SquaredMagnitude(u.V()), 0) {
+				sum += weights[i]
+				u.Scale(weights[i])
 			}
 			v.Add(u.V())
+		}
+
+		if !epsilon.Within(sum, 0) {
+			v.Scale(1 / sum)
 		}
 
 		return v.V()

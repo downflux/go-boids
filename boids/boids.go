@@ -78,8 +78,13 @@ func New(db *database.DB, o O) *B {
 // TODO(minkezhang): Make concurrent.
 func (b *B) Tick(d time.Duration) {
 	t := float64(d) / float64(time.Second)
+
 	results := make([]result, 0, 256)
 	for a := range b.db.ListAgents() {
+		arrivalR := b.arrivalHorizon * a.Radius()
+		alignmentR := b.alignmentHorizon * a.Radius()
+		avoidanceR := a.Radius() + b.avoidanceHorizon*vector.Magnitude(a.Velocity())
+
 		results = append(results, result{
 			agent: a,
 			steer: clamped.Clamped(
@@ -87,10 +92,7 @@ func (b *B) Tick(d time.Duration) {
 					// First term in this clamped velocity
 					// allows collision avoidance to take
 					// precedent.
-					scale.Scale(b.avoidanceWeight, avoidance.Avoid(
-						b.db,
-						time.Duration(int(b.avoidanceHorizon*float64(time.Second))),
-					)),
+					scale.Scale(b.avoidanceWeight, avoidance.Avoid(b.db, avoidanceR)),
 					// Second term in this clamped velocity
 					// allows contribution from all sources.
 					clamped.Clamped(
@@ -102,8 +104,8 @@ func (b *B) Tick(d time.Duration) {
 							// agent.Stable() to
 							// indicate the agent
 							// should stop.
-							scale.Scale(b.arrivalWeight, arrival.SLSDO(b.arrivalHorizon*a.Radius())),
-							scale.Scale(b.alignmentWeight, alignment.Align(b.db, b.alignmentHorizon*a.Radius())),
+							scale.Scale(b.arrivalWeight, arrival.SLSDO(arrivalR)),
+							scale.Scale(b.alignmentWeight, alignment.Align(b.db, alignmentR)),
 						},
 						math.Inf(1),
 					),

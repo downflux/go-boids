@@ -2,7 +2,6 @@ package avoidance
 
 import (
 	"sort"
-	"time"
 
 	"github.com/downflux/go-boids/constraint"
 	"github.com/downflux/go-boids/constraint/clamped"
@@ -15,12 +14,8 @@ import (
 	vnd "github.com/downflux/go-geometry/nd/vector"
 )
 
-func Avoid(db *database.DB, d time.Duration) constraint.Accelerator {
-	t := float64(float64(d) / float64(time.Second))
-
+func Avoid(db *database.DB, r float64) constraint.Accelerator {
 	return func(a agent.RO) vector.V {
-		window := t * vector.Magnitude(a.Velocity())
-		r := a.Radius() + window
 		x, y := a.Position().X(), a.Position().Y()
 		// Check for collision in the upcoming window.
 		aabb := *hyperrectangle.New(

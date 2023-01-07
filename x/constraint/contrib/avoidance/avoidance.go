@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/downflux/go-boids/x/constraint"
+	"github.com/downflux/go-boids/x/constraint/clamped"
 	"github.com/downflux/go-database/agent"
 	"github.com/downflux/go-database/database"
 	"github.com/downflux/go-database/filters"
@@ -34,16 +35,15 @@ func Avoid(db *database.DB, d time.Duration) constraint.Accelerator {
 		// TODO(minkezhang): Only care about closest feature and / or
 		// agent.
 		//
-		// TODO(minkezhang): Add clamped magnitude.
-		//
 		// TODO(minkezhang): Add feature avoidance.
-		v := vector.M{0, 0}
+		cs := []constraint.Accelerator{}
 		for _, obstacle := range db.QueryAgents(aabb, func(b agent.RO) bool {
 			return a.ID() != b.ID() && !filters.AgentIsSquishable(a, b)
 		}) {
-			v.Add(SLSDO(a, obstacle))
+			cs = append(cs, func(a agent.RO) vector.V {
+				return SLSDO(a, obstacle)
+			})
 		}
-
-		return v.V()
+		return clamped.Clamped(cs, a.MaxAcceleration())(a)
 	}
 }

@@ -9,6 +9,7 @@ import (
 	"github.com/downflux/go-boids/constraint/contrib/arrival"
 	"github.com/downflux/go-boids/constraint/contrib/avoidance"
 	"github.com/downflux/go-boids/constraint/contrib/seek"
+	"github.com/downflux/go-boids/constraint/contrib/separation"
 	"github.com/downflux/go-boids/constraint/utils"
 	"github.com/downflux/go-database/agent"
 	"github.com/downflux/go-database/database"
@@ -31,32 +32,46 @@ var (
 
 		AlignmentWeight:  0.5,
 		AlignmentHorizon: 2,
+
+		SeparationWeight:  0.5,
+		SeparationHorizon: 2,
+
+		CohesionWeight:  0.4,
+		CohesionHorizon: 5,
 	}
 )
 
 type O struct {
 	PoolSize int
 
-	AvoidanceWeight  float64
-	AvoidanceHorizon float64
-	SeekWeight       float64
-	ArrivalWeight    float64
-	ArrivalHorizon   float64
-	AlignmentWeight  float64
-	AlignmentHorizon float64
+	AvoidanceWeight   float64
+	AvoidanceHorizon  float64
+	SeekWeight        float64
+	ArrivalWeight     float64
+	ArrivalHorizon    float64
+	AlignmentWeight   float64
+	AlignmentHorizon  float64
+	SeparationWeight  float64
+	SeparationHorizon float64
+	CohesionWeight    float64
+	CohesionHorizon   float64
 }
 
 type B struct {
 	db       *database.DB
 	poolSize int
 
-	avoidanceWeight  float64
-	avoidanceHorizon float64
-	seekWeight       float64
-	arrivalWeight    float64
-	arrivalHorizon   float64
-	alignmentWeight  float64
-	alignmentHorizon float64
+	avoidanceWeight   float64
+	avoidanceHorizon  float64
+	seekWeight        float64
+	arrivalWeight     float64
+	arrivalHorizon    float64
+	alignmentWeight   float64
+	alignmentHorizon  float64
+	separationWeight  float64
+	separationHorizon float64
+	cohesionWeight    float64
+	cohesionHorizon   float64
 }
 
 func New(db *database.DB, o O) *B {
@@ -64,13 +79,17 @@ func New(db *database.DB, o O) *B {
 		db:       db,
 		poolSize: o.PoolSize,
 
-		avoidanceWeight:  o.AvoidanceWeight,
-		avoidanceHorizon: o.AvoidanceHorizon,
-		seekWeight:       o.SeekWeight,
-		arrivalWeight:    o.ArrivalWeight,
-		arrivalHorizon:   o.ArrivalHorizon,
-		alignmentWeight:  o.AlignmentWeight,
-		alignmentHorizon: o.AlignmentHorizon,
+		avoidanceWeight:   o.AvoidanceWeight,
+		avoidanceHorizon:  o.AvoidanceHorizon,
+		seekWeight:        o.SeekWeight,
+		arrivalWeight:     o.ArrivalWeight,
+		arrivalHorizon:    o.ArrivalHorizon,
+		alignmentWeight:   o.AlignmentWeight,
+		alignmentHorizon:  o.AlignmentHorizon,
+		separationWeight:  o.SeparationWeight,
+		separationHorizon: o.SeparationHorizon,
+		cohesionWeight:    o.CohesionWeight,
+		cohesionHorizon:   o.CohesionHorizon,
 	}
 }
 
@@ -83,6 +102,8 @@ func (b *B) Tick(d time.Duration) {
 		arrivalR := b.arrivalHorizon * a.Radius()
 		alignmentR := b.alignmentHorizon * a.Radius()
 		avoidanceR := a.Radius() + b.avoidanceHorizon*vector.Magnitude(a.Velocity())
+		separationR := b.separationHorizon * a.Radius()
+		cohesionR := b.cohesionHorizon * a.Radius()
 
 		// First term in this clamped velocity allows collision
 		// avoidance to take precedent.
@@ -91,13 +112,13 @@ func (b *B) Tick(d time.Duration) {
 		// Second term in this clamped velocity allows contribution from
 		// all sources.
 		weighted := []constraint.Accelerator{
-			// TODO(minkezhang): Cohesion.
-			// TODO(minkezhang): Separation.
 			utils.Scale(b.seekWeight, seek.SLSDO(a.TargetPosition())),
 			// TODO(minkezhang): Add agent.Stable() to indicate the
 			// agent should stop.
 			utils.Scale(b.arrivalWeight, arrival.SLSDO(a.TargetPosition(), arrivalR)),
 			utils.Scale(b.alignmentWeight, alignment.Align(b.db, alignmentR)),
+			utils.Scale(b.separationWeight, separation.Separation(b.db, separationR)),
+			utils.Scale(-b.cohesionWeight, separation.Separation(b.db, cohesionR)),
 		}
 
 		results = append(results, result{

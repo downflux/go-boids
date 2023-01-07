@@ -12,11 +12,11 @@ import (
 // goal.
 //
 // See https://slsdo.github.io/steering-behaviors/ for more information.
-func SLSDO(r float64) constraint.Accelerator {
+func SLSDO(v vector.V, r float64) constraint.Accelerator {
 	return steer.Steer(
 		func(a agent.RO) vector.V {
 			buf := vector.M{0, 0}
-			buf.Copy(a.TargetPosition())
+			buf.Copy(v)
 			buf.Sub(a.Position())
 			e := a.MaxVelocity()
 			if d := vector.Magnitude(buf.V()); d < r {

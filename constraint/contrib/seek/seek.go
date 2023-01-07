@@ -1,6 +1,7 @@
 package seek
 
 import (
+	"github.com/downflux/go-boids/constraint"
 	"github.com/downflux/go-boids/constraint/steer"
 	"github.com/downflux/go-database/agent"
 	"github.com/downflux/go-geometry/2d/vector"
@@ -11,14 +12,14 @@ import (
 // numerous sources.
 //
 // See https://slsdo.github.io/steering-behaviors/ for more information.
-func SLSDO(a agent.RO) vector.V {
+func SLSDO(v vector.V) constraint.Accelerator {
 	return steer.Steer(
 		func(a agent.RO) vector.V {
 			buf := vector.M{0, 0}
-			buf.Copy(a.TargetPosition())
+			buf.Copy(v)
 			buf.Sub(a.Position())
 			buf.Scale(a.MaxVelocity())
 			return buf.V()
 		},
-	)(a)
+	)
 }

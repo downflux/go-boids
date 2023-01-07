@@ -94,10 +94,10 @@ func (b *B) Tick(d time.Duration) {
 		weighted := []constraint.Accelerator{
 			// TODO(minkezhang): Cohesion.
 			// TODO(minkezhang): Separation.
-			scale.Scale(b.seekWeight, seek.SLSDO),
+			scale.Scale(b.seekWeight, seek.SLSDO(a.TargetPosition())),
 			// TODO(minkezhang): Add agent.Stable() to indicate the
 			// agent should stop.
-			scale.Scale(b.arrivalWeight, arrival.SLSDO(arrivalR)),
+			scale.Scale(b.arrivalWeight, arrival.SLSDO(a.TargetPosition(), arrivalR)),
 			scale.Scale(b.alignmentWeight, alignment.Align(b.db, alignmentR)),
 		}
 

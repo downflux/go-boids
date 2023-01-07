@@ -1,49 +1,46 @@
 package weighted
 
 import (
-	"fmt"
-	"math"
-
-	"github.com/downflux/go-boids/agent"
 	"github.com/downflux/go-boids/constraint"
+	"github.com/downflux/go-database/agent"
 	"github.com/downflux/go-geometry/2d/vector"
 	"github.com/downflux/go-geometry/epsilon"
 )
 
-var _ constraint.C = C{}
-
-type C struct {
-	cs []constraint.C
-	ws []float64
+func Average(accelerators []constraint.Accelerator) constraint.Accelerator {
+	ws := make([]float64, 0, len(accelerators))
+	for i := 0; i < len(ws); i++ {
+		ws[i] = 1
+	}
+	return WeightedAverage(accelerators, ws)
 }
 
-func New(cs []constraint.C, ws []float64) *C {
-	if len(cs) != len(ws) {
-		panic(fmt.Sprintf("mismatching constraint and weight lengths: %v != %v", len(cs), len(ws)))
-	}
-	return &C{
-		cs: cs,
-		ws: ws,
-	}
-}
-
-func (c C) Accelerate(a agent.RO) vector.V {
-	if len(c.cs) == 0 {
-		return *vector.New(0, 0)
+func WeightedAverage(accelerators []constraint.Accelerator, weights []float64) constraint.Accelerator {
+	if len(accelerators) != len(weights) {
+		panic("mismatching accelerator and weight lengths")
 	}
 
-	parts := 0.0
-	for _, w := range c.ws {
-		parts += w
-	}
+	return func(a agent.RO) vector.V {
+		sum := 0.0
+		v := vector.M{0, 0}
 
-	n := *vector.New(0, 0)
-	for i, d := range c.cs {
-		n = vector.Add(n, vector.Scale(c.ws[i]/parts, d.Accelerate(a)))
-	}
-	if epsilon.Within(vector.SquaredMagnitude(n), 0) {
-		return *vector.New(0, 0)
-	}
+		for i, accel := range accelerators {
+			u := vector.M{0, 0}
+			u.Copy(accel(a))
 
-	return vector.Scale(math.Min(a.MaxNetAcceleration(), vector.Magnitude(n)), vector.Unit(n))
+			// We will only track accelerators which contribute to
+			// the total.
+			if !epsilon.Absolute(1e-5).Within(vector.SquaredMagnitude(u.V()), 0) {
+				sum += weights[i]
+				u.Scale(weights[i])
+			}
+			v.Add(u.V())
+		}
+
+		if !epsilon.Within(sum, 0) {
+			v.Scale(1 / sum)
+		}
+
+		return v.V()
+	}
 }

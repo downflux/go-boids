@@ -6,6 +6,7 @@ import (
 	"github.com/downflux/go-boids/x/constraint"
 	"github.com/downflux/go-database/agent"
 	"github.com/downflux/go-database/database"
+	"github.com/downflux/go-database/filters"
 	"github.com/downflux/go-geometry/2d/vector"
 	"github.com/downflux/go-geometry/nd/hyperrectangle"
 
@@ -14,9 +15,10 @@ import (
 
 func Avoid(db *database.DB, d time.Duration) constraint.Accelerator {
 	t := float64(d / time.Second)
+	window := t * vector.Magnitude(a.Velocity())
 
 	return func(a agent.RO) vector.V {
-		r := a.Radius() + t*vector.Magnitude(a.Velocity())
+		r := a.Radius() + window
 		x, y := a.Position().X(), a.Position().Y()
 		// Check for collision in the upcoming window.
 		aabb := *hyperrectangle.New(
@@ -37,16 +39,11 @@ func Avoid(db *database.DB, d time.Duration) constraint.Accelerator {
 		// TODO(minkezhang): Add feature avoidance.
 		v := vector.M{0, 0}
 		for _, obstacle := range db.QueryAgents(aabb, func(b agent.RO) bool {
-			return AgentFilter(a, b)
+			return a.ID() != b.ID() && !filters.AgentIsSquishable(a, b)
 		}) {
 			v.Add(SLSDO(a, obstacle))
 		}
 
 		return v.V()
 	}
-}
-
-// TODO(minkezhang): Export Squishable, etc. in go-database.
-func AgentFilter(a, b agent.RO) bool {
-	return a.ID() != b.ID()
 }

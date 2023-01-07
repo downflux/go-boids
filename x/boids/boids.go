@@ -16,8 +16,10 @@ import (
 
 var (
 	DefaultO = O{
-		PoolSize:        24,
-		AvoidanceWeight: 5,
+		PoolSize: 24,
+
+		AvoidanceWeight:  5,
+		AvoidanceHorizon: 1,
 
 		// TODO(minkezhang): Add an agent.Mode() which conditionally
 		// uses selective steering behaviors.
@@ -31,20 +33,22 @@ var (
 type O struct {
 	PoolSize int
 
-	AvoidanceWeight float64
-	SeekWeight      float64
-	ArrivalWeight   float64
-	ArrivalHorizon  float64
+	AvoidanceWeight  float64
+	AvoidanceHorizon float64
+	SeekWeight       float64
+	ArrivalWeight    float64
+	ArrivalHorizon   float64
 }
 
 type B struct {
 	db       *database.DB
 	poolSize int
 
-	avoidanceWeight float64
-	seekWeight      float64
-	arrivalWeight   float64
-	arrivalHorizon  float64
+	avoidanceWeight  float64
+	avoidanceHorizon float64
+	seekWeight       float64
+	arrivalWeight    float64
+	arrivalHorizon   float64
 }
 
 func New(db *database.DB, o O) *B {
@@ -52,10 +56,11 @@ func New(db *database.DB, o O) *B {
 		db:       db,
 		poolSize: o.PoolSize,
 
-		avoidanceWeight: o.AvoidanceWeight,
-		seekWeight:      o.SeekWeight,
-		arrivalWeight:   o.ArrivalWeight,
-		arrivalHorizon:  o.ArrivalHorizon,
+		avoidanceWeight:  o.AvoidanceWeight,
+		avoidanceHorizon: o.AvoidanceHorizon,
+		seekWeight:       o.SeekWeight,
+		arrivalWeight:    o.ArrivalWeight,
+		arrivalHorizon:   o.ArrivalHorizon,
 	}
 }
 
@@ -68,7 +73,10 @@ func (b *B) Tick(d time.Duration) {
 			agent: a,
 			steer: clamped.Clamped(
 				[]constraint.Accelerator{
-					scale.Scale(b.avoidanceWeight, avoidance.Avoid(b.db, time.Second)),
+					scale.Scale(b.avoidanceWeight, avoidance.Avoid(
+						b.db,
+						time.Duration(int(b.avoidanceHorizon*float64(time.Second))),
+					)),
 					// TODO(minkezhang): Cohesion.
 					scale.Scale(b.seekWeight, seek.SLSDO),
 					scale.Scale(b.arrivalWeight, arrival.SLSDO(b.arrivalHorizon*a.Radius())),

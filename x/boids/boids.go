@@ -5,6 +5,7 @@ import (
 
 	"github.com/downflux/go-boids/x/constraint"
 	"github.com/downflux/go-boids/x/constraint/clamped"
+	"github.com/downflux/go-boids/x/constraint/contrib/arrival"
 	"github.com/downflux/go-boids/x/constraint/contrib/avoidance"
 	"github.com/downflux/go-boids/x/constraint/contrib/seek"
 	"github.com/downflux/go-boids/x/constraint/scale"
@@ -17,7 +18,13 @@ var (
 	DefaultO = O{
 		PoolSize:        24,
 		AvoidanceWeight: 5,
-		SeekWeight:      1,
+
+		// TODO(minkezhang): Add an agent.Mode() which conditionally
+		// uses selective steering behaviors.
+		SeekWeight: 0,
+
+		ArrivalWeight:  1,
+		ArrivalHorizon: 3,
 	}
 )
 
@@ -26,6 +33,8 @@ type O struct {
 
 	AvoidanceWeight float64
 	SeekWeight      float64
+	ArrivalWeight   float64
+	ArrivalHorizon  float64
 }
 
 type B struct {
@@ -34,6 +43,8 @@ type B struct {
 
 	avoidanceWeight float64
 	seekWeight      float64
+	arrivalWeight   float64
+	arrivalHorizon  float64
 }
 
 func New(db *database.DB, o O) *B {
@@ -43,6 +54,8 @@ func New(db *database.DB, o O) *B {
 
 		avoidanceWeight: o.AvoidanceWeight,
 		seekWeight:      o.SeekWeight,
+		arrivalWeight:   o.ArrivalWeight,
+		arrivalHorizon:  o.ArrivalHorizon,
 	}
 }
 
@@ -57,8 +70,8 @@ func (b *B) Tick(d time.Duration) {
 				[]constraint.Accelerator{
 					scale.Scale(b.avoidanceWeight, avoidance.Avoid(b.db, time.Second)),
 					// TODO(minkezhang): Cohesion.
-					// TODO(minkezhang): Arrival.
 					scale.Scale(b.seekWeight, seek.SLSDO),
+					scale.Scale(b.arrivalWeight, arrival.SLSDO(b.arrivalHorizon*a.Radius())),
 				},
 				a.MaxAcceleration(),
 			)(a),

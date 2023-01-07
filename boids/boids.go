@@ -30,6 +30,11 @@ var (
 		ArrivalWeight:  1,
 		ArrivalHorizon: 3,
 
+		// FlockingWeight is a metaparameter which touches the
+		// alignment, separation, and cohesion weights while keeping
+		// their relative strengths.
+		FlockingWeight: 1,
+
 		AlignmentWeight:  0.5,
 		AlignmentHorizon: 2,
 
@@ -55,6 +60,7 @@ type O struct {
 	SeparationHorizon float64
 	CohesionWeight    float64
 	CohesionHorizon   float64
+	FlockingWeight    float64
 }
 
 type B struct {
@@ -84,11 +90,11 @@ func New(db *database.DB, o O) *B {
 		seekWeight:        o.SeekWeight,
 		arrivalWeight:     o.ArrivalWeight,
 		arrivalHorizon:    o.ArrivalHorizon,
-		alignmentWeight:   o.AlignmentWeight,
+		alignmentWeight:   o.FlockingWeight * o.AlignmentWeight,
 		alignmentHorizon:  o.AlignmentHorizon,
-		separationWeight:  o.SeparationWeight,
+		separationWeight:  o.FlockingWeight * o.SeparationWeight,
 		separationHorizon: o.SeparationHorizon,
-		cohesionWeight:    o.CohesionWeight,
+		cohesionWeight:    o.FlockingWeight * o.CohesionWeight,
 		cohesionHorizon:   o.CohesionHorizon,
 	}
 }
@@ -126,7 +132,7 @@ func (b *B) Tick(d time.Duration) {
 			steer: utils.Clamped(
 				[]constraint.Accelerator{
 					collision,
-					utils.Clamped(weighted, math.Inf(1)),
+					utils.Sum(weighted),
 				},
 				a.MaxAcceleration(),
 			)(a),

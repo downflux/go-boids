@@ -46,7 +46,16 @@ func SLSDO(a agent.RO, o agent.RO) vector.V {
 				buf.Sub(l.L(t))
 				buf.Unit()
 			}
-			e := (r - d) / r * a.MaxVelocity()
+
+			// N.B.: buf here is already the steering vector. The
+			// desired velocity can be calculated as
+			//
+			//  v' = a.V() + steer
+			//
+			// Since the steering vector is easier to calculate than
+			// the desired velocity directly, we will skip
+			// needlessly invoking the steering constraint.
+			e := (r - d) / r * a.MaxAcceleration()
 			e *= om / am
 			buf.Scale(-e)
 		}

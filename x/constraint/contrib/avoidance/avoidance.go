@@ -24,13 +24,7 @@ func Avoid(db *database.DB, d time.Duration) constraint.Accelerator {
 		x, y := a.Position().X(), a.Position().Y()
 		// Check for collision in the upcoming window.
 		aabb := *hyperrectangle.New(
-			vnd.V{
-				x - r,
-				y - r,
-			}, vnd.V{
-				x + r,
-				y + r,
-			},
+			vnd.V{x - r, y - r}, vnd.V{x + r, y + r},
 		)
 
 		// Use a clamping function to ensure some amount of action will

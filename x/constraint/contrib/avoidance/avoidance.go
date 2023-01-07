@@ -15,9 +15,9 @@ import (
 
 func Avoid(db *database.DB, d time.Duration) constraint.Accelerator {
 	t := float64(d / time.Second)
-	window := t * vector.Magnitude(a.Velocity())
 
 	return func(a agent.RO) vector.V {
+		window := t * vector.Magnitude(a.Velocity())
 		r := a.Radius() + window
 		x, y := a.Position().X(), a.Position().Y()
 		// Check for collision in the upcoming window.

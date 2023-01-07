@@ -32,7 +32,7 @@ var (
 		// FlockingWeight is a metaparameter which touches the
 		// alignment, separation, and cohesion weights while keeping
 		// their relative strengths.
-		FlockingWeight: 1,
+		FlockingWeight: 1.5,
 
 		AlignmentWeight:  0.5,
 		AlignmentHorizon: 2,

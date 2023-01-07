@@ -85,30 +85,28 @@ func (b *B) Tick(d time.Duration) {
 		alignmentR := b.alignmentHorizon * a.Radius()
 		avoidanceR := a.Radius() + b.avoidanceHorizon*vector.Magnitude(a.Velocity())
 
+		// First term in this clamped velocity allows collision
+		// avoidance to take precedent.
+		collision := scale.Scale(b.avoidanceWeight, avoidance.Avoid(b.db, avoidanceR))
+
+		// Second term in this clamped velocity allows contribution from
+		// all sources.
+		weighted := []constraint.Accelerator{
+			// TODO(minkezhang): Cohesion.
+			// TODO(minkezhang): Separation.
+			scale.Scale(b.seekWeight, seek.SLSDO),
+			// TODO(minkezhang): Add agent.Stable() to indicate the
+			// agent should stop.
+			scale.Scale(b.arrivalWeight, arrival.SLSDO(arrivalR)),
+			scale.Scale(b.alignmentWeight, alignment.Align(b.db, alignmentR)),
+		}
+
 		results = append(results, result{
 			agent: a,
 			steer: clamped.Clamped(
 				[]constraint.Accelerator{
-					// First term in this clamped velocity
-					// allows collision avoidance to take
-					// precedent.
-					scale.Scale(b.avoidanceWeight, avoidance.Avoid(b.db, avoidanceR)),
-					// Second term in this clamped velocity
-					// allows contribution from all sources.
-					clamped.Clamped(
-						[]constraint.Accelerator{
-							// TODO(minkezhang): Cohesion.
-							// TODO(minkezhang): Separation.
-							scale.Scale(b.seekWeight, seek.SLSDO),
-							// TODO(minkezhang): Add
-							// agent.Stable() to
-							// indicate the agent
-							// should stop.
-							scale.Scale(b.arrivalWeight, arrival.SLSDO(arrivalR)),
-							scale.Scale(b.alignmentWeight, alignment.Align(b.db, alignmentR)),
-						},
-						math.Inf(1),
-					),
+					collision,
+					clamped.Clamped(weighted, math.Inf(1)),
 				},
 				a.MaxAcceleration(),
 			)(a),

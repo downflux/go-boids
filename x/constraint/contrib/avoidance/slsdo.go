@@ -34,10 +34,7 @@ func SLSDO(a agent.RO, o agent.RO) vector.V {
 			if epsilon.Absolute(1e-5).Within(d, 0) {
 				buf.Copy(op)
 				buf.Sub(ap)
-				buf.Copy(vector.V{
-					-buf.Y(),
-					buf.X(),
-				})
+				buf.Copy(vector.V{-buf.Y(), buf.X()})
 				buf.Unit()
 			} else {
 				// Calculate the projected distance vector between the

@@ -53,7 +53,7 @@ func (b *B) Tick(d time.Duration) {
 	for a := range b.db.ListAgents() {
 		results = append(results, result{
 			agent: a,
-			acceleration: clamped.Clamped(
+			steer: clamped.Clamped(
 				[]constraint.Accelerator{
 					scale.Scale(b.avoidanceWeight, avoidance.Avoid(b.db, time.Second)),
 					// TODO(minkezhang): Cohesion.
@@ -66,13 +66,13 @@ func (b *B) Tick(d time.Duration) {
 	}
 
 	for _, r := range results {
-		a := vector.Scale(t, r.acceleration)
+		a := vector.Scale(t, r.steer)
 		v := vector.Add(r.agent.Velocity(), a)
 		b.db.SetAgentTargetVelocity(r.agent.ID(), v)
 	}
 }
 
 type result struct {
-	agent        agent.RO
-	acceleration vector.V
+	agent agent.RO
+	steer vector.V
 }

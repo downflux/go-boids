@@ -1,6 +1,7 @@
 package avoidance
 
 import (
+	"sort"
 	"time"
 
 	"github.com/downflux/go-boids/x/constraint"
@@ -32,18 +33,37 @@ func Avoid(db *database.DB, d time.Duration) constraint.Accelerator {
 			},
 		)
 
-		// TODO(minkezhang): Only care about closest feature and / or
-		// agent.
+		// Use a clamping function to ensure some amount of action will
+		// be taken in the case the agent is stuck between multiple
+		// obstacles. See Reynolds 1987 for more information.
 		//
 		// TODO(minkezhang): Add feature avoidance.
-		cs := []constraint.Accelerator{}
+		es := []e{}
 		for _, obstacle := range db.QueryAgents(aabb, func(b agent.RO) bool {
+			// QueryAgents is an AABB query function -- we will
+			// manually filter out agents which lie within the AABB
+			// but outside the circle.
+			if d := vector.Magnitude(vector.Sub(a.Position(), b.Position())); d > r {
+				return false
+			}
 			return a.ID() != b.ID() && !filters.AgentIsSquishable(a, b)
 		}) {
-			cs = append(cs, func(a agent.RO) vector.V {
-				return SLSDO(a, obstacle)
+			es = append(es, e{
+				c: func(a agent.RO) vector.V { return SLSDO(a, obstacle) },
+				h: vector.SquaredMagnitude(vector.Sub(a.Position(), obstacle.Position())),
 			})
+		}
+		sort.Slice(es, func(i, j int) bool { return es[i].h < es[j].h })
+
+		cs := make([]constraint.Accelerator, 0, len(es))
+		for _, e := range es {
+			cs = append(cs, e.c)
 		}
 		return clamped.Clamped(cs, a.MaxAcceleration())(a)
 	}
+}
+
+type e struct {
+	c constraint.Accelerator
+	h float64
 }

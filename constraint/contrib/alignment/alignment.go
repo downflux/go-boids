@@ -2,7 +2,7 @@ package alignment
 
 import (
 	"github.com/downflux/go-boids/constraint"
-	"github.com/downflux/go-boids/constraint/steer"
+	"github.com/downflux/go-boids/constraint/utils"
 	"github.com/downflux/go-database/agent"
 	"github.com/downflux/go-database/database"
 	"github.com/downflux/go-database/filters"
@@ -13,10 +13,9 @@ import (
 )
 
 func Align(db *database.DB, r float64) constraint.Accelerator {
-	return steer.Steer(
+	return utils.Steer(
 		func(a agent.RO) vector.V {
 			x, y := a.Position().X(), a.Position().Y()
-			// Check for collision in the upcoming window.
 			aabb := *hyperrectangle.New(
 				vnd.V{x - r, y - r}, vnd.V{x + r, y + r},
 			)

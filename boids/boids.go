@@ -5,12 +5,11 @@ import (
 	"time"
 
 	"github.com/downflux/go-boids/constraint"
-	"github.com/downflux/go-boids/constraint/clamped"
 	"github.com/downflux/go-boids/constraint/contrib/alignment"
 	"github.com/downflux/go-boids/constraint/contrib/arrival"
 	"github.com/downflux/go-boids/constraint/contrib/avoidance"
 	"github.com/downflux/go-boids/constraint/contrib/seek"
-	"github.com/downflux/go-boids/constraint/scale"
+	"github.com/downflux/go-boids/constraint/utils"
 	"github.com/downflux/go-database/agent"
 	"github.com/downflux/go-database/database"
 	"github.com/downflux/go-geometry/2d/vector"
@@ -87,26 +86,26 @@ func (b *B) Tick(d time.Duration) {
 
 		// First term in this clamped velocity allows collision
 		// avoidance to take precedent.
-		collision := scale.Scale(b.avoidanceWeight, avoidance.Avoid(b.db, avoidanceR))
+		collision := utils.Scale(b.avoidanceWeight, avoidance.Avoid(b.db, avoidanceR))
 
 		// Second term in this clamped velocity allows contribution from
 		// all sources.
 		weighted := []constraint.Accelerator{
 			// TODO(minkezhang): Cohesion.
 			// TODO(minkezhang): Separation.
-			scale.Scale(b.seekWeight, seek.SLSDO(a.TargetPosition())),
+			utils.Scale(b.seekWeight, seek.SLSDO(a.TargetPosition())),
 			// TODO(minkezhang): Add agent.Stable() to indicate the
 			// agent should stop.
-			scale.Scale(b.arrivalWeight, arrival.SLSDO(a.TargetPosition(), arrivalR)),
-			scale.Scale(b.alignmentWeight, alignment.Align(b.db, alignmentR)),
+			utils.Scale(b.arrivalWeight, arrival.SLSDO(a.TargetPosition(), arrivalR)),
+			utils.Scale(b.alignmentWeight, alignment.Align(b.db, alignmentR)),
 		}
 
 		results = append(results, result{
 			agent: a,
-			steer: clamped.Clamped(
+			steer: utils.Clamped(
 				[]constraint.Accelerator{
 					collision,
-					clamped.Clamped(weighted, math.Inf(1)),
+					utils.Clamped(weighted, math.Inf(1)),
 				},
 				a.MaxAcceleration(),
 			)(a),

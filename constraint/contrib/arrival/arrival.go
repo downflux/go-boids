@@ -2,7 +2,7 @@ package arrival
 
 import (
 	"github.com/downflux/go-boids/constraint"
-	"github.com/downflux/go-boids/constraint/steer"
+	"github.com/downflux/go-boids/constraint/utils"
 	"github.com/downflux/go-database/agent"
 	"github.com/downflux/go-geometry/2d/vector"
 )
@@ -13,7 +13,7 @@ import (
 //
 // See https://slsdo.github.io/steering-behaviors/ for more information.
 func SLSDO(v vector.V, r float64) constraint.Accelerator {
-	return steer.Steer(
+	return utils.Steer(
 		func(a agent.RO) vector.V {
 			buf := vector.M{0, 0}
 			buf.Copy(v)

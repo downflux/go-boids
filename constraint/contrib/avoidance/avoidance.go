@@ -4,7 +4,7 @@ import (
 	"sort"
 
 	"github.com/downflux/go-boids/constraint"
-	"github.com/downflux/go-boids/constraint/clamped"
+	"github.com/downflux/go-boids/constraint/utils"
 	"github.com/downflux/go-database/agent"
 	"github.com/downflux/go-database/database"
 	"github.com/downflux/go-database/filters"
@@ -48,7 +48,7 @@ func Avoid(db *database.DB, r float64) constraint.Accelerator {
 		for _, e := range es {
 			cs = append(cs, e.c)
 		}
-		return clamped.Clamped(cs, a.MaxAcceleration())(a)
+		return utils.Clamped(cs, a.MaxAcceleration())(a)
 	}
 }
 

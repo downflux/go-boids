@@ -1,7 +1,6 @@
 package boids
 
 import (
-	"math"
 	"time"
 
 	"github.com/downflux/go-boids/constraint"

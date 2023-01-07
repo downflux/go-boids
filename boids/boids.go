@@ -1,10 +1,12 @@
 package boids
 
 import (
+	"math"
 	"time"
 
 	"github.com/downflux/go-boids/constraint"
 	"github.com/downflux/go-boids/constraint/clamped"
+	"github.com/downflux/go-boids/constraint/contrib/alignment"
 	"github.com/downflux/go-boids/constraint/contrib/arrival"
 	"github.com/downflux/go-boids/constraint/contrib/avoidance"
 	"github.com/downflux/go-boids/constraint/contrib/seek"
@@ -19,7 +21,7 @@ var (
 		PoolSize: 24,
 
 		AvoidanceWeight:  5,
-		AvoidanceHorizon: 1,
+		AvoidanceHorizon: 1.5,
 
 		// TODO(minkezhang): Add an agent.Mode() which conditionally
 		// uses selective steering behaviors.
@@ -27,6 +29,9 @@ var (
 
 		ArrivalWeight:  1,
 		ArrivalHorizon: 3,
+
+		AlignmentWeight:  0.5,
+		AlignmentHorizon: 2,
 	}
 )
 
@@ -38,6 +43,8 @@ type O struct {
 	SeekWeight       float64
 	ArrivalWeight    float64
 	ArrivalHorizon   float64
+	AlignmentWeight  float64
+	AlignmentHorizon float64
 }
 
 type B struct {
@@ -49,6 +56,8 @@ type B struct {
 	seekWeight       float64
 	arrivalWeight    float64
 	arrivalHorizon   float64
+	alignmentWeight  float64
+	alignmentHorizon float64
 }
 
 func New(db *database.DB, o O) *B {
@@ -61,6 +70,8 @@ func New(db *database.DB, o O) *B {
 		seekWeight:       o.SeekWeight,
 		arrivalWeight:    o.ArrivalWeight,
 		arrivalHorizon:   o.ArrivalHorizon,
+		alignmentWeight:  o.AlignmentWeight,
+		alignmentHorizon: o.AlignmentHorizon,
 	}
 }
 
@@ -73,13 +84,29 @@ func (b *B) Tick(d time.Duration) {
 			agent: a,
 			steer: clamped.Clamped(
 				[]constraint.Accelerator{
+					// First term in this clamped velocity
+					// allows collision avoidance to take
+					// precedent.
 					scale.Scale(b.avoidanceWeight, avoidance.Avoid(
 						b.db,
 						time.Duration(int(b.avoidanceHorizon*float64(time.Second))),
 					)),
-					// TODO(minkezhang): Cohesion.
-					scale.Scale(b.seekWeight, seek.SLSDO),
-					scale.Scale(b.arrivalWeight, arrival.SLSDO(b.arrivalHorizon*a.Radius())),
+					// Second term in this clamped velocity
+					// allows contribution from all sources.
+					clamped.Clamped(
+						[]constraint.Accelerator{
+							// TODO(minkezhang): Cohesion.
+							// TODO(minkezhang): Separation.
+							scale.Scale(b.seekWeight, seek.SLSDO),
+							// TODO(minkezhang): Add
+							// agent.Stable() to
+							// indicate the agent
+							// should stop.
+							scale.Scale(b.arrivalWeight, arrival.SLSDO(b.arrivalHorizon*a.Radius())),
+							scale.Scale(b.alignmentWeight, alignment.Align(b.db, b.alignmentHorizon*a.Radius())),
+						},
+						math.Inf(1),
+					),
 				},
 				a.MaxAcceleration(),
 			)(a),

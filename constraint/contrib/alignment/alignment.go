@@ -1,8 +1,6 @@
 package alignment
 
 import (
-	"time"
-
 	"github.com/downflux/go-boids/constraint"
 	"github.com/downflux/go-boids/constraint/steer"
 	"github.com/downflux/go-database/agent"
@@ -14,13 +12,9 @@ import (
 	vnd "github.com/downflux/go-geometry/nd/vector"
 )
 
-func Align(db *database.DB, d time.Duration) constraint.Accelerator {
-	t := float64(d / time.Second)
-
+func Align(db *database.DB, r float64) constraint.Accelerator {
 	return steer.Steer(
 		func(a agent.RO) vector.V {
-			window := t * vector.Magnitude(a.Velocity())
-			r := a.Radius() + window
 			x, y := a.Position().X(), a.Position().Y()
 			// Check for collision in the upcoming window.
 			aabb := *hyperrectangle.New(

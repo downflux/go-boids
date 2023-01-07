@@ -16,7 +16,7 @@ import (
 )
 
 func Avoid(db *database.DB, d time.Duration) constraint.Accelerator {
-	t := float64(d / time.Second)
+	t := float64(float64(d) / float64(time.Second))
 
 	return func(a agent.RO) vector.V {
 		window := t * vector.Magnitude(a.Velocity())

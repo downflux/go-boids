@@ -1,6 +1,8 @@
 package boids
 
 import (
+	"fmt"
+	"sync"
 	"time"
 
 	"github.com/downflux/go-boids/constraint"
@@ -80,6 +82,10 @@ type B struct {
 }
 
 func New(db *database.DB, o O) *B {
+	if o.PoolSize < 1 {
+		panic(fmt.Sprintf("PoolSize specified %v is smaller than the minimum value of 1", o.PoolSize))
+	}
+
 	return &B{
 		db:       db,
 		poolSize: o.PoolSize,
@@ -98,47 +104,70 @@ func New(db *database.DB, o O) *B {
 	}
 }
 
-// TODO(minkezhang): Make concurrent.
+func (b *B) generate() []result {
+	agents := b.db.ListAgents()
+	ch := make(chan result, 1024)
+
+	go func(ch chan<- result) {
+		var wg sync.WaitGroup
+		wg.Add(b.poolSize)
+		for i := 0; i < b.poolSize; i++ {
+			go func(ch chan<- result) {
+				defer wg.Done()
+				for a := range agents {
+					arrivalR := b.arrivalHorizon * a.Radius()
+					alignmentR := b.alignmentHorizon * a.Radius()
+					avoidanceR := a.Radius() + b.avoidanceHorizon*vector.Magnitude(a.Velocity())
+					separationR := b.separationHorizon * a.Radius()
+					cohesionR := b.cohesionHorizon * a.Radius()
+
+					// First term in this clamped velocity allows collision
+					// avoidance to take precedent.
+					collision := utils.Scale(b.avoidanceWeight, avoidance.Avoid(b.db, avoidanceR))
+
+					// Second term in this clamped velocity allows contribution from
+					// all sources.
+					weighted := []constraint.Accelerator{
+						utils.Scale(b.seekWeight, seek.SLSDO(a.TargetPosition())),
+						// TODO(minkezhang): Add agent.Stable() to indicate the
+						// agent should stop.
+						utils.Scale(b.arrivalWeight, arrival.SLSDO(a.TargetPosition(), arrivalR)),
+						utils.Scale(b.alignmentWeight, alignment.Align(b.db, alignmentR)),
+						utils.Scale(b.separationWeight, separation.Separation(b.db, separationR)),
+						utils.Scale(-b.cohesionWeight, separation.Separation(b.db, cohesionR)),
+					}
+
+					ch <- result{
+						agent: a,
+						steer: utils.Clamped(
+							[]constraint.Accelerator{
+								collision,
+								utils.Sum(weighted),
+							},
+							a.MaxAcceleration(),
+						)(a),
+					}
+				}
+			}(ch)
+		}
+				wg.Wait()
+				close(ch)
+	}(ch)
+
+	results := make([]result, 0, 1024)
+	for r := range ch {
+		results = append(results, r)
+	}
+	return results
+}
+
 func (b *B) Tick(d time.Duration) {
 	t := float64(d) / float64(time.Second)
 
-	results := make([]result, 0, 256)
-	for a := range b.db.ListAgents() {
-		arrivalR := b.arrivalHorizon * a.Radius()
-		alignmentR := b.alignmentHorizon * a.Radius()
-		avoidanceR := a.Radius() + b.avoidanceHorizon*vector.Magnitude(a.Velocity())
-		separationR := b.separationHorizon * a.Radius()
-		cohesionR := b.cohesionHorizon * a.Radius()
-
-		// First term in this clamped velocity allows collision
-		// avoidance to take precedent.
-		collision := utils.Scale(b.avoidanceWeight, avoidance.Avoid(b.db, avoidanceR))
-
-		// Second term in this clamped velocity allows contribution from
-		// all sources.
-		weighted := []constraint.Accelerator{
-			utils.Scale(b.seekWeight, seek.SLSDO(a.TargetPosition())),
-			// TODO(minkezhang): Add agent.Stable() to indicate the
-			// agent should stop.
-			utils.Scale(b.arrivalWeight, arrival.SLSDO(a.TargetPosition(), arrivalR)),
-			utils.Scale(b.alignmentWeight, alignment.Align(b.db, alignmentR)),
-			utils.Scale(b.separationWeight, separation.Separation(b.db, separationR)),
-			utils.Scale(-b.cohesionWeight, separation.Separation(b.db, cohesionR)),
-		}
-
-		results = append(results, result{
-			agent: a,
-			steer: utils.Clamped(
-				[]constraint.Accelerator{
-					collision,
-					utils.Sum(weighted),
-				},
-				a.MaxAcceleration(),
-			)(a),
-		})
-	}
-
-	for _, r := range results {
+	// N.B.: This can also be make concurrent, but these are straightforward
+	// property setters and not worth the extra overhead of allocating e.g.
+	// channels.
+	for _, r := range b.generate() {
 		a := vector.Scale(t, r.steer)
 		v := vector.Add(r.agent.Velocity(), a)
 		b.db.SetAgentTargetVelocity(r.agent.ID(), v)

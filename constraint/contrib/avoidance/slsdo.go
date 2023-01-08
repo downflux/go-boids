@@ -17,7 +17,9 @@ import (
 func SLSDO(a agent.RO, o agent.RO) vector.V {
 	am, om := a.Mass(), o.Mass()
 	ap, av := a.Position(), a.Velocity()
-	op := o.Position()
+	// Set the obstacle position a bit into the future. The base slsdo
+	// implementation just uses o.Position here.
+	op := vector.Add(o.Position(), o.Velocity())
 
 	l := line.New(ap, av)
 	buf := vector.M{0, 0}

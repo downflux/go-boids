@@ -47,6 +47,7 @@ func Separation(db *database.DB, r float64) constraint.Accelerator {
 		for i, w := range weights {
 			buf.Add(vector.Scale(w/sum, vs[i]))
 		}
+		buf.Scale(1 - (sum+a.Mass())/a.Mass())
 		buf.Add(a.Position())
 		return seek.SLSDO(buf.V())(a)
 	}

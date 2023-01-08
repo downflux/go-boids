@@ -12,7 +12,7 @@ import (
 	vnd "github.com/downflux/go-geometry/nd/vector"
 )
 
-func Separation(db *database.DB, r float64) constraint.Accelerator {
+func Separation(db database.RO, r float64) constraint.Accelerator {
 	return func(a agent.RO) vector.V {
 		x, y := a.Position().X(), a.Position().Y()
 		aabb := *hyperrectangle.New(

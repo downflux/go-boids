@@ -150,8 +150,8 @@ func (b *B) generate() []result {
 				}
 			}(ch)
 		}
-				wg.Wait()
-				close(ch)
+		wg.Wait()
+		close(ch)
 	}(ch)
 
 	results := make([]result, 0, 1024)

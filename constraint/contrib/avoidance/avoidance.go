@@ -7,10 +7,12 @@ import (
 	"github.com/downflux/go-boids/constraint/utils"
 	"github.com/downflux/go-database/agent"
 	"github.com/downflux/go-database/database"
+	"github.com/downflux/go-database/feature"
 	"github.com/downflux/go-database/filters"
 	"github.com/downflux/go-geometry/2d/vector"
 	"github.com/downflux/go-geometry/nd/hyperrectangle"
 
+	dhr "github.com/downflux/go-database/geometry/hyperrectangle"
 	vnd "github.com/downflux/go-geometry/nd/vector"
 )
 
@@ -25,9 +27,19 @@ func Avoid(db *database.DB, r float64) constraint.Accelerator {
 		// Use a clamping function to ensure some amount of action will
 		// be taken in the case the agent is stuck between multiple
 		// obstacles. See Reynolds 1987 for more information.
-		//
-		// TODO(minkezhang): Add feature avoidance.
 		es := []e{}
+		for _, obstacle := range db.QueryFeatures(aabb, func(f feature.RO) bool {
+			if !dhr.IntersectCircle(f.AABB(), a.Position(), r) {
+				return false
+			}
+			return !filters.FeatureOnDifferentLayers(a, f)
+		}) {
+			d, _ := dhr.Normal(obstacle.AABB(), a.Position())
+			es = append(es, e{
+				c: func(a agent.RO) vector.V { return SLSDOFeature(a, obstacle) },
+				h: d * d,
+			})
+		}
 		for _, obstacle := range db.QueryAgents(aabb, func(b agent.RO) bool {
 			// QueryAgents is an AABB query function -- we will
 			// manually filter out agents which lie within the AABB

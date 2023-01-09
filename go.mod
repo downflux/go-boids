@@ -3,7 +3,7 @@ module github.com/downflux/go-boids
 go 1.19
 
 require (
-	github.com/downflux/go-database v0.3.10
+	github.com/downflux/go-database v0.3.11
 	github.com/downflux/go-geometry v0.15.4
 )
 

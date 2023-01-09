@@ -1,11 +1,34 @@
 package avoidance
 
 import (
+	"math"
+
 	"github.com/downflux/go-database/agent"
+	"github.com/downflux/go-database/feature"
 	"github.com/downflux/go-geometry/2d/line"
 	"github.com/downflux/go-geometry/2d/vector"
 	"github.com/downflux/go-geometry/epsilon"
+
+	dhr "github.com/downflux/go-database/geometry/hyperrectangle"
 )
+
+func SLSDOFeature(a agent.RO, f feature.RO) vector.V {
+	buf := vector.M{0, 0}
+
+	d, n := dhr.Normal(f.AABB(), a.Position())
+
+	buf.Copy(n)
+	// As with SLSDO, this is already a steering force.
+	//
+	// N.B.: We are taking the absolute value of d - r, as it is possible
+	// (through experimentation, for an agent to slightly penetrate the
+	// AABB. The normal vector as reported by dhr.Normal still points
+	// outwards, so we need to manually account for this change.
+	e := a.MaxAcceleration() / math.Max(1e-5, math.Abs((d-a.Radius())))
+	buf.Scale(e)
+
+	return buf.V()
+}
 
 // SLSDO calculates a steering acceleration given an agent-agent interaction.
 // This is based on the slsdo avoidance algorithm. See

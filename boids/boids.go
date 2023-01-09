@@ -130,7 +130,12 @@ func (b *B) generate() []result {
 					weighted := []constraint.Accelerator{
 						utils.Scale(b.seekWeight, seek.SLSDO(a.TargetPosition())),
 						// TODO(minkezhang): Add agent.Stable() to indicate the
-						// agent should stop.
+						// agent should stop. Also
+						// consider a normalized
+						// velocity scaling factor which
+						// decreases the weight for
+						// flocking behaviors. The goal
+						// is to stop end-state jitter.
 						utils.Scale(b.arrivalWeight, arrival.SLSDO(a.TargetPosition(), arrivalR)),
 						utils.Scale(b.alignmentWeight, alignment.Align(b.db, alignmentR)),
 						utils.Scale(b.separationWeight, separation.Separation(b.db, separationR)),

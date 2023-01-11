@@ -9,6 +9,7 @@ import (
 	"github.com/downflux/go-database/database"
 	"github.com/downflux/go-database/feature"
 	"github.com/downflux/go-database/filters"
+	"github.com/downflux/go-database/flags/move"
 	"github.com/downflux/go-geometry/2d/vector"
 	"github.com/downflux/go-geometry/nd/hyperrectangle"
 
@@ -18,6 +19,10 @@ import (
 
 func Avoid(db *database.DB, r float64) constraint.Accelerator {
 	return func(a agent.RO) vector.V {
+		if a.MoveMode()&move.FAvoidance == move.FNone {
+			return vector.V{0, 0}
+		}
+
 		x, y := a.Position().X(), a.Position().Y()
 		// Check for collision in the upcoming window.
 		aabb := *hyperrectangle.New(

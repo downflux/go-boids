@@ -24,9 +24,7 @@ var (
 		AvoidanceWeight:  5,
 		AvoidanceHorizon: 1.5,
 
-		// TODO(minkezhang): Add an agent.Mode() which conditionally
-		// uses selective steering behaviors.
-		SeekWeight: 0,
+		SeekWeight: 1,
 
 		ArrivalWeight:  1,
 		ArrivalHorizon: 3,
@@ -129,13 +127,6 @@ func (b *B) generate() []result {
 					// all sources.
 					weighted := []constraint.Accelerator{
 						utils.Scale(b.seekWeight, seek.SLSDO(a.TargetPosition())),
-						// TODO(minkezhang): Add agent.Stable() to indicate the
-						// agent should stop. Also
-						// consider a normalized
-						// velocity scaling factor which
-						// decreases the weight for
-						// flocking behaviors. The goal
-						// is to stop end-state jitter.
 						utils.Scale(b.arrivalWeight, arrival.SLSDO(a.TargetPosition(), arrivalR)),
 						utils.Scale(b.alignmentWeight, alignment.Align(b.db, alignmentR)),
 						utils.Scale(b.separationWeight, separation.Separation(b.db, separationR)),

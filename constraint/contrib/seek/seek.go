@@ -4,6 +4,7 @@ import (
 	"github.com/downflux/go-boids/constraint"
 	"github.com/downflux/go-boids/constraint/utils"
 	"github.com/downflux/go-database/agent"
+	"github.com/downflux/go-database/flags/move"
 	"github.com/downflux/go-geometry/2d/vector"
 )
 
@@ -15,6 +16,10 @@ import (
 func SLSDO(v vector.V) constraint.Accelerator {
 	return utils.Steer(
 		func(a agent.RO) vector.V {
+			if a.MoveMode()&move.FSeek == move.FNone {
+				return a.Velocity()
+			}
+
 			buf := vector.M{0, 0}
 			buf.Copy(v)
 			buf.Sub(a.Position())

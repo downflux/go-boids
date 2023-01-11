@@ -6,6 +6,7 @@ import (
 	"github.com/downflux/go-database/agent"
 	"github.com/downflux/go-database/database"
 	"github.com/downflux/go-database/filters"
+	"github.com/downflux/go-database/flags/move"
 	"github.com/downflux/go-geometry/2d/vector"
 	"github.com/downflux/go-geometry/nd/hyperrectangle"
 
@@ -15,6 +16,10 @@ import (
 func Align(db database.RO, r float64) constraint.Accelerator {
 	return utils.Steer(
 		func(a agent.RO) vector.V {
+			if a.MoveMode()&move.FAlignment == move.FNone {
+				return a.Velocity()
+			}
+
 			x, y := a.Position().X(), a.Position().Y()
 			aabb := *hyperrectangle.New(
 				vnd.V{x - r, y - r}, vnd.V{x + r, y + r},

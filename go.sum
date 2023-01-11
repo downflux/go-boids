@@ -20,6 +20,8 @@ github.com/downflux/go-database v0.3.10 h1:152Nh0VnUxiPiKNenJbi3qx20+Ak7iN5aAAjc
 github.com/downflux/go-database v0.3.10/go.mod h1:GgparhC7kkqx5VPbyFjE8/zA7o2F/E8P8SR/GwXNs+s=
 github.com/downflux/go-database v0.3.11 h1:R/4Iarb4hrMW/HiluJgg5R1NJmQ6ncJia/4wbJjMa6o=
 github.com/downflux/go-database v0.3.11/go.mod h1:GgparhC7kkqx5VPbyFjE8/zA7o2F/E8P8SR/GwXNs+s=
+github.com/downflux/go-database v0.3.12 h1:coclMrXPFfvaZXERscdz2jl2arna5xOzIQGZhppFKmk=
+github.com/downflux/go-database v0.3.12/go.mod h1:GgparhC7kkqx5VPbyFjE8/zA7o2F/E8P8SR/GwXNs+s=
 github.com/downflux/go-geometry v0.15.4 h1:COO+vw9M0fEoBIYrR1tY4nzWhnDNAnW1xIcf3TYKqJg=
 github.com/downflux/go-geometry v0.15.4/go.mod h1:ZJcto0QwYRdoIbi5G4mh5y6v2xUS+d++/cANaO1F9+8=
 github.com/downflux/go-pq v0.3.0 h1:oWLx7rzsD4fv1f2kp33NUq63CJVQvXZORkcpHr6bp9g=

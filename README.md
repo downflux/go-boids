@@ -14,3 +14,6 @@ Golang implementation of Boid flocking
    https://authors.library.caltech.edu/28025/1/cdstr-ros-03-006.pdf. 2003.
 1. Park et al. "Target Arrival Coordination in Boid Based Formation Flight."
    https://www.sciencedirect.com/science/article/pii/S1474667017323236. 2004.
+1. Bevilacqua, Fernando. "Understanding Steering Behaviors."
+   https://gamedevelopment.tutsplus.com/series/understanding-steering-behaviors--gamedev-12732.
+   2022.

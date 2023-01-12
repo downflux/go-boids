@@ -19,12 +19,16 @@ func SLSDOFeature(a agent.RO, f feature.RO) vector.V {
 	d, n := dhr.Normal(f.AABB(), a.Position())
 
 	buf.Copy(n)
+
+	// In the case the boid is moving in a targeted manner, we want to
+	// ensure the agent is moving parallel to the AABB, but in a direction
+	// closest to the goal.
 	if a.MoveMode()&(move.FSeek|move.FArrival) != move.FNone {
 		dp := vector.Sub(a.Position(), a.TargetPosition())
 		if n := (vector.V{buf.Y(), -buf.X()}); vector.Dot(n, dp) < 0 {
-			buf.Copy(n)
+			buf.Add(n)
 		} else {
-			buf.Copy(vector.Scale(-1, n))
+			buf.Add(vector.Scale(-1, n))
 		}
 	}
 

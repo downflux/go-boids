@@ -10,6 +10,7 @@ import (
 	"github.com/downflux/go-database/agent"
 	"github.com/downflux/go-database/database"
 	"github.com/downflux/go-database/feature"
+	"github.com/downflux/go-database/flags/move"
 	"github.com/downflux/go-database/flags/size"
 	"github.com/downflux/go-geometry/2d/vector"
 	"github.com/downflux/go-geometry/2d/vector/polar"
@@ -67,6 +68,9 @@ func BenchmarkTick(b *testing.B) {
 					MaxAngularVelocity: math.Pi / 4,
 					Heading:            polar.V{1, 0},
 					Size:               size.FSmall,
+					// Attempt to calculate all boid
+					// heuristics.
+					Move: ^move.FNone,
 				})
 			}
 

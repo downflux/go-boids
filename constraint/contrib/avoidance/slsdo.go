@@ -5,6 +5,7 @@ import (
 
 	"github.com/downflux/go-database/agent"
 	"github.com/downflux/go-database/feature"
+	"github.com/downflux/go-database/flags/move"
 	"github.com/downflux/go-geometry/2d/line"
 	"github.com/downflux/go-geometry/2d/vector"
 	"github.com/downflux/go-geometry/epsilon"
@@ -18,6 +19,15 @@ func SLSDOFeature(a agent.RO, f feature.RO) vector.V {
 	d, n := dhr.Normal(f.AABB(), a.Position())
 
 	buf.Copy(n)
+	if a.MoveMode()&(move.FSeek|move.FArrival) != move.FNone {
+		dp := vector.Sub(a.Position(), a.TargetPosition())
+		if n := (vector.V{buf.Y(), -buf.X()}); vector.Dot(n, dp) < 0 {
+			buf.Copy(n)
+		} else {
+			buf.Copy(vector.Scale(-1, n))
+		}
+	}
+
 	// As with SLSDO, this is already a steering force.
 	//
 	// N.B.: We are taking the absolute value of d - r, as it is possible

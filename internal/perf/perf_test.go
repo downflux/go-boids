@@ -6,14 +6,17 @@ import (
 
 	"github.com/downflux/go-boids/constraint"
 	"github.com/downflux/go-boids/constraint/contrib/arrival"
+	"github.com/downflux/go-boids/constraint/contrib/avoidance"
 	"github.com/downflux/go-boids/constraint/contrib/seek"
 	"github.com/downflux/go-boids/constraint/utils"
 	"github.com/downflux/go-boids/constraint/utils/mock"
 	"github.com/downflux/go-database/agent"
+	"github.com/downflux/go-database/feature"
 	"github.com/downflux/go-database/flags/move"
 	"github.com/downflux/go-geometry/2d/vector"
 
 	magent "github.com/downflux/go-database/agent/mock"
+	mfeature "github.com/downflux/go-database/feature/mock"
 )
 
 func BenchmarkSteer(b *testing.B) {
@@ -51,12 +54,29 @@ func BenchmarkSteer(b *testing.B) {
 			name: "Seek/SLSDO",
 			s:    seek.SLSDO(vector.V{1, 100}),
 		},
+		{
+			name: "Avoidance/SLSDO",
+			s: avoidance.SLSDO(magent.New(0, agent.O{
+				Mass:     100,
+				Radius:   10,
+				Position: vector.V{100, 100},
+			})),
+		},
+		{
+			name: "Avoidance/SLSDOFeature",
+			s: avoidance.SLSDOFeature(mfeature.New(0, feature.O{
+				Min: vector.V{10, 10},
+				Max: vector.V{100, 100},
+			})),
+		},
 	}
 
 	for _, c := range configs {
 		b.Run(c.name, func(b *testing.B) {
 			a := magent.New(0, agent.O{
-				Move: ^move.FNone,
+				Mass:   10,
+				Radius: 5,
+				Move:   ^move.FNone,
 			})
 			for i := 0; i < b.N; i++ {
 				c.s(a)

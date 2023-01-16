@@ -7,16 +7,16 @@ import (
 	"github.com/downflux/go-geometry/epsilon"
 )
 
-func Average(accelerators []constraint.Accelerator) constraint.Accelerator {
-	ws := make([]float64, 0, len(accelerators))
+func Average(steerings []constraint.Steer) constraint.Steer {
+	ws := make([]float64, 0, len(steerings))
 	for i := 0; i < len(ws); i++ {
 		ws[i] = 1
 	}
-	return WeightedAverage(accelerators, ws)
+	return WeightedAverage(steerings, ws)
 }
 
-func WeightedAverage(accelerators []constraint.Accelerator, weights []float64) constraint.Accelerator {
-	if len(accelerators) != len(weights) {
+func WeightedAverage(steerings []constraint.Steer, weights []float64) constraint.Steer {
+	if len(steerings) != len(weights) {
 		panic("mismatching accelerator and weight lengths")
 	}
 
@@ -24,11 +24,11 @@ func WeightedAverage(accelerators []constraint.Accelerator, weights []float64) c
 		sum := 0.0
 		v := vector.M{0, 0}
 
-		for i, accel := range accelerators {
+		for i, s := range steerings {
 			u := vector.M{0, 0}
-			u.Copy(accel(a))
+			u.Copy(s(a))
 
-			// We will only track accelerators which contribute to
+			// We will only track steerings which contribute to
 			// the total.
 			if !epsilon.Absolute(1e-5).Within(vector.SquaredMagnitude(u.V()), 0) {
 				sum += weights[i]

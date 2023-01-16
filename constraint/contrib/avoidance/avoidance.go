@@ -17,7 +17,7 @@ import (
 	vnd "github.com/downflux/go-geometry/nd/vector"
 )
 
-func Avoid(db *database.DB, r float64) constraint.Accelerator {
+func Avoid(db *database.DB, r float64) constraint.Steer {
 	return func(a agent.RO) vector.V {
 		if a.MoveMode()&move.FAvoidance == move.FNone {
 			return vector.V{0, 0}
@@ -41,7 +41,7 @@ func Avoid(db *database.DB, r float64) constraint.Accelerator {
 		}) {
 			d, _ := dhr.Normal(obstacle.AABB(), a.Position())
 			es = append(es, e{
-				c: func(a agent.RO) vector.V { return SLSDOFeature(a, obstacle) },
+				c: SLSDOFeature(obstacle),
 				h: d * d,
 			})
 		}
@@ -55,13 +55,13 @@ func Avoid(db *database.DB, r float64) constraint.Accelerator {
 			return a.ID() != b.ID() && !filters.AgentIsSquishable(a, b)
 		}) {
 			es = append(es, e{
-				c: func(a agent.RO) vector.V { return SLSDO(a, obstacle) },
+				c: SLSDO(obstacle),
 				h: vector.SquaredMagnitude(vector.Sub(a.Position(), obstacle.Position())),
 			})
 		}
 		sort.Slice(es, func(i, j int) bool { return es[i].h < es[j].h })
 
-		cs := make([]constraint.Accelerator, 0, len(es))
+		cs := make([]constraint.Steer, 0, len(es))
 		for _, e := range es {
 			cs = append(cs, e.c)
 		}
@@ -70,6 +70,6 @@ func Avoid(db *database.DB, r float64) constraint.Accelerator {
 }
 
 type e struct {
-	c constraint.Accelerator
+	c constraint.Steer
 	h float64
 }

@@ -6,8 +6,8 @@ import (
 	"github.com/downflux/go-geometry/2d/vector"
 )
 
-func Scale(f float64, c constraint.Accelerator) constraint.Accelerator {
+func Scale(f float64, s constraint.Steer) constraint.Steer {
 	return func(a agent.RO) vector.V {
-		return vector.Scale(f, c(a))
+		return vector.Scale(f, s(a))
 	}
 }

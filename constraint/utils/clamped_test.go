@@ -12,22 +12,22 @@ import (
 
 func TestClamped(t *testing.T) {
 	type config struct {
-		name         string
-		accelerators []constraint.Accelerator
-		limit        float64
-		want         vector.V
+		name      string
+		steerings []constraint.Steer
+		limit     float64
+		want      vector.V
 	}
 
 	configs := []config{
 		{
-			name:         "Empty",
-			accelerators: nil,
-			limit:        0,
-			want:         vector.V{0, 0},
+			name:      "Empty",
+			steerings: nil,
+			limit:     0,
+			want:      vector.V{0, 0},
 		},
 		{
 			name: "Trivial",
-			accelerators: []constraint.Accelerator{
+			steerings: []constraint.Steer{
 				mock.M(vector.V{1, 1}),
 			},
 			limit: 10,
@@ -35,7 +35,7 @@ func TestClamped(t *testing.T) {
 		},
 		{
 			name: "TooLarge",
-			accelerators: []constraint.Accelerator{
+			steerings: []constraint.Steer{
 				mock.M(vector.V{100, 0}),
 			},
 			limit: 10,
@@ -43,7 +43,7 @@ func TestClamped(t *testing.T) {
 		},
 		{
 			name: "Truncate",
-			accelerators: []constraint.Accelerator{
+			steerings: []constraint.Steer{
 				mock.M(vector.V{-1, 0}),
 				mock.M(vector.V{10, 0}),
 			},
@@ -54,7 +54,7 @@ func TestClamped(t *testing.T) {
 
 	for _, c := range configs {
 		t.Run(c.name, func(t *testing.T) {
-			got := Clamped(c.accelerators, c.limit)(&magent.A{})
+			got := Clamped(c.steerings, c.limit)(&magent.A{})
 			if !vector.Within(got, c.want) {
 				t.Errorf("Clamped() = %v, want = %v", got, c.want)
 			}

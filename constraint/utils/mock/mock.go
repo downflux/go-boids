@@ -6,6 +6,6 @@ import (
 	"github.com/downflux/go-geometry/2d/vector"
 )
 
-func M(v vector.V) constraint.Accelerator {
+func M(v vector.V) constraint.Steer {
 	return func(a agent.RO) vector.V { return v }
 }

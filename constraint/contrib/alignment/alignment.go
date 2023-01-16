@@ -13,7 +13,7 @@ import (
 	vnd "github.com/downflux/go-geometry/nd/vector"
 )
 
-func Align(db database.RO, r float64) constraint.Accelerator {
+func Align(db database.RO, r float64) constraint.Steer {
 	return utils.Steer(
 		func(a agent.RO) vector.V {
 			if a.MoveMode()&move.FAlignment == move.FNone {

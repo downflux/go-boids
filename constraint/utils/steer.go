@@ -7,13 +7,13 @@ import (
 	"github.com/downflux/go-geometry/epsilon"
 )
 
-// Steer takes as input a desired velocity and returns an acceleration.
-func Steer(c func(a agent.RO) vector.V) constraint.Accelerator {
+// Steer takes as input a desired velocity and returns a steering acceleration
+// vector.
+func Steer(v func(agent.RO) vector.V) constraint.Steer {
 	return func(a agent.RO) vector.V {
-		// c(a) returns an acceleration vector over the next second. We
-		// assume t = 1 (since the agent velocity is also over the next
-		// second).
-		desired := c(a)
+		// v(a) returns a desired velocity vector.  We assume t = 1
+		// (since the agent velocity is also over the next second).
+		desired := v(a)
 
 		buf := vector.M{0, 0}
 		buf.Copy(desired)

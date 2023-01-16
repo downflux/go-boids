@@ -12,22 +12,22 @@ import (
 
 func TestWeightedAverage(t *testing.T) {
 	type config struct {
-		name         string
-		accelerators []constraint.Accelerator
-		weights      []float64
-		want         vector.V
+		name      string
+		steerings []constraint.Steer
+		weights   []float64
+		want      vector.V
 	}
 
 	configs := []config{
 		{
-			name:         "Trivial",
-			accelerators: []constraint.Accelerator{},
-			weights:      []float64{},
-			want:         vector.V{0, 0},
+			name:      "Trivial",
+			steerings: []constraint.Steer{},
+			weights:   []float64{},
+			want:      vector.V{0, 0},
 		},
 		{
 			name: "Simple",
-			accelerators: []constraint.Accelerator{
+			steerings: []constraint.Steer{
 				mock.M(vector.V{0, 2}),
 				mock.M(vector.V{2, 0}),
 			},
@@ -36,7 +36,7 @@ func TestWeightedAverage(t *testing.T) {
 		},
 		{
 			name: "FilterNoContrib",
-			accelerators: []constraint.Accelerator{
+			steerings: []constraint.Steer{
 				mock.M(vector.V{0, 0}),
 				mock.M(vector.V{2, 0}),
 			},
@@ -47,7 +47,7 @@ func TestWeightedAverage(t *testing.T) {
 
 	for _, c := range configs {
 		t.Run(c.name, func(t *testing.T) {
-			got := WeightedAverage(c.accelerators, c.weights)(&magent.A{})
+			got := WeightedAverage(c.steerings, c.weights)(&magent.A{})
 			if !vector.Within(got, c.want) {
 				t.Errorf("WeightedAverage() = %v, want = %v", got, c.want)
 			}

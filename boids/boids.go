@@ -125,7 +125,7 @@ func (b *B) generate() []result {
 
 					// Second term in this clamped velocity allows contribution from
 					// all sources.
-					weighted := []constraint.Accelerator{
+					weighted := []constraint.Steer{
 						utils.Scale(b.seekWeight, seek.SLSDO(a.TargetPosition())),
 						utils.Scale(b.arrivalWeight, arrival.SLSDO(a.TargetPosition(), arrivalR)),
 						utils.Scale(b.alignmentWeight, alignment.Align(b.db, alignmentR)),
@@ -136,7 +136,7 @@ func (b *B) generate() []result {
 					ch <- result{
 						agent: a,
 						steer: utils.Clamped(
-							[]constraint.Accelerator{
+							[]constraint.Steer{
 								collision,
 								utils.Sum(weighted),
 							},

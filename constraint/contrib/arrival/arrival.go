@@ -13,7 +13,7 @@ import (
 // goal.
 //
 // See https://slsdo.github.io/steering-behaviors/ for more information.
-func SLSDO(v vector.V, r float64) constraint.Accelerator {
+func SLSDO(v vector.V, r float64) constraint.Steer {
 	return utils.Steer(
 		func(a agent.RO) vector.V {
 			if a.MoveMode()&move.FArrival == move.FNone {

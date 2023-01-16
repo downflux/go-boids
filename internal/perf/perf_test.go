@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	"github.com/downflux/go-boids/constraint"
+	"github.com/downflux/go-boids/constraint/contrib/arrival"
+	"github.com/downflux/go-boids/constraint/contrib/seek"
 	"github.com/downflux/go-boids/constraint/utils"
 	"github.com/downflux/go-boids/constraint/utils/mock"
 	"github.com/downflux/go-database/agent"
@@ -40,6 +42,14 @@ func BenchmarkSteer(b *testing.B) {
 		{
 			name: "Scale",
 			s:    utils.Scale(10, mock.M(vector.V{2, 9})),
+		},
+		{
+			name: "Arrival/SLSDO",
+			s:    arrival.SLSDO(vector.V{1, 100}, 10),
+		},
+		{
+			name: "Seek/SLSDO",
+			s:    seek.SLSDO(vector.V{1, 100}),
 		},
 	}
 

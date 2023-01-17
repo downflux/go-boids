@@ -2,6 +2,7 @@ package boids
 
 import (
 	"fmt"
+	"math"
 	"sync"
 	"time"
 
@@ -14,12 +15,23 @@ import (
 	"github.com/downflux/go-boids/constraint/utils"
 	"github.com/downflux/go-database/agent"
 	"github.com/downflux/go-database/database"
+	"github.com/downflux/go-database/database/cache"
+	"github.com/downflux/go-database/feature"
 	"github.com/downflux/go-geometry/2d/vector"
+	"github.com/downflux/go-geometry/nd/hyperrectangle"
+
+	vnd "github.com/downflux/go-geometry/nd/vector"
 )
 
 var (
 	DefaultO = O{
 		PoolSize: 24,
+
+		// Optionally instruct the simulation to do a single BroadPhase
+		// query per tick. This query will use the largest radius
+		// available. This is used when the simulation is expected to
+		// incur a large BVH query penalty.
+		EnableCache: false,
 
 		AvoidanceWeight:  5,
 		AvoidanceHorizon: 1.5,
@@ -46,7 +58,8 @@ var (
 )
 
 type O struct {
-	PoolSize int
+	PoolSize    int
+	EnableCache bool
 
 	AvoidanceWeight   float64
 	AvoidanceHorizon  float64
@@ -63,8 +76,9 @@ type O struct {
 }
 
 type B struct {
-	db       *database.DB
-	poolSize int
+	db          *database.DB
+	poolSize    int
+	enableCache bool
 
 	avoidanceWeight   float64
 	avoidanceHorizon  float64
@@ -85,8 +99,9 @@ func New(db *database.DB, o O) *B {
 	}
 
 	return &B{
-		db:       db,
-		poolSize: o.PoolSize,
+		db:          db,
+		poolSize:    o.PoolSize,
+		enableCache: o.EnableCache,
 
 		avoidanceWeight:   o.AvoidanceWeight,
 		avoidanceHorizon:  o.AvoidanceHorizon,
@@ -100,6 +115,32 @@ func New(db *database.DB, o O) *B {
 		cohesionWeight:    o.FlockingWeight * o.CohesionWeight,
 		cohesionHorizon:   o.CohesionHorizon,
 	}
+}
+
+func (b *B) cache(a agent.RO, rs ...float64) database.RO {
+	r := math.Inf(-1)
+	for _, x := range rs {
+		if x > r {
+			r = x
+		}
+	}
+
+	p := a.Position()
+	aabb := hyperrectangle.New(
+		vnd.V{
+			p.X() - r,
+			p.Y() - r,
+		},
+		vnd.V{
+			p.X() + r,
+			p.Y() + r,
+		},
+	)
+
+	return cache.New(cache.O{
+		Agents:   b.db.QueryAgents(*aabb, func(a agent.RO) bool { return true }),
+		Features: b.db.QueryFeatures(*aabb, func(f feature.RO) bool { return true }),
+	})
 }
 
 func (b *B) generate() []result {
@@ -119,18 +160,30 @@ func (b *B) generate() []result {
 					separationR := b.separationHorizon * a.Radius()
 					cohesionR := b.cohesionHorizon * a.Radius()
 
+					var c database.RO = b.db
+					if b.enableCache {
+						c = b.cache(
+							a,
+							arrivalR,
+							alignmentR,
+							avoidanceR,
+							separationR,
+							cohesionR,
+						)
+					}
+
 					// First term in this clamped velocity allows collision
 					// avoidance to take precedent.
-					collision := utils.Scale(b.avoidanceWeight, avoidance.Avoid(b.db, avoidanceR))
+					collision := utils.Scale(b.avoidanceWeight, avoidance.Avoid(c, avoidanceR))
 
 					// Second term in this clamped velocity allows contribution from
 					// all sources.
 					weighted := []constraint.Steer{
 						utils.Scale(b.seekWeight, seek.SLSDO(a.TargetPosition())),
 						utils.Scale(b.arrivalWeight, arrival.SLSDO(a.TargetPosition(), arrivalR)),
-						utils.Scale(b.alignmentWeight, alignment.Align(b.db, alignmentR)),
-						utils.Scale(b.separationWeight, separation.Separation(b.db, separationR)),
-						utils.Scale(-b.cohesionWeight, separation.Separation(b.db, cohesionR)),
+						utils.Scale(b.alignmentWeight, alignment.Align(c, alignmentR)),
+						utils.Scale(b.separationWeight, separation.Separation(c, separationR)),
+						utils.Scale(-b.cohesionWeight, separation.Separation(c, cohesionR)),
 					}
 
 					ch <- result{

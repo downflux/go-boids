@@ -30,18 +30,25 @@ func rv(min, max float64) vector.V {
 
 func BenchmarkTick(b *testing.B) {
 	type config struct {
-		name     string
-		n        int
-		coverage float64
+		name        string
+		n           int
+		coverage    float64
+		enableCache bool
 	}
 
 	configs := []config{}
 	for _, n := range []int{1e3, 1e4, 1e5} {
 		for _, coverage := range []float64{0.01, 0.05, 0.1} {
 			configs = append(configs, config{
-				name:     fmt.Sprintf("N=%v/ρ=%v", n, coverage),
-				n:        n,
-				coverage: coverage,
+				name:        fmt.Sprintf("N=%v/ρ=%v/Cached=%v", n, coverage, true),
+				n:           n,
+				coverage:    coverage,
+				enableCache: true,
+			}, config{
+				name:        fmt.Sprintf("N=%v/ρ=%v/Cached=%v", n, coverage, false),
+				n:           n,
+				coverage:    coverage,
+				enableCache: false,
 			})
 		}
 	}
@@ -54,7 +61,11 @@ func BenchmarkTick(b *testing.B) {
 			max := math.Sqrt(area)
 
 			db := database.New(database.DefaultO)
-			boids := New(db, DefaultO)
+			opts := DefaultO
+			if c.enableCache {
+				opts.EnableCache = true
+			}
+			boids := New(db, opts)
 			for i := 0; i < c.n; i++ {
 				db.InsertAgent(agent.O{
 					Radius:             R,

@@ -17,7 +17,7 @@ import (
 	vnd "github.com/downflux/go-geometry/nd/vector"
 )
 
-func Avoid(db *database.DB, r float64) constraint.Steer {
+func Avoid(db database.RO, r float64) constraint.Steer {
 	return func(a agent.RO) vector.V {
 		if a.MoveMode()&move.FAvoidance == move.FNone {
 			return vector.V{0, 0}

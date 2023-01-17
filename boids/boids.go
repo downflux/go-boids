@@ -2,6 +2,7 @@ package boids
 
 import (
 	"fmt"
+	"math"
 	"sync"
 	"time"
 
@@ -14,7 +15,12 @@ import (
 	"github.com/downflux/go-boids/constraint/utils"
 	"github.com/downflux/go-database/agent"
 	"github.com/downflux/go-database/database"
+	"github.com/downflux/go-database/database/cache"
+	"github.com/downflux/go-database/feature"
 	"github.com/downflux/go-geometry/2d/vector"
+	"github.com/downflux/go-geometry/nd/hyperrectangle"
+
+	vnd "github.com/downflux/go-geometry/nd/vector"
 )
 
 var (
@@ -102,6 +108,31 @@ func New(db *database.DB, o O) *B {
 	}
 }
 
+func (b *B) cache(a agent.RO, rs ...float64) database.RO {
+	r := math.Inf(-1)
+	for _, x := range rs {
+		if x > r {
+			r = x
+		}
+	}
+
+	aabb := hyperrectangle.New(
+		vnd.V{
+			a.Position().X() - r,
+			a.Position().Y() - r,
+		},
+		vnd.V{
+			a.Position().X() + r,
+			a.Position().Y() + r,
+		},
+	)
+
+	return cache.New(cache.O{
+		Agents:   b.db.QueryAgents(*aabb, func(a agent.RO) bool { return true }),
+		Features: b.db.QueryFeatures(*aabb, func(f feature.RO) bool { return true }),
+	})
+}
+
 func (b *B) generate() []result {
 	agents := b.db.ListAgents()
 	ch := make(chan result, 1024)
@@ -119,18 +150,20 @@ func (b *B) generate() []result {
 					separationR := b.separationHorizon * a.Radius()
 					cohesionR := b.cohesionHorizon * a.Radius()
 
+					c := b.cache(a, arrivalR, alignmentR, avoidanceR, separationR, cohesionR)
+
 					// First term in this clamped velocity allows collision
 					// avoidance to take precedent.
-					collision := utils.Scale(b.avoidanceWeight, avoidance.Avoid(b.db, avoidanceR))
+					collision := utils.Scale(b.avoidanceWeight, avoidance.Avoid(c, avoidanceR))
 
 					// Second term in this clamped velocity allows contribution from
 					// all sources.
 					weighted := []constraint.Steer{
 						utils.Scale(b.seekWeight, seek.SLSDO(a.TargetPosition())),
 						utils.Scale(b.arrivalWeight, arrival.SLSDO(a.TargetPosition(), arrivalR)),
-						utils.Scale(b.alignmentWeight, alignment.Align(b.db, alignmentR)),
-						utils.Scale(b.separationWeight, separation.Separation(b.db, separationR)),
-						utils.Scale(-b.cohesionWeight, separation.Separation(b.db, cohesionR)),
+						utils.Scale(b.alignmentWeight, alignment.Align(c, alignmentR)),
+						utils.Scale(b.separationWeight, separation.Separation(c, separationR)),
+						utils.Scale(-b.cohesionWeight, separation.Separation(c, cohesionR)),
 					}
 
 					ch <- result{

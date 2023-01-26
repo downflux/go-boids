@@ -17,10 +17,8 @@ import (
 	"github.com/downflux/go-database/database"
 	"github.com/downflux/go-database/database/cache"
 	"github.com/downflux/go-database/feature"
+	"github.com/downflux/go-geometry/2d/hyperrectangle"
 	"github.com/downflux/go-geometry/2d/vector"
-	"github.com/downflux/go-geometry/nd/hyperrectangle"
-
-	vnd "github.com/downflux/go-geometry/nd/vector"
 )
 
 var (
@@ -127,11 +125,11 @@ func (b *B) cache(a agent.RO, rs ...float64) database.RO {
 
 	p := a.Position()
 	aabb := hyperrectangle.New(
-		vnd.V{
+		vector.V{
 			p.X() - r,
 			p.Y() - r,
 		},
-		vnd.V{
+		vector.V{
 			p.X() + r,
 			p.Y() + r,
 		},

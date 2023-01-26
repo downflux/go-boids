@@ -10,11 +10,10 @@ import (
 	"github.com/downflux/go-database/feature"
 	"github.com/downflux/go-database/filters"
 	"github.com/downflux/go-database/flags/move"
+	"github.com/downflux/go-geometry/2d/hyperrectangle"
 	"github.com/downflux/go-geometry/2d/vector"
-	"github.com/downflux/go-geometry/nd/hyperrectangle"
 
 	dhr "github.com/downflux/go-database/geometry/hyperrectangle"
-	vnd "github.com/downflux/go-geometry/nd/vector"
 )
 
 func Avoid(db database.RO, r float64) constraint.Steer {
@@ -26,7 +25,7 @@ func Avoid(db database.RO, r float64) constraint.Steer {
 		x, y := a.Position().X(), a.Position().Y()
 		// Check for collision in the upcoming window.
 		aabb := *hyperrectangle.New(
-			vnd.V{x - r, y - r}, vnd.V{x + r, y + r},
+			vector.V{x - r, y - r}, vector.V{x + r, y + r},
 		)
 
 		// Use a clamping function to ensure some amount of action will

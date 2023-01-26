@@ -13,6 +13,7 @@ import (
 	"github.com/downflux/go-database/agent"
 	"github.com/downflux/go-database/feature"
 	"github.com/downflux/go-database/flags/move"
+	"github.com/downflux/go-geometry/2d/hyperrectangle"
 	"github.com/downflux/go-geometry/2d/vector"
 
 	magent "github.com/downflux/go-database/agent/mock"
@@ -65,8 +66,7 @@ func BenchmarkSteer(b *testing.B) {
 		{
 			name: "Avoidance/SLSDOFeature",
 			s: avoidance.SLSDOFeature(mfeature.New(0, feature.O{
-				Min: vector.V{10, 10},
-				Max: vector.V{100, 100},
+				AABB: *hyperrectangle.New(vector.V{10, 10}, vector.V{100, 100}),
 			})),
 		},
 	}

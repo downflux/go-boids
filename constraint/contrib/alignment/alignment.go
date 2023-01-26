@@ -7,10 +7,8 @@ import (
 	"github.com/downflux/go-database/database"
 	"github.com/downflux/go-database/filters"
 	"github.com/downflux/go-database/flags/move"
+	"github.com/downflux/go-geometry/2d/hyperrectangle"
 	"github.com/downflux/go-geometry/2d/vector"
-	"github.com/downflux/go-geometry/nd/hyperrectangle"
-
-	vnd "github.com/downflux/go-geometry/nd/vector"
 )
 
 func Align(db database.RO, r float64) constraint.Steer {
@@ -22,7 +20,7 @@ func Align(db database.RO, r float64) constraint.Steer {
 
 			x, y := a.Position().X(), a.Position().Y()
 			aabb := *hyperrectangle.New(
-				vnd.V{x - r, y - r}, vnd.V{x + r, y + r},
+				vector.V{x - r, y - r}, vector.V{x + r, y + r},
 			)
 
 			obstacles := db.QueryAgents(aabb, func(b agent.RO) bool {
